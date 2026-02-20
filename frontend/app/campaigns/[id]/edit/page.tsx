@@ -32,7 +32,7 @@ export default function CampaignEditPage() {
         <AppLayout>
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold">Editar Campanha</h1>
+                    <h1 className="text-3xl font-bold">Editar Sequence</h1>
                     <Button variant="outline" onClick={() => router.push(`/campaigns/${campaignId}`)}>
                         Voltar
                     </Button>
@@ -44,7 +44,7 @@ export default function CampaignEditPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <p className="text-muted-foreground">
-                            A edição avançada de campanhas (steps, audiência e agendamento) estará disponível em breve.
+                            A edicao avancada de sequences (steps, audiencia e agendamento) estara disponivel em breve.
                         </p>
                         <Button onClick={() => router.push(`/campaigns/new?clone=${campaignId}`)}>
                             Duplicar e editar

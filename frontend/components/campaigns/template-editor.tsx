@@ -60,7 +60,7 @@ const TEMPLATE_LIBRARY = [
         id: 3,
         name: "Proposta de Valor",
         category: "Apresentação",
-        content: "<p>Olá <strong>{{firstName}}</strong>,</p><p><br></p><p>Empresas de <strong>{{industry}}</strong> em <strong>{{city}}</strong> estão enfrentando 3 desafios principais:</p><ul><li>Geração de leads qualificados</li><li>Automação de processos</li><li>Conversão de oportunidades</li></ul><p><br></p><p>Nossa plataforma resolve os 3. Posso mostrar como?</p>",
+        content: "<p>Olá <strong>{{firstName}}</strong>,</p><p><br></p><p>Empresas de <strong>{{industry}}</strong> em <strong>{{city}}</strong> estão enfrentando 3 desafios principais:</p><ul><li>Priorizacao com sinais de mercado</li><li>Automação de processos</li><li>Conversão de oportunidades</li></ul><p><br></p><p>Nossa plataforma resolve os 3. Posso mostrar como?</p>",
     },
     {
         id: 4,

@@ -112,9 +112,9 @@ export default function NewCampaignPage() {
                     schedule: normalizeScheduleSettings(campaign.schedule) || prev.schedule,
                 }));
             } catch (error) {
-                console.error("Erro ao clonar campanha:", error);
+                console.error("Erro ao clonar sequence:", error);
                 toast({
-                    title: "Erro ao carregar campanha",
+                    title: "Erro ao carregar sequence",
                     variant: "destructive",
                 });
             }
@@ -152,7 +152,7 @@ export default function NewCampaignPage() {
             const campaign = await campaignsApi.create(campaignData);
 
             toast({
-                title: "Campanha criada!",
+                title: "Sequence criada!",
                 description: `${campaign.name} foi criada com sucesso.`,
             });
 
@@ -160,7 +160,7 @@ export default function NewCampaignPage() {
         } catch (error) {
             console.error("Error saving campaign:", error);
             toast({
-                title: "Erro ao salvar campanha",
+                title: "Erro ao salvar sequence",
                 description: error instanceof Error ? error.message : "Erro desconhecido",
                 variant: "destructive",
             });
@@ -181,7 +181,7 @@ export default function NewCampaignPage() {
                     <div>
                         <h2 className="text-3xl font-bold tracking-tight">Nova Sequence</h2>
                         <p className="text-muted-foreground">
-                            Configure sua sequência de automação em 3 passos simples.
+                            Configure sua sequence em 4 passos simples.
                         </p>
                     </div>
                 </div>
@@ -203,7 +203,7 @@ export default function NewCampaignPage() {
                                     className={`text-sm ${step >= s ? "font-medium text-foreground" : "text-muted-foreground"
                                         }`}
                                 >
-                                    {s === 1 ? "Detalhes" : s === 2 ? "Audiência" : s === 3 ? "Sequência" : "Agendamento"}
+                                    {s === 1 ? "Detalhes" : s === 2 ? "Audiencia" : s === 3 ? "Sequence" : "Agendamento"}
                                 </span>
                                 {s < 4 && <div className="w-12 h-[2px] bg-muted" />}
                             </div>
@@ -222,14 +222,14 @@ export default function NewCampaignPage() {
                             >
                                 <Card className="max-w-2xl mx-auto">
                                     <CardHeader>
-                                        <CardTitle>Detalhes da Campanha</CardTitle>
+                                        <CardTitle>Detalhes da Sequence</CardTitle>
                                         <CardDescription>
                                             Dê um nome e escolha o canal principal.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="name">Nome da Campanha</Label>
+                                            <Label htmlFor="name">Nome da Sequence</Label>
                                             <Input
                                                 id="name"
                                                 placeholder="Ex: Prospecção CEO Tech Q3"
@@ -295,7 +295,7 @@ export default function NewCampaignPage() {
                                     </CardContent>
                                     <CardFooter className="flex justify-end">
                                         <Button onClick={nextStep} disabled={!formData.name}>
-                                            Próximo: Audiência <IconArrowRight className="ml-2 h-4 w-4" />
+                                            Proximo: Audiencia <IconArrowRight className="ml-2 h-4 w-4" />
                                         </Button>
                                     </CardFooter>
                                 </Card>
@@ -313,7 +313,7 @@ export default function NewCampaignPage() {
                                     <CardHeader>
                                         <CardTitle>Selecionar Audiência</CardTitle>
                                         <CardDescription>
-                                            Selecione os leads que entrarão nesta campanha.
+                                            Selecione os prospects que entrarao nesta sequence.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -327,7 +327,7 @@ export default function NewCampaignPage() {
                                             Voltar
                                         </Button>
                                         <Button onClick={nextStep} disabled={formData.audience.length === 0}>
-                                            Próximo: Sequência ({formData.audience.length}) <IconArrowRight className="ml-2 h-4 w-4" />
+                                            Proximo: Sequence ({formData.audience.length}) <IconArrowRight className="ml-2 h-4 w-4" />
                                         </Button>
                                     </CardFooter>
                                 </Card>
@@ -344,7 +344,7 @@ export default function NewCampaignPage() {
                             >
                                 <Card className="border-0 shadow-none bg-transparent">
                                     <CardHeader className="px-0 pt-0">
-                                        <CardTitle>Construir Sequência</CardTitle>
+                                        <CardTitle>Construir Sequence</CardTitle>
                                         <CardDescription>
                                             Defina os passos e mensagens arrastando os elementos.
                                         </CardDescription>
@@ -363,7 +363,7 @@ export default function NewCampaignPage() {
                                             onClick={nextStep}
                                             disabled={formData.steps.length === 0}
                                         >
-                                            Próximo: Agendamento <IconArrowRight className="ml-2 h-4 w-4" />
+                                            Proximo: Agendamento <IconArrowRight className="ml-2 h-4 w-4" />
                                         </Button>
                                     </CardFooter>
                                 </Card>

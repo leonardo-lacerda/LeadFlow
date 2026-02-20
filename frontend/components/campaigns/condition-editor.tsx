@@ -27,9 +27,9 @@ interface ConditionEditorProps {
 }
 
 const CONDITION_OPTIONS = [
-    { value: "EMAIL_OPENED", label: "Lead abriu o email" },
-    { value: "EMAIL_REPLIED", label: "Lead respondeu o email" },
-    { value: "EMAIL_CLICKED", label: "Lead clicou em um link" },
+    { value: "EMAIL_OPENED", label: "Prospect abriu o email" },
+    { value: "EMAIL_REPLIED", label: "Prospect respondeu o email" },
+    { value: "EMAIL_CLICKED", label: "Prospect clicou em um link" },
     { value: "WAIT_TIME", label: "Tempo de espera passou" },
 ];
 
@@ -47,14 +47,14 @@ export function ConditionEditor({ value, onChange }: ConditionEditorProps) {
         <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                 <IconGitBranch className="h-4 w-4" />
-                <span>Se a condição for verdadeira, continua sequência. Caso contrário, pausa.</span>
+                <span>Se a condicao for verdadeira, continua sequence. Caso contrario, pausa.</span>
             </div>
 
             <div className="space-y-2">
-                <Label>Tipo de Condição</Label>
+                <Label>Tipo de condicao</Label>
                 <Select value={conditionType} onValueChange={handleTypeChange}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Selecione a condição" />
+                        <SelectValue placeholder="Selecione a condicao" />
                     </SelectTrigger>
                     <SelectContent>
                         {CONDITION_OPTIONS.map((option) => (
@@ -73,29 +73,29 @@ export function ConditionEditor({ value, onChange }: ConditionEditorProps) {
                         <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                             {conditionType === "EMAIL_OPENED" && (
                                 <>
-                                    <li>Sistema aguarda até 48h para verificar abertura</li>
-                                    <li>Se aberto: continua para próximo passo</li>
-                                    <li>Se não abriu: pausa a sequência</li>
+                                    <li>Sistema aguarda ate 48h para verificar abertura</li>
+                                    <li>Se abriu: continua para proximo passo</li>
+                                    <li>Se nao abriu: pausa a sequence</li>
                                 </>
                             )}
                             {conditionType === "EMAIL_REPLIED" && (
                                 <>
-                                    <li>Sistema aguarda até 7 dias para verificar resposta</li>
-                                    <li>Se respondeu: marca como &quot;Interessado&quot; e pausa</li>
-                                    <li>Se não respondeu: continua sequência</li>
+                                    <li>Sistema aguarda ate 7 dias para verificar resposta</li>
+                                    <li>Se respondeu: marca como interessado e pausa</li>
+                                    <li>Se nao respondeu: continua sequence</li>
                                 </>
                             )}
                             {conditionType === "EMAIL_CLICKED" && (
                                 <>
                                     <li>Sistema verifica se houve clique em qualquer link</li>
-                                    <li>Se clicou: marca como &quot;Engajado&quot;</li>
-                                    <li>Se não clicou: continua normalmente</li>
+                                    <li>Se clicou: marca como engajado</li>
+                                    <li>Se nao clicou: continua normalmente</li>
                                 </>
                             )}
                             {conditionType === "WAIT_TIME" && (
                                 <>
                                     <li>Aguarda tempo configurado antes de prosseguir</li>
-                                    <li>Útil para criar pausas estratégicas</li>
+                                    <li>Util para criar pausas estrategicas</li>
                                 </>
                             )}
                         </ul>
@@ -104,8 +104,8 @@ export function ConditionEditor({ value, onChange }: ConditionEditorProps) {
             </Card>
 
             <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 rounded-md p-3">
-                <strong>Nota:</strong> Condições são verificadas automaticamente pelo sistema.
-                Leads que não atenderem as condições ficarão pausados até ação manual.
+                <strong>Nota:</strong> Condicoes sao verificadas automaticamente pelo sistema.
+                Prospects que nao atenderem as condicoes ficam pausados ate acao manual.
             </div>
         </div>
     );

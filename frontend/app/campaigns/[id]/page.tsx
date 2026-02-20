@@ -33,7 +33,7 @@ export default function CampaignDetailsPage() {
         } catch (error) {
             console.error("Error loading campaign:", error);
             toast({
-                title: "Erro ao carregar campanha",
+                title: "Erro ao carregar sequence",
                 description: error instanceof Error ? error.message : "Erro desconhecido",
                 variant: "destructive",
             });
@@ -64,7 +64,7 @@ export default function CampaignDetailsPage() {
 
             toast({
                 title: "Status atualizado",
-                description: `Campanha ${newStatus === "ACTIVE" ? "ativada" : "pausada"} com sucesso.`,
+                description: `Sequence ${newStatus === "ACTIVE" ? "ativada" : "pausada"} com sucesso.`,
             });
 
             loadCampaign();
@@ -102,7 +102,7 @@ export default function CampaignDetailsPage() {
         return (
             <AppLayout>
                 <div className="flex items-center justify-center h-96">
-                    <p>Campanha não encontrada.</p>
+                    <p>Sequence nao encontrada.</p>
                 </div>
             </AppLayout>
         );
@@ -219,7 +219,7 @@ export default function CampaignDetailsPage() {
                             <CardHeader>
                                 <CardTitle>Sequência de Passos</CardTitle>
                                 <CardDescription>
-                                    Visualize a sequência de mensagens desta campanha
+                                    Visualize a sequencia de mensagens desta sequence
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -319,7 +319,7 @@ export default function CampaignDetailsPage() {
                             <CardHeader>
                                 <CardTitle>Prospects na Sequence</CardTitle>
                                 <CardDescription>
-                                    Acompanhe o progresso e status de cada lead
+                                    Acompanhe o progresso e status de cada prospect
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -333,7 +333,7 @@ export default function CampaignDetailsPage() {
                             <CardHeader>
                                 <CardTitle>Jornada dos Prospects</CardTitle>
                                 <CardDescription>
-                                    Visualize o progresso dos leads na sequência.
+                                    Visualize o progresso dos prospects na sequence.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -345,7 +345,7 @@ export default function CampaignDetailsPage() {
                                             <div key={lead.id} className="border rounded-md p-3">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <p className="font-medium">{lead.lead?.fullName || "Lead"}</p>
+                                                        <p className="font-medium">{lead.lead?.fullName || "Prospect"}</p>
                                                         <p className="text-xs text-muted-foreground">{lead.lead?.email}</p>
                                                     </div>
                                                     <Badge variant="outline">{lead.status}</Badge>
@@ -360,7 +360,7 @@ export default function CampaignDetailsPage() {
                                         );
                                     })
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">Nenhum lead associado.</p>
+                                    <p className="text-sm text-muted-foreground">Nenhum prospect associado.</p>
                                 )}
                             </CardContent>
                         </Card>

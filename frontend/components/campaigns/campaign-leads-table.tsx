@@ -117,7 +117,7 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Lead</TableHead>
+                            <TableHead>Prospect</TableHead>
                             <TableHead>Empresa</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Passo Atual</TableHead>
@@ -130,14 +130,14 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
                                 <TableCell colSpan={5} className="h-24 text-center">
                                     <div className="flex items-center justify-center gap-2 text-muted-foreground">
                                         <IconLoader className="h-4 w-4 animate-spin" />
-                                        Carregando leads...
+                                        Carregando prospects...
                                     </div>
                                 </TableCell>
                             </TableRow>
                         ) : leads.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                    Nenhum lead encontrado com os filtros atuais.
+                                    Nenhum prospect encontrado com os filtros atuais.
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -165,7 +165,7 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
             {/* Pagination */}
             <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
-                    Mostrando {leads.length} de {total} leads
+                    Mostrando {leads.length} de {total} prospects
                 </div>
                 <div className="flex items-center gap-2">
                     <Button
