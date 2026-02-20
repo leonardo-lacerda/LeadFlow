@@ -1,0 +1,157 @@
+[
+  {
+    "id": "f78812426ef94b6ab83c9a50fd16e686",
+    "name": "lead_scoring",
+    "content": "You are a B2B lead scoring assistant.\nReturn JSON only with keys: score (0-100), icp_match (0-1), explanation (string), tags (array).\n\nLead:\n{{lead_summary}}\n\nICP:\n{{icp_summary}}",
+    "variables": [
+      "lead_summary",
+      "icp_summary"
+    ],
+    "description": "Score lead fit and ICP match",
+    "category": "scoring",
+    "created_at": "2026-02-10T16:37:54.894687Z",
+    "updated_at": "2026-02-10T16:37:54.894687Z"
+  },
+  {
+    "id": "3857b466f0ff4c67bbc3de71a3fb8582",
+    "name": "email_generation",
+    "content": "You are an SDR writing outbound emails.\nReturn JSON only: {\"subject\": \"...\", \"body\": \"...\"}.\n\nTone: {{tone}}\nLanguage: {{language}}\n\nLead:\n{{lead_summary}}\n\nCompany:\n{{company_summary}}",
+    "variables": [
+      "lead_summary",
+      "company_summary",
+      "tone",
+      "language"
+    ],
+    "description": "Generate an outbound email",
+    "category": "generation",
+    "created_at": "2026-02-10T16:37:54.901064Z",
+    "updated_at": "2026-02-10T16:37:54.901064Z"
+  },
+  {
+    "id": "715a30c016954c17a7e6baf61763caff",
+    "name": "whatsapp_generation",
+    "content": "You are an SDR writing WhatsApp outreach. Keep it short.\nReturn JSON only: {\"message\": \"...\"}.\n\nTone: {{tone}}\nLanguage: {{language}}\n\nLead:\n{{lead_summary}}\n\nCompany:\n{{company_summary}}",
+    "variables": [
+      "lead_summary",
+      "company_summary",
+      "tone",
+      "language"
+    ],
+    "description": "Generate a WhatsApp message",
+    "category": "generation",
+    "created_at": "2026-02-10T16:37:54.920271Z",
+    "updated_at": "2026-02-10T16:37:54.920271Z"
+  },
+  {
+    "id": "030033b4f8af4ce0b1dfc509f062d67d",
+    "name": "intent_classification",
+    "content": "Classify the intent of the reply.\nPossible intents: interested, not_interested, question, meeting_request, follow_up, complaint, unknown.\nReturn JSON only: {\"intent\": \"...\", \"confidence\": 0-1}.\n\nReply:\n{{message}}",
+    "variables": [
+      "message"
+    ],
+    "description": "Classify intent of a reply",
+    "category": "analysis",
+    "created_at": "2026-02-10T16:37:54.946061Z",
+    "updated_at": "2026-02-10T16:37:54.946061Z"
+  },
+  {
+    "id": "75dabc338b2a4f71b93246fb9bd5679d",
+    "name": "sentiment_analysis",
+    "content": "Analyze sentiment of the reply.\nReturn JSON only: {\"sentiment\": \"positive|neutral|negative\", \"confidence\": 0-1}.\n\nReply:\n{{message}}",
+    "variables": [
+      "message"
+    ],
+    "description": "Analyze sentiment of a reply",
+    "category": "analysis",
+    "created_at": "2026-02-10T16:37:54.968804Z",
+    "updated_at": "2026-02-10T16:37:54.968804Z"
+  },
+  {
+    "id": "78cae685ef9a46e1a1d197c9287f1d08",
+    "name": "auto_categorization",
+    "content": "Categorize the reply into a short label (e.g. pricing, timing, competitor, objections, invalid).\nReturn JSON only: {\"category\": \"...\"}.\n\nReply:\n{{message}}",
+    "variables": [
+      "message"
+    ],
+    "description": "Auto categorize replies",
+    "category": "analysis",
+    "created_at": "2026-02-10T16:37:55.003259Z",
+    "updated_at": "2026-02-10T16:37:55.003259Z"
+  },
+  {
+    "id": "8d12bb5f656f4f6bb70bc1c313dff287",
+    "name": "suggested_response",
+    "content": "Write a short suggested response.\nReturn JSON only: {\"response\": \"...\"}.\n\nTone: {{tone}}\nLanguage: {{language}}\n\nReply:\n{{message}}",
+    "variables": [
+      "message",
+      "tone",
+      "language"
+    ],
+    "description": "Suggest a response",
+    "category": "analysis",
+    "created_at": "2026-02-10T16:37:55.022953Z",
+    "updated_at": "2026-02-10T16:37:55.022953Z"
+  },
+  {
+    "id": "a6dd4dbfe5ab4c46b42b461baf7760fe",
+    "name": "meeting_detection",
+    "content": "Detect if the reply is asking for a meeting or scheduling.\nReturn JSON only: {\"meeting_detected\": true|false, \"details\": \"...\"}.\n\nReply:\n{{message}}",
+    "variables": [
+      "message"
+    ],
+    "description": "Detect meeting intent",
+    "category": "analysis",
+    "created_at": "2026-02-10T16:37:55.055099Z",
+    "updated_at": "2026-02-10T16:37:55.055099Z"
+  },
+  {
+    "id": "7777a27c3e254b70bc3ff573e1f870bf",
+    "name": "best_time_prediction",
+    "content": "Predict the best time window to send outreach (weekday + time range).\nReturn JSON only: {\"best_time\": \"...\", \"reason\": \"...\"}.\n\nLead:\n{{lead_summary}}",
+    "variables": [
+      "lead_summary"
+    ],
+    "description": "Predict best time to send",
+    "category": "prediction",
+    "created_at": "2026-02-10T16:37:55.074968Z",
+    "updated_at": "2026-02-10T16:37:55.074968Z"
+  },
+  {
+    "id": "7046e55557f24ba686e5a908bb0f4d8a",
+    "name": "subject_optimization",
+    "content": "Improve the subject line for higher opens.\nReturn JSON only: {\"subject\": \"...\", \"reason\": \"...\"}.\n\nOriginal subject:\n{{subject}}\n\nLead:\n{{lead_summary}}",
+    "variables": [
+      "subject",
+      "lead_summary"
+    ],
+    "description": "Optimize subject line",
+    "category": "optimization",
+    "created_at": "2026-02-10T16:37:55.105607Z",
+    "updated_at": "2026-02-10T16:37:55.105607Z"
+  },
+  {
+    "id": "8f1744cbf0f8415f97da198e1dbb953c",
+    "name": "length_optimization",
+    "content": "Rewrite the message to optimal length and clarity.\nReturn JSON only: {\"message\": \"...\"}.\n\nMessage:\n{{message}}",
+    "variables": [
+      "message"
+    ],
+    "description": "Optimize message length",
+    "category": "optimization",
+    "created_at": "2026-02-10T16:37:55.132141Z",
+    "updated_at": "2026-02-10T16:37:55.132141Z"
+  },
+  {
+    "id": "1f521514e834496fa7f0376c3e18e065",
+    "name": "engagement_prediction",
+    "content": "Predict engagement likelihood from 0 to 1.\nReturn JSON only: {\"engagement\": 0-1, \"reason\": \"...\"}.\n\nMessage:\n{{message}}\n\nLead:\n{{lead_summary}}",
+    "variables": [
+      "message",
+      "lead_summary"
+    ],
+    "description": "Predict engagement likelihood",
+    "category": "prediction",
+    "created_at": "2026-02-10T16:37:55.149128Z",
+    "updated_at": "2026-02-10T16:37:55.149128Z"
+  }
+]

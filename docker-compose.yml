@@ -1,0 +1,180 @@
+﻿version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: leadflow-postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-leadflow}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: leadflow-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  evolution:
+    image: atendai/evolution-api:latest
+    container_name: leadflow-evolution
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    volumes:
+      - evolution_data:/evolution/instances
+    environment:
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:?EVOLUTION_API_KEY is required}
+      DEL_INSTANCE: "false"
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-leadflow}?schema=evolution
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis:6379/1
+      CORS_ORIGIN: "*"
+      CORS_METHODS: GET,POST,PUT,DELETE
+      CORS_CREDENTIALS: "true"
+
+  backend:
+    build: ./backend
+    container_name: leadflow-backend
+    env_file:
+      - .env
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app
+      - type: volume
+        source: backend_node_modules
+        target: /app/node_modules
+        volume:
+          nocopy: true
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-4000}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-leadflow}?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      EVOLUTION_API_URL: http://evolution:8080
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY:?EVOLUTION_API_KEY is required}
+      API_BASE_URL: http://backend:4000
+      IMAP_POLL_INTERVAL: ${IMAP_POLL_INTERVAL:-300000}
+      SCRAPING_SERVICE_URL: http://scraping:5001
+      SCRAPING_WEBHOOK_URL: http://backend:4000/api/scraping/webhook
+      SCRAPING_WEBHOOK_SECRET: ${SCRAPING_WEBHOOK_SECRET:?SCRAPING_WEBHOOK_SECRET is required}
+      SCRAPING_NO_API: ${SCRAPING_NO_API:-true}
+      ENRICHMENT_SERVICE_URL: http://enrichment:5002
+      ENRICHMENT_WEBHOOK_URL: http://backend:4000/api/enrichment/webhook
+      ENRICHMENT_WEBHOOK_SECRET: ${ENRICHMENT_WEBHOOK_SECRET:?ENRICHMENT_WEBHOOK_SECRET is required}
+      AI_SERVICE_URL: http://ai:5003
+      AI_WEBHOOK_URL: http://backend:4000/api/ai/webhook
+      AI_WEBHOOK_SECRET: ${AI_WEBHOOK_SECRET:?AI_WEBHOOK_SECRET is required}
+      WHATSAPP_WEBHOOK_SECRET: ${WHATSAPP_WEBHOOK_SECRET:?WHATSAPP_WEBHOOK_SECRET is required}
+      AUTO_ENRICH_LEADS: ${AUTO_ENRICH_LEADS:-false}
+      RUN_WORKERS: ${RUN_WORKERS:-true}
+      RUN_IMAP_POLLING: ${RUN_IMAP_POLLING:-true}
+      INTERNAL_REQUEST_TIMEOUT_MS: ${INTERNAL_REQUEST_TIMEOUT_MS:-30000}
+      EMAIL_WEBHOOK_SECRET: ${EMAIL_WEBHOOK_SECRET:?EMAIL_WEBHOOK_SECRET is required}
+      EMAIL_TRACKING_SIGNING_SECRET: ${EMAIL_TRACKING_SIGNING_SECRET:?EMAIL_TRACKING_SIGNING_SECRET is required}
+      EMAIL_TRACKING_ALLOWED_DOMAINS: ${EMAIL_TRACKING_ALLOWED_DOMAINS:-}
+      SECRETS_ENCRYPTION_KEY: ${SECRETS_ENCRYPTION_KEY:?SECRETS_ENCRYPTION_KEY is required}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: sh -c "if [ ! -f node_modules/.bin/tsx ]; then npm install; fi; npx prisma generate && npx prisma migrate deploy && npm run dev"
+
+  scraping:
+    build: ./services/scraping
+    container_name: leadflow-scraping
+    env_file:
+      - .env
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./services/scraping:/app
+    environment:
+      SCRAPING_MOCK: ${SCRAPING_MOCK:-false}
+      SCRAPING_NO_API: ${SCRAPING_NO_API:-true}
+      BACKEND_WEBHOOK_URL: http://backend:4000/api/scraping/webhook
+      SCRAPING_WEBHOOK_SECRET: ${SCRAPING_WEBHOOK_SECRET:?SCRAPING_WEBHOOK_SECRET is required}
+      PROXY_LIST: ${PROXY_LIST:-}
+      SERPAPI_KEY: ${SERPAPI_KEY:-}
+      CNPJ_WS_BASE_URL: ${CNPJ_WS_BASE_URL:-}
+      WAPPALYZER_API_KEY: ${WAPPALYZER_API_KEY:-}
+    depends_on:
+      - backend
+
+  enrichment:
+    build: ./services/enrichment
+    container_name: leadflow-enrichment
+    env_file:
+      - .env
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./services/enrichment:/app
+    environment:
+      ENRICHMENT_MOCK: ${ENRICHMENT_MOCK:-true}
+      BACKEND_WEBHOOK_URL: http://backend:4000/api/enrichment/webhook
+      ENRICHMENT_WEBHOOK_SECRET: ${ENRICHMENT_WEBHOOK_SECRET:?ENRICHMENT_WEBHOOK_SECRET is required}
+      CNPJ_WS_BASE_URL: ${CNPJ_WS_BASE_URL:-}
+      SERPAPI_KEY: ${SERPAPI_KEY:-}
+      HUNTER_API_KEY: ${HUNTER_API_KEY:-}
+      SNOV_CLIENT_ID: ${SNOV_CLIENT_ID:-}
+      SNOV_CLIENT_SECRET: ${SNOV_CLIENT_SECRET:-}
+      ZEROBOUNCE_API_KEY: ${ZEROBOUNCE_API_KEY:-}
+      PROXY_LIST: ${PROXY_LIST:-}
+    depends_on:
+      - backend
+
+  ai:
+    build: ./services/ai
+    container_name: leadflow-ai
+    env_file:
+      - .env
+    ports:
+      - "5003:5003"
+    volumes:
+      - ./services/ai:/app
+    environment:
+      AI_MOCK: ${AI_MOCK:-true}
+      BACKEND_WEBHOOK_URL: http://backend:4000/api/ai/webhook
+      AI_WEBHOOK_SECRET: ${AI_WEBHOOK_SECRET:?AI_WEBHOOK_SECRET is required}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+  evolution_data:
+  backend_node_modules:
+
+networks:
+  default:
+    name: leadflow-network

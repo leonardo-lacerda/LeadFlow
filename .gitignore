@@ -1,0 +1,26 @@
+# Dependencies
+**/node_modules/
+
+# Build outputs
+**/.next/
+**/dist/
+**/build/
+
+# Local env
+.env
+.env.*
+!.env.example
+
+# Logs
+**/*.log
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Runtime local data
+.postgres/
+
+# Backup of nested git metadata
+frontend/.git.frontend-backup/
