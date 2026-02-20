@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎨 Leadflow Frontend
 
-## Getting Started
+Frontend para a plataforma SaaS Leadflow, construído com Next.js 14, TailwindCSS e shadcn/ui.
 
-First, run the development server:
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: TailwindCSS + shadcn/ui
+- **State**: Zustand + React Query
+- **Forms**: React Hook Form + Zod
+- **Icons**: Tabler Icons + Lucide React
+- **Animations**: Framer Motion
+
+## 🚀 Como Rodar
+
+### Instalação
+
+```bash
+npm install
+```
+
+### Desenvolvimento
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+O frontend estará disponível em [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📂 Estrutura
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+frontend/
+├── app/                  # Next.js App Router
+│   ├── (auth)/           # Rotas de autenticação (login, register)
+│   ├── dashboard/        # Dashboard principal
+│   ├── leads/            # Gestão de leads
+│   ├── campaigns/        # Gestão de campanhas (em breve)
+│   ├── layout.tsx        # Layout raiz com Providers
+│   └── page.tsx          # Home (redirect para dashboard)
+├── components/           # Componentes React
+│   ├── ui/               # shadcn/ui components
+│   ├── layout/           # Componentes de layout (Sidebar, Header)
+│   └── shared/           # Componentes reutilizáveis
+├── lib/                  # Utilitários e configurações
+│   ├── api.ts            # Client Axios configurado
+│   └── utils.ts          # Helpers gerais
+├── store/                # Zustand stores (auth, etc)
+└── hooks/                # Custom hooks (use-toast, etc)
+```
 
-## Learn More
+## 🔐 Autenticação
 
-To learn more about Next.js, take a look at the following resources:
+A autenticação é gerenciada via Zustand (`store/auth-store.ts`) persistindo o token JWT no localStorage. O `api.ts` intercepta requisições para adicionar o token automaticamente.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎨 UI Guidelines
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Fonte**: Inter (Google Fonts)
+- **Cores**: Slate/Neutral (Tailwind default)
+- **Dark Mode**: Suportado (via `next-themes` - a configurar)
