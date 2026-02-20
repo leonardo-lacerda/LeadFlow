@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -131,13 +131,13 @@ export default function LeadsPage() {
         setSaving(true);
         try {
             await leadsApi.create(form);
-            toast({ title: "Lead criado com sucesso" });
+            toast({ title: "Prospect criado com sucesso" });
             setCreateOpen(false);
             setForm(EMPTY_FORM);
             await refreshLeads();
         } catch (error) {
             toast({
-                title: "Erro ao criar lead",
+                title: "Erro ao criar prospect",
                 description: error instanceof Error ? error.message : "Erro desconhecido",
                 variant: "destructive",
             });
@@ -154,7 +154,7 @@ export default function LeadsPage() {
         setSaving(true);
         try {
             await leadsApi.update(selectedLeadId, form);
-            toast({ title: "Lead atualizado com sucesso" });
+            toast({ title: "Prospect atualizado com sucesso" });
             setEditOpen(false);
             setSelectedLeadId(null);
             await refreshLeads();
@@ -170,16 +170,16 @@ export default function LeadsPage() {
     };
 
     const removeLead = async (lead: LeadRow) => {
-        if (!confirm(`Excluir lead ${lead.fullName || lead.email || lead.id}?`)) {
+        if (!confirm(`Excluir prospect ${lead.fullName || lead.email || lead.id}?`)) {
             return;
         }
         try {
             await leadsApi.delete(lead.id);
-            toast({ title: "Lead excluido" });
+            toast({ title: "Prospect removido" });
             await refreshLeads();
         } catch (error) {
             toast({
-                title: "Erro ao excluir lead",
+                title: "Erro ao excluir prospect",
                 description: error instanceof Error ? error.message : "Erro desconhecido",
                 variant: "destructive",
             });
@@ -193,7 +193,7 @@ export default function LeadsPage() {
         }
 
         downloadCsv(
-            `leads-${new Date().toISOString().slice(0, 10)}.csv`,
+            `prospects-${new Date().toISOString().slice(0, 10)}.csv`,
             rows.map((lead) => ({
                 id: lead.id,
                 nome: lead.fullName || "",
@@ -211,7 +211,7 @@ export default function LeadsPage() {
         <AppLayout>
             <div className="flex-1 space-y-4 p-8 pt-6">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-3xl font-bold tracking-tight">Leads</h2>
+                    <h2 className="text-3xl font-bold tracking-tight">Prospects + Signals</h2>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" onClick={exportCurrentRows}>
                             <IconDownload className="mr-2 h-4 w-4" />
@@ -219,7 +219,7 @@ export default function LeadsPage() {
                         </Button>
                         <Button size="sm" onClick={openCreate}>
                             <IconPlus className="mr-2 h-4 w-4" />
-                            Novo Lead
+                            Novo Prospect
                         </Button>
                     </div>
                 </div>
@@ -278,13 +278,13 @@ export default function LeadsPage() {
                             {isLoading ? (
                                 <TableRow>
                                     <TableCell colSpan={6} className="h-24 text-center">
-                                        Carregando leads...
+                                        Carregando prospects...
                                     </TableCell>
                                 </TableRow>
                             ) : rows.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={6} className="h-24 text-center">
-                                        Nenhum lead encontrado.
+                                        Nenhum prospect encontrado.
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -358,7 +358,7 @@ export default function LeadsPage() {
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Novo Lead</DialogTitle>
+                            <DialogTitle>Novo Prospect</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                             <div className="space-y-2">
@@ -404,7 +404,7 @@ export default function LeadsPage() {
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Editar Lead</DialogTitle>
+                            <DialogTitle>Editar Prospect</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                             <div className="space-y-2">
@@ -450,3 +450,4 @@ export default function LeadsPage() {
         </AppLayout>
     );
 }
+

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ const LEAD_FIELDS = [
     { value: "jobTitle", label: "Cargo" },
     { value: "city", label: "Cidade" },
     { value: "state", label: "Estado" },
-    { value: "country", label: "País" },
+    { value: "country", label: "Pa�s" },
     { value: "linkedinUrl", label: "LinkedIn" },
     { value: "source", label: "Fonte" },
 ];
@@ -68,7 +68,7 @@ export default function ImportLeadsPage() {
         } else if (ext === "xlsx" || ext === "xls") {
             parseExcel(file);
         } else {
-            toast({ title: "Formato não suportado", variant: "destructive" });
+            toast({ title: "Formato n�o suportado", variant: "destructive" });
         }
     };
 
@@ -139,7 +139,7 @@ export default function ImportLeadsPage() {
 
         if (invalidRows.length > 0) {
             setErrors([
-                `Encontramos ${invalidRows.length} linhas sem email. Elas serão ignoradas.`,
+                `Encontramos ${invalidRows.length} linhas sem email. Elas ser�o ignoradas.`,
             ]);
         }
 
@@ -164,8 +164,8 @@ export default function ImportLeadsPage() {
             }
 
             toast({
-                title: "Importação concluída",
-                description: `${imported} leads importados com sucesso.`,
+                title: "Importa��o conclu�da",
+                description: `${imported} prospects importados com sucesso.`,
             });
         } catch (error) {
             console.error(error);
@@ -181,18 +181,18 @@ export default function ImportLeadsPage() {
     return (
         <AppLayout>
             <div className="flex-1 space-y-4 p-8 pt-6">
-                <h2 className="text-3xl font-bold tracking-tight">Importar Leads</h2>
+                <h2 className="text-3xl font-bold tracking-tight">Importar Prospects</h2>
 
                 <Card>
                     <CardHeader>
                         <CardTitle>Upload de CSV/Excel</CardTitle>
                         <CardDescription>
-                            Importe leads em massa usando arquivos .csv ou .xlsx.
+                            Importe prospects em massa usando arquivos .csv ou .xlsx.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="grid w-full max-w-sm items-center gap-1.5">
-                            <Label htmlFor="file">Arquivo de Leads</Label>
+                            <Label htmlFor="file">Arquivo de Prospects</Label>
                             <div className="flex items-center gap-4">
                                 <Input
                                     id="file"
@@ -247,7 +247,7 @@ export default function ImportLeadsPage() {
 
                         {rows.length > 0 && (
                             <div className="space-y-4">
-                                <h3 className="font-semibold">Pré-visualização</h3>
+                                <h3 className="font-semibold">Pr�-visualiza��o</h3>
                                 <div className="border rounded-md p-4 max-h-64 overflow-auto text-sm">
                                     <pre>{JSON.stringify(rows.slice(0, 3), null, 2)}</pre>
                                 </div>
@@ -269,7 +269,7 @@ export default function ImportLeadsPage() {
                                 {uploading ? "Importando..." : (
                                     <>
                                         <IconUpload className="mr-2 h-4 w-4" />
-                                        Importar Leads
+                                        Importar Prospects
                                     </>
                                 )}
                             </Button>
@@ -280,3 +280,4 @@ export default function ImportLeadsPage() {
         </AppLayout>
     );
 }
+

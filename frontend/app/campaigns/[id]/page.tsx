@@ -159,8 +159,8 @@ export default function CampaignDetailsPage() {
                     <TabsList>
                         <TabsTrigger value="overview">Overview</TabsTrigger>
                         <TabsTrigger value="steps">Sequência</TabsTrigger>
-                        <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                        <TabsTrigger value="leads">Leads ({campaign.leads?.length || 0})</TabsTrigger>
+                        <TabsTrigger value="analytics">Intelligence</TabsTrigger>
+                        <TabsTrigger value="leads">Prospects ({campaign.leads?.length || 0})</TabsTrigger>
                         <TabsTrigger value="journey">Jornada</TabsTrigger>
                     </TabsList>
 
@@ -168,7 +168,7 @@ export default function CampaignDetailsPage() {
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                             <Card>
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm font-medium">Total de Leads</CardTitle>
+                                    <CardTitle className="text-sm font-medium">Total de Prospects</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">{campaign.leads?.length || 0}</div>
@@ -317,7 +317,7 @@ export default function CampaignDetailsPage() {
                     <TabsContent value="leads" className="mt-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Leads na Campanha</CardTitle>
+                                <CardTitle>Prospects na Sequence</CardTitle>
                                 <CardDescription>
                                     Acompanhe o progresso e status de cada lead
                                 </CardDescription>
@@ -331,7 +331,7 @@ export default function CampaignDetailsPage() {
                     <TabsContent value="journey" className="mt-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Jornada dos Leads</CardTitle>
+                                <CardTitle>Jornada dos Prospects</CardTitle>
                                 <CardDescription>
                                     Visualize o progresso dos leads na sequência.
                                 </CardDescription>

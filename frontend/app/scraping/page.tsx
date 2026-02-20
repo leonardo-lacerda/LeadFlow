@@ -482,9 +482,9 @@ export default function ScrapingPage() {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Scraping</h1>
+                        <h1 className="text-3xl font-bold">Lead Discovery</h1>
                         <p className="text-muted-foreground">
-                            Automatize a coleta de leads de múltiplas fontes
+                            Descubra prospects em multiplas fontes com coleta estruturada
                         </p>
                     </div>
                     <div className="flex gap-2">
@@ -526,7 +526,7 @@ export default function ScrapingPage() {
                     </Card>
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardDescription>Leads Criados</CardDescription>
+                            <CardDescription>Prospects Criados</CardDescription>
                             <CardTitle className="text-3xl">
                                 {jobs.reduce((sum, j) => sum + j.leadsCreated, 0)}
                             </CardTitle>
@@ -537,7 +537,7 @@ export default function ScrapingPage() {
                 {/* Jobs Table */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Jobs de Scraping</CardTitle>
+                        <CardTitle>Jobs de Discovery</CardTitle>
                         <CardDescription>Histórico e status dos seus jobs</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -547,7 +547,7 @@ export default function ScrapingPage() {
                                     <TableHead>Nome/Fonte</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Progresso</TableHead>
-                                    <TableHead>Leads</TableHead>
+                                    <TableHead>Prospects</TableHead>
                                     <TableHead>Criado</TableHead>
                                     <TableHead className="text-right">Ações</TableHead>
                                 </TableRow>
@@ -638,7 +638,7 @@ export default function ScrapingPage() {
             <Dialog open={showWizard} onOpenChange={setShowWizard}>
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>Novo Job de Scraping</DialogTitle>
+                        <DialogTitle>Novo Job de Discovery</DialogTitle>
                         <DialogDescription>
                             Passo {wizardStep} de 2: {wizardStep === 1 ? "Selecione a fonte" : "Configure os parametros"}
                         </DialogDescription>
@@ -790,3 +790,4 @@ export default function ScrapingPage() {
         </AppLayout>
     );
 }
+

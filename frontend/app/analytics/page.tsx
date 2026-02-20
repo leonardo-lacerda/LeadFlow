@@ -87,9 +87,9 @@ export default function AnalyticsPage() {
             <div className="space-y-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Analytics Avancado</h1>
+                        <h1 className="text-3xl font-bold">Intelligence</h1>
                         <p className="text-muted-foreground">
-                            Correlacoes de desempenho para orientar decisao comercial.
+                            Sinais coletivos para orientar prioridade, timing e canal de abordagem.
                         </p>
                     </div>
                     <Button
@@ -98,23 +98,23 @@ export default function AnalyticsPage() {
                         disabled={recalculateMutation.isPending}
                     >
                         <IconRefresh className="mr-2 h-4 w-4" />
-                        Recalcular metricas
+                        Recalcular sinais
                     </Button>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <MetricCard
-                        label="Leads capturados"
+                        label="Prospects capturados"
                         value={captured}
                         helper={stats ? `Variacao mes: ${stats.changes.leads}` : undefined}
                     />
                     <MetricCard
-                        label="Leads responderam"
+                        label="Prospects responderam"
                         value={replied}
                         helper={stats ? `Taxa de resposta: ${stats.responseRate}%` : undefined}
                     />
                     <MetricCard
-                        label="Leads convertidos"
+                        label="Prospects convertidos"
                         value={converted}
                         helper={`Conversao final: ${conversionRate}`}
                     />
@@ -192,7 +192,7 @@ export default function AnalyticsPage() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Faixa</TableHead>
-                                            <TableHead>Leads</TableHead>
+                                            <TableHead>Prospects</TableHead>
                                             <TableHead>Contatados</TableHead>
                                             <TableHead>Reply</TableHead>
                                             <TableHead>Conversao</TableHead>
@@ -228,3 +228,4 @@ export default function AnalyticsPage() {
         </AppLayout>
     );
 }
+

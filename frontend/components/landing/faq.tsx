@@ -9,25 +9,25 @@ import {
 
 const faqs = [
     {
-        question: "Preciso conectar meu próprio email?",
-        answer: "Sim! Você pode conectar contas do Gmail, Outlook ou qualquer provedor SMTP/IMAP. Recomendamos usar contas secundárias para proteger seu domínio principal."
+        question: "O Leadflow vende lead direto entre empresas?",
+        answer: "Nao. O Leadflow nao e marketplace de lead. A plataforma entrega sinais, score, timing e recomendacao de canal para cada org executar com autonomia.",
     },
     {
-        question: "Como funciona a integração com WhatsApp?",
-        answer: "Utilizamos a API Oficial do WhatsApp Business (Cloud API) ou conexão via QR Code para instâncias web. Você pode criar fluxos que alternam entre email e mensagem automaticamente."
+        question: "Quais dados sao compartilhados entre SaaS?",
+        answer: "Somente padroes anonimizados por segmento (ex.: reply rate por perfil e horario). Nome, email, conteudo da mensagem e origem da org nao sao compartilhados.",
     },
     {
-        question: "Os dados dos leads são confiáveis?",
-        answer: "Nossa base é atualizada mensalmente e verificamos todos os emails em tempo real antes de você adicionar à campanha, garantindo taxa de entrega superior a 95%."
+        question: "Qual perfil de cliente encaixa no cohort inicial?",
+        answer: "SaaS B2B com decisor tecnico, ticket recorrente e outbound leve (email + WhatsApp). Esse recorte reduz ruido e aumenta precisao dos sinais.",
     },
     {
-        question: "Posso cancelar a qualquer momento?",
-        answer: "Com certeza. Não há fidelidade nos planos mensais. Se cancelar, você mantém o acesso até o fim do ciclo de cobrança vigente."
+        question: "Sem sinais de rede o produto ainda funciona?",
+        answer: "Sim. O Leadflow opera com seus dados proprios e evolui conforme o volume coletivo cresce. Quanto mais orgs similares entram, mais forte fica o data moat.",
     },
     {
-        question: "Vocês oferecem garantia?",
-        answer: "Sim, oferecemos 7 dias de garantia incondicional. Se não gostar da ferramenta, devolvemos 100% do seu dinheiro."
-    }
+        question: "Qual resultado posso esperar?",
+        answer: "A promessa nao e cliente garantido. A promessa e decisao comercial melhor: priorizacao mais inteligente, menos tentativa e erro e aumento consistente de resposta.",
+    },
 ];
 
 export function LandingFAQ() {
@@ -36,7 +36,7 @@ export function LandingFAQ() {
             <div className="container mx-auto px-4 max-w-3xl">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-                        Perguntas Frequentes
+                        Perguntas frequentes
                     </h2>
                 </div>
 

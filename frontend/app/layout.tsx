@@ -7,8 +7,8 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Leadflow - B2B Prospecting",
-  description: "Automated B2B Prospecting Platform",
+  title: "Leadflow - Acquisition as Infrastructure",
+  description: "Shared intelligence and signal layer for B2B SaaS acquisition.",
 };
 
 const themeScript = `

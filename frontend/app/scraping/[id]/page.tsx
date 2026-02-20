@@ -311,7 +311,7 @@ export default function ScrapingJobDetails() {
                         <CardHeader>
                             <CardTitle>Captura Em Tempo Real</CardTitle>
                             <CardDescription>
-                                Leads mais recentes encontrados neste job.
+                                Prospects mais recentes encontrados neste job.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
@@ -352,7 +352,7 @@ export default function ScrapingJobDetails() {
                         <CardHeader className="pb-2">
                             <div className="flex items-center gap-2">
                                 <IconUsers className="h-4 w-4 text-muted-foreground" />
-                                <CardDescription>Leads Criados</CardDescription>
+                                <CardDescription>Prospects Criados</CardDescription>
                             </div>
                             <CardTitle className="text-3xl">{job.leadsCreated}</CardTitle>
                         </CardHeader>
@@ -400,8 +400,8 @@ export default function ScrapingJobDetails() {
                     <CardHeader>
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <CardTitle>Leads Capturados</CardTitle>
-                                <CardDescription>Leads gerados por este job</CardDescription>
+                                <CardTitle>Prospects Capturados</CardTitle>
+                                <CardDescription>Prospects gerados por este job</CardDescription>
                             </div>
                             <div className="w-full sm:max-w-xs">
                                 <div className="relative">

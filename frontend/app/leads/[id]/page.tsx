@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
@@ -225,7 +225,7 @@ export default function LeadDetailsPage() {
         if (!lead?.id) return;
         try {
             await leadsApi.update(lead.id, editForm);
-            toast({ title: "Lead atualizado" });
+            toast({ title: "Prospect atualizado" });
             setEditOpen(false);
             refetch();
         } catch (error) {
@@ -294,9 +294,9 @@ export default function LeadDetailsPage() {
         return (
             <AppLayout>
                 <div className="flex-1 p-8 pt-6 flex flex-col items-center justify-center gap-4">
-                    <p>Lead não encontrado</p>
+                    <p>Prospect nao encontrado</p>
                     <Button asChild>
-                        <Link href="/leads">Voltar para Leads</Link>
+                        <Link href="/leads">Voltar para Prospects</Link>
                     </Button>
                 </div>
             </AppLayout>
@@ -581,7 +581,7 @@ export default function LeadDetailsPage() {
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Editar Lead</DialogTitle>
+                        <DialogTitle>Editar Prospect</DialogTitle>
                         <DialogDescription>Atualize os dados do lead.</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">

@@ -179,7 +179,7 @@ export default function NewCampaignPage() {
                         </Link>
                     </Button>
                     <div>
-                        <h2 className="text-3xl font-bold tracking-tight">Nova Campanha</h2>
+                        <h2 className="text-3xl font-bold tracking-tight">Nova Sequence</h2>
                         <p className="text-muted-foreground">
                             Configure sua sequência de automação em 3 passos simples.
                         </p>
@@ -410,3 +410,4 @@ export default function NewCampaignPage() {
         </AppLayout>
     );
 }
+

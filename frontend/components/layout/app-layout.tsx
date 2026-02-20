@@ -54,28 +54,28 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             ),
         },
         {
-            label: "Leads",
+            label: "Prospects + Signals",
             href: "/leads",
             icon: (
                 <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {
-            label: "Importar Leads",
+            label: "Importar Prospects",
             href: "/leads/import",
             icon: (
                 <IconUpload className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {
-            label: "Scraping",
+            label: "Lead Discovery",
             href: "/scraping",
             icon: (
                 <IconSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {
-            label: "Campaigns",
+            label: "Sequences",
             href: "/campaigns",
             icon: (
                 <IconMail className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
@@ -89,7 +89,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             ),
         },
         {
-            label: "Analytics",
+            label: "Intelligence",
             href: "/analytics",
             icon: (
                 <IconChartBar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />

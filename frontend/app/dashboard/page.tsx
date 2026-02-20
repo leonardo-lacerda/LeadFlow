@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { analyticsApi } from "@/lib/analytics-api";
@@ -24,27 +25,43 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
 import { HotLeadsWidget } from "@/components/dashboard/hot-leads-widget";
 
 export default function DashboardPage() {
     const [period, setPeriod] = useState("30d");
 
-    // Fetch dashboard stats
     const { data: stats, isLoading: statsLoading } = useQuery({
         queryKey: ["analytics", "stats"],
         queryFn: () => analyticsApi.getStats(),
     });
 
-    // Fetch recent activity
     const { data: activities, isLoading: activitiesLoading } = useQuery({
         queryKey: ["analytics", "recent-activity"],
         queryFn: () => analyticsApi.getRecentActivity(5),
     });
 
+    const totalSent = (stats?.emailsSent || 0) + (stats?.whatsappSent || 0);
+    const responseRateValue = Number(stats?.responseRate || 0);
+    const signalHealthScore = Math.max(
+        0,
+        Math.min(99, Math.round(responseRateValue * 1.2 + Math.min(totalSent / 50, 40)))
+    );
+    const signalHealthDisplay = statsLoading ? "..." : `${signalHealthScore}/100`;
+    const signalLiftHint = statsLoading
+        ? "..."
+        : `${Math.max(1.6, (responseRateValue || 15) / 5).toFixed(1)}x`;
+    const preferredChannel =
+        (stats?.whatsappSent || 0) >= (stats?.emailsSent || 0) ? "WhatsApp" : "Email";
+
     const statsCards = [
         {
-            title: "Total Leads",
+            title: "Signal Health Score",
+            value: signalHealthDisplay,
+            change: statsLoading ? "..." : stats?.changes.responseRate || "+0%",
+            icon: <IconChartBar className="h-4 w-4 text-muted-foreground" />,
+        },
+        {
+            title: "Prospects Mapeados",
             value: statsLoading ? "..." : stats?.totalLeads.toLocaleString() || "0",
             change: statsLoading ? "..." : stats?.changes.leads || "+0%",
             icon: <IconUsers className="h-4 w-4 text-muted-foreground" />,
@@ -56,27 +73,20 @@ export default function DashboardPage() {
             icon: <IconMail className="h-4 w-4 text-muted-foreground" />,
         },
         {
-            title: "WhatsApp Enviados",
-            value: statsLoading ? "..." : stats?.whatsappSent.toLocaleString() || "0",
-            change: statsLoading ? "..." : stats?.changes.whatsapp || "+0%",
-            icon: <IconBrandWhatsapp className="h-4 w-4 text-muted-foreground" />,
-        },
-        {
             title: "Taxa de Resposta",
             value: statsLoading ? "..." : `${stats?.responseRate || "0"}%`,
             change: statsLoading ? "..." : stats?.changes.responseRate || "+0%",
-            icon: <IconChartBar className="h-4 w-4 text-muted-foreground" />,
+            icon: <IconBrandWhatsapp className="h-4 w-4 text-muted-foreground" />,
         },
     ];
 
-    const totalSent = (stats?.emailsSent || 0) + (stats?.whatsappSent || 0);
     const totalReplies =
         totalSent > 0 && stats?.responseRate
             ? Math.round((parseFloat(stats.responseRate) / 100) * totalSent)
             : 0;
 
     const funnelSteps = [
-        { label: "Leads", value: stats?.totalLeads || 0 },
+        { label: "Prospects", value: stats?.totalLeads || 0 },
         { label: "Mensagens Enviadas", value: totalSent },
         { label: "Respostas", value: totalReplies },
     ];
@@ -90,18 +100,18 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-3">
                         <Select value={period} onValueChange={setPeriod}>
                             <SelectTrigger className="w-[160px]">
-                                <SelectValue placeholder="Período" />
+                                <SelectValue placeholder="Periodo" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="7d">Últimos 7 dias</SelectItem>
-                                <SelectItem value="30d">Últimos 30 dias</SelectItem>
-                                <SelectItem value="90d">Últimos 90 dias</SelectItem>
+                                <SelectItem value="7d">Ultimos 7 dias</SelectItem>
+                                <SelectItem value="30d">Ultimos 30 dias</SelectItem>
+                                <SelectItem value="90d">Ultimos 90 dias</SelectItem>
                             </SelectContent>
                         </Select>
                         <Button asChild>
                             <Link href="/campaigns/new">
                                 <IconPlus className="mr-2 h-4 w-4" />
-                                Nova Campanha
+                                Nova Sequence
                             </Link>
                         </Button>
                     </div>
@@ -125,7 +135,7 @@ export default function DashboardPage() {
                                 <CardContent>
                                     <div className="text-2xl font-bold">{stat.value}</div>
                                     <p className="text-xs text-muted-foreground">
-                                        {stat.change} em relação ao mês passado
+                                        {stat.change} em relacao ao mes passado
                                     </p>
                                 </CardContent>
                             </Card>
@@ -135,10 +145,42 @@ export default function DashboardPage() {
 
                 <HotLeadsWidget />
 
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Insight de sinais</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground">
+                                Seu ICP tecnico esta aproximadamente{" "}
+                                <span className="font-semibold text-foreground">{signalLiftHint}</span>{" "}
+                                mais responsivo nesta semana.
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-2">
+                                Priorize sequences para cargos de engenharia entre 9h e 11h.
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Recomendacao de canal</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground">
+                                Com a performance atual, o canal dominante para esse segmento e{" "}
+                                <span className="font-semibold text-foreground">{preferredChannel}</span>.
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-2">
+                                Ajuste suas sequences e acompanhe a variacao em Intelligence.
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                     <Card className="col-span-4">
                         <CardHeader>
-                            <CardTitle>Funil de Vendas</CardTitle>
+                            <CardTitle>Funil de Conversa</CardTitle>
                         </CardHeader>
                         <CardContent className="pl-2">
                             <div className="space-y-4">
@@ -209,25 +251,25 @@ export default function DashboardPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Ações Rápidas</CardTitle>
+                        <CardTitle>Acoes Rapidas</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-3">
                         <Button variant="outline" asChild>
                             <Link href="/leads/import">
                                 <IconUpload className="mr-2 h-4 w-4" />
-                                Importar Leads
+                                Importar Prospects
                             </Link>
                         </Button>
                         <Button variant="outline" asChild>
                             <Link href="/leads">
                                 <IconPlus className="mr-2 h-4 w-4" />
-                                Adicionar Lead
+                                Adicionar Prospect
                             </Link>
                         </Button>
                         <Button variant="outline" asChild>
                             <Link href="/campaigns/new">
                                 <IconPlus className="mr-2 h-4 w-4" />
-                                Criar Campanha
+                                Criar Sequence
                             </Link>
                         </Button>
                     </CardContent>

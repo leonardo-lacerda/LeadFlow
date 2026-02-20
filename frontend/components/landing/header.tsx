@@ -13,14 +13,14 @@ export function LandingHeader() {
                 </div>
 
                 <nav className="hidden md:flex items-center gap-8">
-                    <Link href="#features" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
-                        Features
+                    <Link href="#signal-layer" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                        Signal Layer
                     </Link>
                     <Link href="#how-it-works" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
-                        Como Funciona
+                        Como funciona
                     </Link>
                     <Link href="#pricing" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
-                        Preços
+                        Precos
                     </Link>
                     <Link href="#faq" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
                         FAQ
@@ -35,7 +35,7 @@ export function LandingHeader() {
                     </Link>
                     <Link href="/register">
                         <Button className="bg-white text-black hover:bg-gray-200">
-                            Começar Agora
+                            Entrar no Cohort
                         </Button>
                     </Link>
                 </div>

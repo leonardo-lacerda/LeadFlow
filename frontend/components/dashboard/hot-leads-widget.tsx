@@ -73,10 +73,10 @@ export function HotLeadsWidget() {
                 <div className="space-y-1">
                     <CardTitle className="flex items-center gap-2">
                         <IconBolt className="h-4 w-4 text-amber-500" />
-                        Leads Quentes Agora
+                        Prospects + Signals em Alta
                     </CardTitle>
                     <p className="text-xs text-muted-foreground">
-                        Priorizacao por score, interacao e timing
+                        Priorizacao por score compartilhado, interacao e timing
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -91,7 +91,7 @@ export function HotLeadsWidget() {
                     </Button>
                     <Button variant="ghost" size="sm" asChild>
                         <Link href="/leads">
-                            Ver todos
+                            Ver prospects
                             <IconArrowRight className="ml-1 h-4 w-4" />
                         </Link>
                     </Button>
@@ -106,7 +106,7 @@ export function HotLeadsWidget() {
                     </div>
                 ) : !leads || leads.length === 0 ? (
                     <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                        Nenhum lead priorizado ainda. Clique em Recalcular para atualizar os scores.
+                        Nenhum prospect priorizado ainda. Clique em Recalcular para atualizar os scores.
                     </div>
                 ) : (
                     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">

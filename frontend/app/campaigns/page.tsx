@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
@@ -84,10 +84,10 @@ export default function CampaignsPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Excluir esta campanha?")) return;
+        if (!confirm("Excluir esta sequence?")) return;
         try {
             await campaignsApi.delete(id);
-            toast({ title: "Campanha removida" });
+            toast({ title: "Sequence removida" });
             refetch();
         } catch (error) {
             console.error(error);
@@ -102,7 +102,7 @@ export default function CampaignsPage() {
     const handleArchive = async (id: string) => {
         try {
             await campaignsApi.updateStatus(id, "COMPLETED");
-            toast({ title: "Campanha arquivada" });
+            toast({ title: "Sequence arquivada" });
             refetch();
         } catch (error) {
             console.error(error);
@@ -114,11 +114,11 @@ export default function CampaignsPage() {
         <AppLayout>
             <div className="flex-1 space-y-4 p-8 pt-6">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-3xl font-bold tracking-tight">Campanhas</h2>
+                    <h2 className="text-3xl font-bold tracking-tight">Sequences</h2>
                     <Button asChild>
                         <Link href="/campaigns/new">
                             <IconPlus className="mr-2 h-4 w-4" />
-                            Nova Campanha
+                            Nova Sequence
                         </Link>
                     </Button>
                 </div>
@@ -154,7 +154,7 @@ export default function CampaignsPage() {
                     <div className="relative flex-1">
                         <IconSearch className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Buscar campanhas..."
+                            placeholder="Buscar sequences..."
                             className="pl-9"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -168,22 +168,22 @@ export default function CampaignsPage() {
                             <TableRow>
                                 <TableHead>Nome</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead>Métricas</TableHead>
+                                <TableHead>M�tricas</TableHead>
                                 <TableHead>Criada em</TableHead>
-                                <TableHead className="text-right">Ações</TableHead>
+                                <TableHead className="text-right">A��es</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="h-24 text-center">
-                                        Carregando campanhas...
+                                        Carregando sequences...
                                     </TableCell>
                                 </TableRow>
                             ) : campaigns.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="h-24 text-center">
-                                        Nenhuma campanha encontrada. Crie sua primeira campanha!
+                                        Nenhuma sequence encontrada. Crie sua primeira sequence!
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -252,7 +252,7 @@ export default function CampaignsPage() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                                    <DropdownMenuLabel>A��es</DropdownMenuLabel>
                                                     <DropdownMenuItem onClick={() => handleStatusToggle(campaign.id, campaign.status)}>
                                                         {campaign.status === "ACTIVE" ? (
                                                             <>
@@ -290,3 +290,4 @@ export default function CampaignsPage() {
         </AppLayout>
     );
 }
+

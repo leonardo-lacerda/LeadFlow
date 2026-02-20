@@ -11,29 +11,29 @@ import { cn } from "@/lib/utils";
 
 const features = [
     {
-        title: "Busca de Leads B2B",
-        description: "Acesse uma base com mais de 200 milhões de contatos verificados. Filtre por cargo, setor, localização e tamanho da empresa.",
+        title: "Lead Pool Compartilhado",
+        description: "Base viva de prospects B2B para iniciar a operacao sem depender de scraping isolado em cada org.",
         icon: <IconSearch className="h-8 w-8 text-indigo-400" />,
         className: "md:col-span-2",
         bgClass: "bg-indigo-500/10",
     },
     {
-        title: "Enriquecimento de Dados",
-        description: "Transforme emails incompletos em perfis detalhados. Validamos emails e telefones em tempo real.",
+        title: "Signal Layer",
+        description: "Agrega respostas anonimizadas por segmento e transforma tentativa e erro em padrao reutilizavel.",
         icon: <IconDatabase className="h-8 w-8 text-purple-400" />,
         className: "md:col-span-1",
         bgClass: "bg-purple-500/10",
     },
     {
-        title: "Campanhas Multicanal",
-        description: "Crie sequências automatizadas que combinam Email e WhatsApp para aumentar sua taxa de resposta em até 3x.",
+        title: "Timing + Canal Score",
+        description: "Recomenda o melhor dia, horario e canal para cada perfil com base em performance coletiva.",
         icon: <IconMail className="h-8 w-8 text-pink-400" />,
         className: "md:col-span-1",
         bgClass: "bg-pink-500/10",
     },
     {
-        title: "Assistente de IA",
-        description: "Nossa IA gera copies personalizadas para cada prospect, analisando o perfil do LinkedIn e site da empresa.",
+        title: "Aprendizado Coletivo",
+        description: "Quanto mais SaaS B2B participam, maior a precisao dos sinais e menor o CAC individual.",
         icon: <IconRobot className="h-8 w-8 text-blue-400" />,
         className: "md:col-span-2",
         bgClass: "bg-blue-500/10",
@@ -42,16 +42,16 @@ const features = [
 
 export function LandingFeatures() {
     return (
-        <section id="features" className="py-24 bg-black/50">
+        <section id="signal-layer" className="py-24 bg-black/50">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-                        Tudo que você precisa para <br />
-                        <span className="text-gray-400">vendar mais, em um só lugar.</span>
+                        Infra coletiva de aquisicao B2B <br />
+                        <span className="text-gray-400">para SaaS que querem parar de aprender sozinhos.</span>
                     </h2>
                     <p className="text-gray-400 max-w-2xl mx-auto">
-                        Elimine a necessidade de múltiplas ferramentas. O Leadflow centraliza
-                        prospecção, enriquecimento e outreach.
+                        Nao e marketplace de leads. E uma camada de inteligencia compartilhada
+                        que orienta decisoes comerciais com sinais reais de mercado.
                     </p>
                 </div>
 
@@ -80,7 +80,7 @@ export function LandingFeatures() {
                                 </div>
 
                                 <div className="mt-8 flex items-center text-sm font-medium text-white/50 group-hover:text-white transition-colors cursor-pointer">
-                                    Saiba mais <MoveUpRight className="ml-2 h-4 w-4" />
+                                    Ver camada <MoveUpRight className="ml-2 h-4 w-4" />
                                 </div>
                             </div>
                         </div>
