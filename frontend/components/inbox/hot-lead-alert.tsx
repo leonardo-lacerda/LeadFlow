@@ -21,7 +21,7 @@ export function HotLeadAlert({
     }
 
     const showOverdue = followup?.overdue === true;
-    const firstName = (leadName || "").split(" ")[0] || "Lead";
+    const firstName = (leadName || "").split(" ")[0] || "Prospect";
 
     return (
         <div
@@ -32,7 +32,7 @@ export function HotLeadAlert({
         >
             <div className="flex items-center gap-2 font-semibold">
                 <Flame className="h-4 w-4" />
-                Lead quente ativo
+                Prospect quente ativo
                 <Badge className="ml-1 border-red-300 bg-white text-red-800">HOT</Badge>
             </div>
             <div className="mt-1">

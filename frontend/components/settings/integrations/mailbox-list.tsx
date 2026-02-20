@@ -117,7 +117,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                 <div>
                     <h3 className="text-lg font-medium">Contas de Email</h3>
                     <p className="text-sm text-muted-foreground">
-                        Configure as contas usadas para envio de campanhas.
+                        Configure as contas usadas para envio de sequences.
                     </p>
                 </div>
                 <Dialog open={open} onOpenChange={setOpen}>

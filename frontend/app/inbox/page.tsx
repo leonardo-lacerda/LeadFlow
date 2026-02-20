@@ -215,7 +215,7 @@ export default function InboxPage() {
                                         <div className="flex items-start gap-3">
                                             <Avatar>
                                                 <AvatarFallback>
-                                                    {getInitials(conversation.lead.fullName || "Lead")}
+                                                    {getInitials(conversation.lead.fullName || "Prospect")}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1 min-w-0">
@@ -310,7 +310,7 @@ export default function InboxPage() {
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-10 w-10">
                                             <AvatarFallback>
-                                                {getInitials(threadData?.lead?.fullName || "Lead")}
+                                                {getInitials(threadData?.lead?.fullName || "Prospect")}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="min-w-0">

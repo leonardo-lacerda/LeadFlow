@@ -230,7 +230,7 @@ export default function LeadDetailsPage() {
             refetch();
         } catch (error) {
             console.error(error);
-            toast({ title: "Erro ao atualizar lead", variant: "destructive" });
+            toast({ title: "Erro ao atualizar prospect", variant: "destructive" });
         }
     };
 
@@ -482,7 +482,7 @@ export default function LeadDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Notas</CardTitle>
-                                        <CardDescription>Registre observações importantes sobre o lead.</CardDescription>
+                                        <CardDescription>Registre observacoes importantes sobre o prospect.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="flex gap-2">
@@ -546,7 +546,7 @@ export default function LeadDetailsPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Tags</CardTitle>
-                        <CardDescription>Organize leads com etiquetas personalizadas.</CardDescription>
+                        <CardDescription>Organize prospects com etiquetas personalizadas.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex gap-2">
@@ -582,7 +582,7 @@ export default function LeadDetailsPage() {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Editar Prospect</DialogTitle>
-                        <DialogDescription>Atualize os dados do lead.</DialogDescription>
+                        <DialogDescription>Atualize os dados do prospect.</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">

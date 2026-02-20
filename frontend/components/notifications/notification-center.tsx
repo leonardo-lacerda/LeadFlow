@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 
 function isHotLeadReplyNotification(notification: Notification) {
     const title = notification.title.toLowerCase();
-    return title.includes("lead quente respondeu");
+    return title.includes("lead quente respondeu") || title.includes("prospect quente respondeu");
 }
 
 export function NotificationCenter() {
@@ -58,7 +58,7 @@ export function NotificationCenter() {
             for (const notification of unseen) {
                 if (!notification.read && isHotLeadReplyNotification(notification)) {
                     toast({
-                        title: "Lead quente respondeu",
+                        title: "Prospect quente respondeu",
                         description: notification.message,
                     });
                 }
