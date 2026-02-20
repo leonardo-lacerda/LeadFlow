@@ -128,9 +128,9 @@ export default function TeamPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium">Equipe</h3>
+                <h3 className="text-lg font-medium">Go-to-Market Team</h3>
                 <p className="text-sm text-muted-foreground">
-                    Gerencie membros da organizacao e suas permissoes.
+                    Gerencie quem pode operar sequences, canais e configuracoes de sinais.
                 </p>
             </div>
             <Separator />
@@ -140,12 +140,12 @@ export default function TeamPage() {
                     <DialogTrigger asChild>
                         <Button>
                             <IconPlus className="mr-2 h-4 w-4" />
-                            Convidar membro
+                            Convidar integrante
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Convidar membro</DialogTitle>
+                            <DialogTitle>Convidar integrante</DialogTitle>
                             <DialogDescription>
                                 Gere um link de convite para adicionar um novo membro.
                             </DialogDescription>

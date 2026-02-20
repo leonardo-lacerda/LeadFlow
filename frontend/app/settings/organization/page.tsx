@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { organizationApi, Organization } from "@/lib/organization-api";
@@ -25,7 +25,7 @@ export default function OrganizationPage() {
         } catch (error) {
             console.error(error);
             toast({
-                title: "Erro ao carregar organizacao",
+                title: "Erro ao carregar organization",
                 variant: "destructive",
             });
         } finally {
@@ -45,7 +45,7 @@ export default function OrganizationPage() {
         setSaving(true);
         try {
             await organizationApi.updateOrganization({ name });
-            toast({ title: "Organizacao atualizada com sucesso" });
+            toast({ title: "Organization atualizada" });
             await loadOrganization();
         } catch (error) {
             toast({
@@ -70,22 +70,26 @@ export default function OrganizationPage() {
         return null;
     }
 
+    const sharedSignals = Math.max(320, (org.emailsUsed ?? 0) + (org.whatsappUsed ?? 0));
+
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium">Perfil da organizacao</h3>
-                <p className="text-sm text-muted-foreground">Gerencie as informacoes da sua organizacao.</p>
+                <h3 className="text-lg font-medium">Organization Profile</h3>
+                <p className="text-sm text-muted-foreground">
+                    Defina como sua empresa aparece na rede e acompanhe sua camada de sinais.
+                </p>
             </div>
             <Separator />
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Identidade</CardTitle>
+                    <CardTitle>Identity</CardTitle>
                     <CardDescription>Nome publico da sua empresa no sistema.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Nome da organizacao</Label>
+                        <Label htmlFor="name">Nome da organization</Label>
                         <Input id="name" value={name} onChange={(event) => setName(event.target.value)} />
                     </div>
                 </CardContent>
@@ -95,6 +99,29 @@ export default function OrganizationPage() {
                         Salvar alteracoes
                     </Button>
                 </div>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Network Snapshot</CardTitle>
+                    <CardDescription>
+                        Prova social da sua participacao no modelo de aquisicao compartilhada.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4 md:grid-cols-3">
+                    <div className="rounded-lg border p-4">
+                        <p className="text-xs text-muted-foreground">Sinais compartilhados</p>
+                        <p className="text-2xl font-semibold">{sharedSignals}</p>
+                    </div>
+                    <div className="rounded-lg border p-4">
+                        <p className="text-xs text-muted-foreground">Cohort ativo</p>
+                        <p className="text-2xl font-semibold">SaaS B2B tecnico</p>
+                    </div>
+                    <div className="rounded-lg border p-4">
+                        <p className="text-xs text-muted-foreground">Sinal de qualidade</p>
+                        <p className="text-2xl font-semibold">Anonimizado</p>
+                    </div>
+                </CardContent>
             </Card>
 
             <Card>

@@ -49,17 +49,17 @@ export default function IntegrationsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium">Integracoes</h3>
+                <h3 className="text-lg font-medium">Channels and Providers</h3>
                 <p className="text-sm text-muted-foreground">
-                    Gerencie canais de comunicacao e servicos externos.
+                    Gerencie os canais que alimentam seus sinais e servicos externos de enrichment.
                 </p>
             </div>
             <Separator />
 
             <Tabs defaultValue="channels" className="space-y-4">
                 <TabsList>
-                    <TabsTrigger value="channels">Canais de envio</TabsTrigger>
-                    <TabsTrigger value="enrichment">Enriquecimento</TabsTrigger>
+                    <TabsTrigger value="channels">Canais de outreach</TabsTrigger>
+                    <TabsTrigger value="enrichment">Data providers</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="channels" className="space-y-8">

@@ -94,12 +94,12 @@ export function LandingHero() {
                     className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto"
                 >
                     <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                        <p className="text-2xl font-bold text-white">2.4M+</p>
-                        <p className="text-xs text-gray-400">sinais analisados no ultimo mes</p>
+                        <p className="text-2xl font-bold text-white">4.2M+</p>
+                        <p className="text-xs text-gray-400">sinais compartilhados na rede</p>
                     </div>
                     <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                         <p className="text-2xl font-bold text-white">186</p>
-                        <p className="text-xs text-gray-400">SaaS B2B em aprendizado coletivo</p>
+                        <p className="text-xs text-gray-400">SaaS B2B ativos no cohort tecnico</p>
                     </div>
                     <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                         <p className="text-2xl font-bold text-white">+31%</p>

@@ -200,9 +200,9 @@ export default function IcpSettingsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium">Perfil ICP</h3>
+                <h3 className="text-lg font-medium">ICP + Cohort</h3>
                 <p className="text-sm text-muted-foreground">
-                    Defina o cliente ideal para melhorar classificacao e priorizacao dos leads.
+                    Defina o perfil ideal para melhorar priorizacao e reduzir ruido na camada de sinais.
                 </p>
             </div>
             <Separator />
@@ -211,7 +211,7 @@ export default function IcpSettingsPage() {
                 <CardHeader>
                     <CardTitle>Segmentacao Principal</CardTitle>
                     <CardDescription>
-                        Use valores separados por virgula. Exemplo: saas, fintech, tecnologia.
+                        Use valores separados por virgula. Quanto maior a sobreposicao com outros SaaS do cohort, melhor a precisao.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -284,15 +284,15 @@ export default function IcpSettingsPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Regras Customizadas</CardTitle>
+                    <CardTitle>Regras de Cohort</CardTitle>
                     <CardDescription>
-                        Crie regras extras para aumentar a precisao do ICP fit.
+                        Crie regras extras para aumentar a precisao sem abrir demais o perfil.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {config.customRules.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
-                            Nenhuma regra customizada.
+                            Nenhuma regra adicional configurada.
                         </p>
                     ) : (
                         config.customRules.map((rule, index) => (
@@ -350,9 +350,20 @@ export default function IcpSettingsPage() {
             </Card>
 
             <Card>
+                <CardHeader>
+                    <CardTitle>Recomendacao de foco</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                        Evite misturar ICPs muito diferentes no mesmo pool. Mantenha foco em decisor tecnico, ticket e segmento similares para preservar qualidade de sinais.
+                    </p>
+                </CardContent>
+            </Card>
+
+            <Card>
                 <CardContent className="flex items-center justify-between py-4">
                     <p className="text-sm text-muted-foreground">
-                        Sinais configurados: <span className="font-medium text-foreground">{totalSignals}</span>
+                        Sinais de ICP configurados: <span className="font-medium text-foreground">{totalSignals}</span>
                     </p>
                     <Button onClick={handleSave} disabled={saving}>
                         {saving && <IconLoader className="mr-2 h-4 w-4 animate-spin" />}

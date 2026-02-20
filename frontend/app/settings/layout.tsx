@@ -17,27 +17,27 @@ interface SettingsLayoutProps {
 
 const sidebarNavItems = [
     {
-        title: "Organizacao",
+        title: "Organization",
         href: "/settings/organization",
         icon: IconBuilding,
     },
     {
-        title: "Equipe",
+        title: "Team",
         href: "/settings/team",
         icon: IconUsers,
     },
     {
-        title: "Integracoes",
+        title: "Channels",
         href: "/settings/integrations",
         icon: IconPlug,
     },
     {
-        title: "ICP",
+        title: "ICP + Cohort",
         href: "/settings/icp",
         icon: IconBuilding,
     },
     {
-        title: "Cobranca",
+        title: "Billing",
         href: "/settings/billing",
         icon: IconCreditCard,
     },

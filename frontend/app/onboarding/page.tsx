@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -11,13 +11,20 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { MailboxList } from "@/components/settings/integrations/mailbox-list";
 import { WhatsappList } from "@/components/settings/integrations/whatsapp-list";
-import { IconCheck, IconArrowRight, IconLoader, IconRocket, IconMail, IconBrandWhatsapp } from "@tabler/icons-react";
+import {
+    IconCheck,
+    IconArrowRight,
+    IconLoader,
+    IconRocket,
+    IconMail,
+    IconBrandWhatsapp,
+} from "@tabler/icons-react";
 
 const STEPS = [
-    { id: "welcome", title: "Bem-vindo", icon: IconRocket },
-    { id: "mailboxes", title: "Email", icon: IconMail },
-    { id: "whatsapp", title: "WhatsApp", icon: IconBrandWhatsapp },
-    { id: "finish", title: "Pronto", icon: IconCheck },
+    { id: "welcome", title: "Signal Layer", icon: IconRocket },
+    { id: "mailboxes", title: "Canal Email", icon: IconMail },
+    { id: "whatsapp", title: "Canal WhatsApp", icon: IconBrandWhatsapp },
+    { id: "finish", title: "Go Live", icon: IconCheck },
 ];
 
 export default function OnboardingPage() {
@@ -107,11 +114,11 @@ export default function OnboardingPage() {
                 });
             }
 
-            toast({ title: "Setup concluido!" });
+            toast({ title: "Ativacao concluida" });
             router.push("/dashboard");
         } catch {
             toast({
-                title: "Erro ao finalizar setup",
+                title: "Erro ao finalizar ativacao",
                 variant: "destructive",
             });
         } finally {
@@ -126,8 +133,10 @@ export default function OnboardingPage() {
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
             <div className="w-full max-w-3xl space-y-6">
                 <div className="space-y-2 text-center">
-                    <h1 className="text-3xl font-bold tracking-tight">Setup Inicial</h1>
-                    <p className="text-muted-foreground">Configure sua maquina de vendas em poucos passos.</p>
+                    <h1 className="text-3xl font-bold tracking-tight">Ativacao do Signal Layer</h1>
+                    <p className="text-muted-foreground">
+                        Conecte seus canais e entre no aprendizado coletivo para aquisicao B2B.
+                    </p>
                 </div>
 
                 <div className="relative">
@@ -155,29 +164,33 @@ export default function OnboardingPage() {
                                 {currentStep.title}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="min-h-[300px]">
+                        <CardContent className="min-h-[320px]">
                             {step === 0 && (
                                 <div className="space-y-4 text-center py-8">
                                     <div className="mx-auto w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-6">
                                         <IconRocket className="h-12 w-12 text-primary" />
                                     </div>
                                     <h2 className="text-2xl font-bold">Bem-vindo ao Leadflow</h2>
-                                    <p className="text-muted-foreground max-w-md mx-auto">
-                                        Vamos configurar seus canais de comunicacao para iniciar a prospeccao.
+                                    <p className="text-muted-foreground max-w-xl mx-auto">
+                                        Aqui sua org nao recebe lead de outras empresas. Voce recebe sinais,
+                                        scores e recomendacoes de timing para decidir melhor.
                                     </p>
+                                    <div className="max-w-xl mx-auto rounded-lg border bg-muted/30 p-4 text-left text-sm text-muted-foreground">
+                                        Cohort inicial: SaaS B2B com decisor tecnico, outbound leve e ICP sobreposto.
+                                    </div>
                                 </div>
                             )}
 
                             {step === 1 && (
                                 <div className="space-y-4">
                                     <p className="text-muted-foreground mb-4">
-                                        Adicione pelo menos uma conta de email para enviar campanhas.
+                                        Adicione ao menos uma conta de email para enviar sequences e gerar sinais de resposta.
                                     </p>
                                     <MailboxList mailboxes={mailboxes} onRefresh={refreshStatus} />
                                     {hasMailbox && (
                                         <div className="p-4 bg-green-50 text-green-700 rounded-md flex items-center gap-2 mt-4">
                                             <IconCheck className="h-5 w-5" />
-                                            <span>Email configurado com sucesso.</span>
+                                            <span>Email conectado. Signals de canal email habilitados.</span>
                                         </div>
                                     )}
                                 </div>
@@ -186,13 +199,13 @@ export default function OnboardingPage() {
                             {step === 2 && (
                                 <div className="space-y-4">
                                     <p className="text-muted-foreground mb-4">
-                                        Opcional: conecte WhatsApp para follow-ups e mensagens diretas.
+                                        Opcional: conecte WhatsApp para ampliar cobertura de canal por segmento.
                                     </p>
                                     <WhatsappList instances={instances} onRefresh={refreshStatus} />
                                     {hasWhatsapp && (
                                         <div className="p-4 bg-green-50 text-green-700 rounded-md flex items-center gap-2 mt-4">
                                             <IconCheck className="h-5 w-5" />
-                                            <span>WhatsApp conectado.</span>
+                                            <span>WhatsApp conectado. Signals de canal WhatsApp habilitados.</span>
                                         </div>
                                     )}
                                 </div>
@@ -203,9 +216,10 @@ export default function OnboardingPage() {
                                     <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
                                         <IconCheck className="h-12 w-12 text-green-600" />
                                     </div>
-                                    <h2 className="text-2xl font-bold">Tudo pronto</h2>
+                                    <h2 className="text-2xl font-bold">Tudo pronto para operar com signals</h2>
                                     <p className="text-muted-foreground max-w-md mx-auto">
-                                        Sua conta esta configurada. Continue para o dashboard.
+                                        Sua base e seus canais estao ativos. Agora voce pode executar com
+                                        contexto, nao por tentativa e erro.
                                     </p>
                                 </div>
                             )}
@@ -220,7 +234,7 @@ export default function OnboardingPage() {
                             </Button>
                             <Button onClick={handleNext} disabled={loading || (step === 1 && !hasMailbox)}>
                                 {loading && <IconLoader className="mr-2 h-4 w-4 animate-spin" />}
-                                {step === STEPS.length - 1 ? "Ir para o Dashboard" : "Proximo"}
+                                {step === STEPS.length - 1 ? "Ir para Dashboard" : "Proximo"}
                                 {step !== STEPS.length - 1 && <IconArrowRight className="ml-2 h-4 w-4" />}
                             </Button>
                         </CardFooter>

@@ -34,31 +34,31 @@ export default function BillingPage() {
 
     if (!org) return null;
 
-    // Simulate usage stats since backend might not be populating them fully yet
-    // Assuming backend returns leadsUsed, etc.
     const limits = {
-        leads: 1000,
-        emails: 5000,
-        whatsapp: 1000,
-        enrichments: 500
+        signals: 100000,
+        prospects: 2000,
+        emailSignals: 50000,
+        whatsappSignals: 20000,
     };
 
-    // Fallbacks if backend fields are missing
     const usage = {
-        leads: org.leadsUsed || 0,
-        emails: org.emailsUsed || 0,
-        whatsapp: org.whatsappUsed || 0,
-        enrichments: org.enrichmentsUsed || 0
+        prospects: org.leadsUsed || 0,
+        emailSignals: org.emailsUsed || 0,
+        whatsappSignals: org.whatsappUsed || 0,
+        enrichments: org.enrichmentsUsed || 0,
     };
 
-    const getPercentage = (used: number, limit: number) => Math.min(100, Math.round((used / limit) * 100));
+    const totalSignals = usage.emailSignals + usage.whatsappSignals + usage.enrichments;
+
+    const getPercentage = (used: number, limit: number) =>
+        Math.min(100, Math.round((used / limit) * 100));
 
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium">Cobrança e Planos</h3>
+                <h3 className="text-lg font-medium">Billing and Plan</h3>
                 <p className="text-sm text-muted-foreground">
-                    Gerencie sua assinatura, métodos de pagamento e faturas.
+                    Seu plano e medido por sinais consumidos e volume de operacao.
                 </p>
             </div>
             <Separator />
@@ -68,8 +68,8 @@ export default function BillingPage() {
                     <CardHeader>
                         <div className="flex justify-between items-start">
                             <div>
-                                <CardTitle>Plano Atual: {org.plan}</CardTitle>
-                                <CardDescription>Renova em 01/03/2026</CardDescription>
+                                <CardTitle>Plano atual: {org.plan}</CardTitle>
+                                <CardDescription>Renovacao estimada em 01/03/2026</CardDescription>
                             </div>
                             <Badge variant="default" className="bg-primary">Ativo</Badge>
                         </div>
@@ -77,35 +77,42 @@ export default function BillingPage() {
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span>Leads Gerados</span>
-                                <span className="font-medium">{usage.leads} / {limits.leads}</span>
+                                <span>Sinais consumidos</span>
+                                <span className="font-medium">{totalSignals} / {limits.signals}</span>
                             </div>
-                            <Progress value={getPercentage(usage.leads, limits.leads)} className="h-2" />
+                            <Progress value={getPercentage(totalSignals, limits.signals)} className="h-2" />
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span>Emails Enviados</span>
-                                <span className="font-medium">{usage.emails} / {limits.emails}</span>
+                                <span>Prospects ativos</span>
+                                <span className="font-medium">{usage.prospects} / {limits.prospects}</span>
                             </div>
-                            <Progress value={getPercentage(usage.emails, limits.emails)} className="h-2" />
+                            <Progress value={getPercentage(usage.prospects, limits.prospects)} className="h-2" />
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span>Mensagens WhatsApp</span>
-                                <span className="font-medium">{usage.whatsapp} / {limits.whatsapp}</span>
+                                <span>Signals de email</span>
+                                <span className="font-medium">{usage.emailSignals} / {limits.emailSignals}</span>
                             </div>
-                            <Progress value={getPercentage(usage.whatsapp, limits.whatsapp)} className="h-2" />
+                            <Progress value={getPercentage(usage.emailSignals, limits.emailSignals)} className="h-2" />
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span>Signals de WhatsApp</span>
+                                <span className="font-medium">{usage.whatsappSignals} / {limits.whatsappSignals}</span>
+                            </div>
+                            <Progress value={getPercentage(usage.whatsappSignals, limits.whatsappSignals)} className="h-2" />
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full">Fazer Upgrade de Plano</Button>
+                        <Button className="w-full">Upgrade para mais sinais</Button>
                     </CardFooter>
                 </Card>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Método de Pagamento</CardTitle>
-                        <CardDescription>Seus cartões salvos no Stripe.</CardDescription>
+                        <CardTitle>Metodo de pagamento</CardTitle>
+                        <CardDescription>Cartoes salvos no provedor de pagamento.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-center space-x-4 p-4 border rounded-md">
@@ -113,20 +120,20 @@ export default function BillingPage() {
                                 VISA
                             </div>
                             <div className="flex-1">
-                                <p className="font-medium">Terminado em 4242</p>
+                                <p className="font-medium">Final 4242</p>
                                 <p className="text-sm text-muted-foreground">Expira em 12/28</p>
                             </div>
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button variant="outline" className="w-full">Adicionar Novo Cartão</Button>
+                        <Button variant="outline" className="w-full">Adicionar cartao</Button>
                     </CardFooter>
                 </Card>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Histórico de Faturas</CardTitle>
+                    <CardTitle>Historico de faturas</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="text-sm text-muted-foreground text-center py-8">
