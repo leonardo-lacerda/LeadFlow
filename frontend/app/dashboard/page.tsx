@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { analyticsApi } from "@/lib/analytics-api";
+import { signalsApi } from "@/lib/signals-api";
 import { useQuery } from "@tanstack/react-query";
 import {
     IconUsers,
@@ -40,6 +41,16 @@ export default function DashboardPage() {
         queryFn: () => analyticsApi.getRecentActivity(5),
     });
 
+    const { data: signalsOverview } = useQuery({
+        queryKey: ["signals", "overview", "dashboard"],
+        queryFn: () => signalsApi.getOverview(),
+    });
+
+    const { data: signalAlerts } = useQuery({
+        queryKey: ["signals", "alerts", "dashboard-page"],
+        queryFn: () => signalsApi.getActionableAlerts(4),
+    });
+
     const totalSent = (stats?.emailsSent || 0) + (stats?.whatsappSent || 0);
     const responseRateValue = Number(stats?.responseRate || 0);
     const signalHealthScore = Math.max(
@@ -51,17 +62,21 @@ export default function DashboardPage() {
         ? "..."
         : `${Math.max(1.6, (responseRateValue || 15) / 5).toFixed(1)}x`;
     const preferredChannel =
-        (stats?.whatsappSent || 0) >= (stats?.emailsSent || 0) ? "WhatsApp" : "Email";
+        signalsOverview?.organization.topChannel === "whatsapp"
+            ? "WhatsApp"
+            : (stats?.whatsappSent || 0) >= (stats?.emailsSent || 0)
+                ? "WhatsApp"
+                : "Email";
 
     const statsCards = [
         {
-            title: "Signal Health Score",
+            title: "Score de Saude de Sinais",
             value: signalHealthDisplay,
             change: statsLoading ? "..." : stats?.changes.responseRate || "+0%",
             icon: <IconChartBar className="h-4 w-4 text-muted-foreground" />,
         },
         {
-            title: "Prospects Mapeados",
+            title: "Leads Mapeados",
             value: statsLoading ? "..." : stats?.totalLeads.toLocaleString() || "0",
             change: statsLoading ? "..." : stats?.changes.leads || "+0%",
             icon: <IconUsers className="h-4 w-4 text-muted-foreground" />,
@@ -86,7 +101,7 @@ export default function DashboardPage() {
             : 0;
 
     const funnelSteps = [
-        { label: "Prospects", value: stats?.totalLeads || 0 },
+        { label: "Leads", value: stats?.totalLeads || 0 },
         { label: "Mensagens Enviadas", value: totalSent },
         { label: "Respostas", value: totalReplies },
     ];
@@ -96,7 +111,7 @@ export default function DashboardPage() {
         <AppLayout>
             <div className="flex-1 space-y-4 p-8 pt-6">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+                    <h2 className="text-3xl font-bold tracking-tight">Painel</h2>
                     <div className="flex items-center gap-3">
                         <Select value={period} onValueChange={setPeriod}>
                             <SelectTrigger className="w-[160px]">
@@ -111,7 +126,7 @@ export default function DashboardPage() {
                         <Button asChild>
                             <Link href="/campaigns/new">
                                 <IconPlus className="mr-2 h-4 w-4" />
-                                Nova Sequence
+                                Nova Sequencia
                             </Link>
                         </Button>
                     </div>
@@ -157,7 +172,11 @@ export default function DashboardPage() {
                                 mais responsivo nesta semana.
                             </p>
                             <p className="text-sm text-muted-foreground mt-2">
-                                Priorize sequences para cargos de engenharia entre 9h e 11h.
+                                Priorize sequencias para{" "}
+                                {signalsOverview?.network.bestWindow
+                                    ? `${signalsOverview.network.bestWindow.dayOfWeek} ${String(signalsOverview.network.bestWindow.hour).padStart(2, "0")}h`
+                                    : "cargos de engenharia entre 9h e 11h"}
+                                .
                             </p>
                         </CardContent>
                     </Card>
@@ -171,11 +190,29 @@ export default function DashboardPage() {
                                 <span className="font-semibold text-foreground">{preferredChannel}</span>.
                             </p>
                             <p className="text-sm text-muted-foreground mt-2">
-                                Ajuste suas sequences e acompanhe a variacao em Intelligence.
+                                Ajuste suas sequencias e acompanhe a variacao em Inteligencia.
                             </p>
                         </CardContent>
                     </Card>
                 </div>
+
+                {signalAlerts && signalAlerts.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Alertas Acionaveis</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid gap-3 md:grid-cols-2">
+                            {signalAlerts.map((alert) => (
+                                <div key={alert.id} className="rounded-md border p-3">
+                                    <p className="text-sm font-medium">{alert.title}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {alert.recommendedAction}
+                                    </p>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                )}
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                     <Card className="col-span-4">
@@ -257,19 +294,19 @@ export default function DashboardPage() {
                         <Button variant="outline" asChild>
                             <Link href="/leads/import">
                                 <IconUpload className="mr-2 h-4 w-4" />
-                                Importar Prospects
+                                Importar Leads
                             </Link>
                         </Button>
                         <Button variant="outline" asChild>
                             <Link href="/leads">
                                 <IconPlus className="mr-2 h-4 w-4" />
-                                Adicionar Prospect
+                                Adicionar Lead
                             </Link>
                         </Button>
                         <Button variant="outline" asChild>
                             <Link href="/campaigns/new">
                                 <IconPlus className="mr-2 h-4 w-4" />
-                                Criar Sequence
+                                Criar Sequencia
                             </Link>
                         </Button>
                     </CardContent>
@@ -278,3 +315,5 @@ export default function DashboardPage() {
         </AppLayout>
     );
 }
+
+

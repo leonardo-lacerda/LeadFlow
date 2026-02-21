@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CampaignLeadItem, campaignsApi } from "@/lib/campaigns-api";
+import { signalsApi } from "@/lib/signals-api";
 import {
     Table,
     TableBody,
@@ -24,10 +25,29 @@ import { Badge } from "@/components/ui/badge";
 import { IconSearch, IconChevronLeft, IconChevronRight, IconLoader } from "@tabler/icons-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useQuery } from "@tanstack/react-query";
+
+const leadStatusLabels: Record<string, string> = {
+    PENDING: "Pendente",
+    SENT: "Enviado",
+    OPENED: "Aberto",
+    REPLIED: "Respondido",
+    BOUNCED: "Erro",
+};
 
 interface CampaignLeadsTableProps {
     campaignId: string;
 }
+
+const WEEKDAY_LABEL: Record<string, string> = {
+    monday: "Seg",
+    tuesday: "Ter",
+    wednesday: "Qua",
+    thursday: "Qui",
+    friday: "Sex",
+    saturday: "Sab",
+    sunday: "Dom",
+};
 
 export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
     const [loading, setLoading] = useState(true);
@@ -41,6 +61,18 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
     const [status, setStatus] = useState<string>("ALL");
 
     const debouncedSearch = useDebounce(search, 500);
+    const leadIds = useMemo(() => leads.map((item) => item.lead.id), [leads]);
+
+    const { data: recommendations } = useQuery({
+        queryKey: ["signals", "campaign-leads-recommendations", campaignId, leadIds],
+        queryFn: () => signalsApi.getLeadRecommendations(leadIds),
+        enabled: leadIds.length > 0,
+    });
+
+    const recommendationMap = useMemo(
+        () => new Map((recommendations || []).map((item) => [item.leadId, item])),
+        [recommendations]
+    );
 
     const loadLeads = useCallback(async () => {
         try {
@@ -71,16 +103,15 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
             PENDING: "secondary",
             SENT: "outline",
             OPENED: "default",
-            REPLIED: "default", // Maybe a different color for replied?
+            REPLIED: "default",
             BOUNCED: "destructive",
         };
 
-        // Custom style for REPLIED to stand out
         if (status === "REPLIED") {
             return <Badge className="bg-green-600 hover:bg-green-700">Respondido</Badge>;
         }
 
-        return <Badge variant={variants[status] || "outline"}>{status}</Badge>;
+        return <Badge variant={variants[status] || "outline"}>{leadStatusLabels[status] || status}</Badge>;
     };
 
     return (
@@ -117,37 +148,54 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Prospect</TableHead>
+                            <TableHead>Lead</TableHead>
                             <TableHead>Empresa</TableHead>
+                            <TableHead>Score</TableHead>
+                            <TableHead>Canal</TableHead>
+                            <TableHead>Janela</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Passo Atual</TableHead>
-                            <TableHead>Última Atividade</TableHead>
+                            <TableHead>Ultima Atividade</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
+                                <TableCell colSpan={8} className="h-24 text-center">
                                     <div className="flex items-center justify-center gap-2 text-muted-foreground">
                                         <IconLoader className="h-4 w-4 animate-spin" />
-                                        Carregando prospects...
+                                        Carregando leads...
                                     </div>
                                 </TableCell>
                             </TableRow>
                         ) : leads.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                    Nenhum prospect encontrado com os filtros atuais.
+                                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                                    Nenhum lead encontrado com os filtros atuais.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            leads.map((item) => (
+                            leads.map((item) => {
+                                const recommendation = recommendationMap.get(item.lead.id);
+                                const channel =
+                                    recommendation?.recommendedChannel === "whatsapp"
+                                        ? "WhatsApp"
+                                        : recommendation?.recommendedChannel === "email"
+                                            ? "Email"
+                                            : "-";
+                                const windowLabel = recommendation
+                                    ? `${WEEKDAY_LABEL[recommendation.bestWindow.dayOfWeek] || recommendation.bestWindow.dayOfWeek} ${String(recommendation.bestWindow.hour).padStart(2, "0")}h`
+                                    : "-";
+                                return (
                                 <TableRow key={item.id}>
                                     <TableCell>
                                         <div className="font-medium">{item.lead.fullName}</div>
                                         <div className="text-sm text-muted-foreground">{item.lead.email}</div>
                                     </TableCell>
                                     <TableCell>{item.lead.companyName || "-"}</TableCell>
+                                    <TableCell>{recommendation ? recommendation.sharedScore : "-"}</TableCell>
+                                    <TableCell>{channel}</TableCell>
+                                    <TableCell>{windowLabel}</TableCell>
                                     <TableCell>{getStatusBadge(item.status)}</TableCell>
                                     <TableCell>Passo {item.currentStep + 1}</TableCell>
                                     <TableCell className="text-muted-foreground text-sm">
@@ -156,7 +204,8 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
                                             : "-"}
                                     </TableCell>
                                 </TableRow>
-                            ))
+                                );
+                            })
                         )}
                     </TableBody>
                 </Table>
@@ -165,7 +214,7 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
             {/* Pagination */}
             <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
-                    Mostrando {leads.length} de {total} prospects
+                    Mostrando {leads.length} de {total} leads
                 </div>
                 <div className="flex items-center gap-2">
                     <Button
@@ -177,7 +226,7 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
                         <IconChevronLeft className="h-4 w-4" />
                     </Button>
                     <span className="text-sm font-medium">
-                        Página {page} de {totalPages || 1}
+                        Pagina {page} de {totalPages || 1}
                     </span>
                     <Button
                         variant="outline"
@@ -192,3 +241,4 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
         </div>
     );
 }
+

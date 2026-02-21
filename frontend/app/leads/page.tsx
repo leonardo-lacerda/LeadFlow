@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -33,6 +33,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { leadsApi, LeadInput } from "@/lib/leads-api";
+import { signalsApi } from "@/lib/signals-api";
 import { downloadCsv, formatDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -50,6 +51,8 @@ interface LeadRow {
     id: string;
     fullName: string | null;
     email: string | null;
+    phone?: string | null;
+    whatsapp?: string | null;
     companyName: string | null;
     jobTitle: string | null;
     status: string;
@@ -73,11 +76,36 @@ const LEAD_STATUS_OPTIONS = [
 
 type LeadStatusFilter = (typeof LEAD_STATUS_OPTIONS)[number];
 
+const LEAD_STATUS_LABELS: Record<string, string> = {
+    ALL: "Todos os status",
+    NEW: "Novo",
+    ENRICHING: "Enriquecendo",
+    ENRICHED: "Enriquecido",
+    CONTACTED: "Contatado",
+    REPLIED: "Respondeu",
+    INTERESTED: "Interessado",
+    MEETING_SCHEDULED: "Reuniao agendada",
+    CONVERTED: "Convertido",
+    NOT_INTERESTED: "Sem interesse",
+    BOUNCED: "Erro de entrega",
+    UNSUBSCRIBED: "Descadastrado",
+};
+
 const EMPTY_FORM: LeadInput = {
     fullName: "",
     email: "",
     companyName: "",
     jobTitle: "",
+};
+
+const WEEKDAY_LABEL: Record<string, string> = {
+    monday: "Seg",
+    tuesday: "Ter",
+    wednesday: "Qua",
+    thursday: "Qui",
+    friday: "Sex",
+    saturday: "Sab",
+    sunday: "Dom",
 };
 
 export default function LeadsPage() {
@@ -105,6 +133,24 @@ export default function LeadsPage() {
     });
 
     const rows = useMemo(() => (data?.data || []) as LeadRow[], [data?.data]);
+    const leadIds = useMemo(() => rows.map((lead) => lead.id), [rows]);
+
+    const { data: recommendations } = useQuery({
+        queryKey: ["signals", "lead-recommendations", leadIds],
+        queryFn: () => signalsApi.getLeadRecommendations(leadIds),
+        enabled: leadIds.length > 0,
+    });
+
+    const recommendationMap = useMemo(
+        () =>
+            new Map(
+                (recommendations || []).map((item) => [
+                    item.leadId,
+                    item,
+                ])
+            ),
+        [recommendations]
+    );
 
     const refreshLeads = async () => {
         await queryClient.invalidateQueries({ queryKey: ["leads"] });
@@ -131,13 +177,13 @@ export default function LeadsPage() {
         setSaving(true);
         try {
             await leadsApi.create(form);
-            toast({ title: "Prospect criado com sucesso" });
+            toast({ title: "Lead criado com sucesso" });
             setCreateOpen(false);
             setForm(EMPTY_FORM);
             await refreshLeads();
         } catch (error) {
             toast({
-                title: "Erro ao criar prospect",
+                title: "Erro ao criar lead",
                 description: error instanceof Error ? error.message : "Erro desconhecido",
                 variant: "destructive",
             });
@@ -154,7 +200,7 @@ export default function LeadsPage() {
         setSaving(true);
         try {
             await leadsApi.update(selectedLeadId, form);
-            toast({ title: "Prospect atualizado com sucesso" });
+            toast({ title: "Lead atualizado com sucesso" });
             setEditOpen(false);
             setSelectedLeadId(null);
             await refreshLeads();
@@ -170,16 +216,16 @@ export default function LeadsPage() {
     };
 
     const removeLead = async (lead: LeadRow) => {
-        if (!confirm(`Excluir prospect ${lead.fullName || lead.email || lead.id}?`)) {
+        if (!confirm(`Excluir lead ${lead.fullName || lead.email || lead.id}?`)) {
             return;
         }
         try {
             await leadsApi.delete(lead.id);
-            toast({ title: "Prospect removido" });
+            toast({ title: "Lead removido" });
             await refreshLeads();
         } catch (error) {
             toast({
-                title: "Erro ao excluir prospect",
+                title: "Erro ao excluir lead",
                 description: error instanceof Error ? error.message : "Erro desconhecido",
                 variant: "destructive",
             });
@@ -193,14 +239,14 @@ export default function LeadsPage() {
         }
 
         downloadCsv(
-            `prospects-${new Date().toISOString().slice(0, 10)}.csv`,
+            `leads-${new Date().toISOString().slice(0, 10)}.csv`,
             rows.map((lead) => ({
                 id: lead.id,
                 nome: lead.fullName || "",
                 email: lead.email || "",
                 empresa: lead.companyName || "",
                 cargo: lead.jobTitle || "",
-                status: lead.status,
+                status: LEAD_STATUS_LABELS[lead.status] || lead.status,
                 criado_em: formatDate(lead.createdAt),
             }))
         );
@@ -211,7 +257,7 @@ export default function LeadsPage() {
         <AppLayout>
             <div className="flex-1 space-y-4 p-8 pt-6">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-3xl font-bold tracking-tight">Prospects + Signals</h2>
+                    <h2 className="text-3xl font-bold tracking-tight">Leads + Sinais</h2>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" onClick={exportCurrentRows}>
                             <IconDownload className="mr-2 h-4 w-4" />
@@ -219,7 +265,7 @@ export default function LeadsPage() {
                         </Button>
                         <Button size="sm" onClick={openCreate}>
                             <IconPlus className="mr-2 h-4 w-4" />
-                            Novo Prospect
+                            Novo Lead
                         </Button>
                     </div>
                 </div>
@@ -253,7 +299,7 @@ export default function LeadsPage() {
                                 <SelectContent>
                                     {LEAD_STATUS_OPTIONS.map((status) => (
                                         <SelectItem key={status} value={status}>
-                                            {status === "ALL" ? "Todos os status" : status}
+                                            {LEAD_STATUS_LABELS[status] || status}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -269,6 +315,9 @@ export default function LeadsPage() {
                                 <TableHead>Nome</TableHead>
                                 <TableHead>Empresa</TableHead>
                                 <TableHead>Cargo</TableHead>
+                                <TableHead>Score</TableHead>
+                                <TableHead>Canal</TableHead>
+                                <TableHead>Janela</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Data</TableHead>
                                 <TableHead className="text-right">Acoes</TableHead>
@@ -277,18 +326,30 @@ export default function LeadsPage() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-24 text-center">
-                                        Carregando prospects...
+                                    <TableCell colSpan={9} className="h-24 text-center">
+                                        Carregando leads...
                                     </TableCell>
                                 </TableRow>
                             ) : rows.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-24 text-center">
-                                        Nenhum prospect encontrado.
+                                    <TableCell colSpan={9} className="h-24 text-center">
+                                        Nenhum lead encontrado.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                rows.map((lead) => (
+                                rows.map((lead) => {
+                                    const recommendation = recommendationMap.get(lead.id);
+                                    const channelLabel =
+                                        recommendation?.recommendedChannel === "whatsapp"
+                                            ? "WhatsApp"
+                                            : recommendation?.recommendedChannel === "email"
+                                                ? "Email"
+                                                : "-";
+                                    const windowLabel = recommendation
+                                        ? `${WEEKDAY_LABEL[recommendation.bestWindow.dayOfWeek] || recommendation.bestWindow.dayOfWeek} ${String(recommendation.bestWindow.hour).padStart(2, "0")}h`
+                                        : "-";
+
+                                    return (
                                     <TableRow key={lead.id}>
                                         <TableCell>
                                             <div className="font-medium">{lead.fullName || "Sem nome"}</div>
@@ -297,7 +358,20 @@ export default function LeadsPage() {
                                         <TableCell>{lead.companyName || "-"}</TableCell>
                                         <TableCell>{lead.jobTitle || "-"}</TableCell>
                                         <TableCell>
-                                            <Badge variant="secondary">{lead.status}</Badge>
+                                            {recommendation ? (
+                                                <Badge variant="outline">
+                                                    {recommendation.sharedScore}
+                                                </Badge>
+                                            ) : (
+                                                "-"
+                                            )}
+                                        </TableCell>
+                                        <TableCell>{channelLabel}</TableCell>
+                                        <TableCell>{windowLabel}</TableCell>
+                                        <TableCell>
+                                            <Badge variant="secondary">
+                                                {LEAD_STATUS_LABELS[lead.status] || lead.status}
+                                            </Badge>
                                         </TableCell>
                                         <TableCell>{formatDate(lead.createdAt)}</TableCell>
                                         <TableCell className="text-right">
@@ -330,7 +404,8 @@ export default function LeadsPage() {
                                             </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
-                                ))
+                                    );
+                                })
                             )}
                         </TableBody>
                     </Table>
@@ -358,7 +433,7 @@ export default function LeadsPage() {
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Novo Prospect</DialogTitle>
+                            <DialogTitle>Novo Lead</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                             <div className="space-y-2">
@@ -404,7 +479,7 @@ export default function LeadsPage() {
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Editar Prospect</DialogTitle>
+                            <DialogTitle>Editar Lead</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                             <div className="space-y-2">
@@ -450,4 +525,6 @@ export default function LeadsPage() {
         </AppLayout>
     );
 }
+
+
 

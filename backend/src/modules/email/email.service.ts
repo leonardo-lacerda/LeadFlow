@@ -1,11 +1,12 @@
 import { ImapFlow } from 'imapflow';
 import nodemailer from 'nodemailer';
-import { Prisma } from '@prisma/client';
+import { Prisma, SignalEventType } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { env } from '../../config/env.js';
 import { emailQueue } from '../../lib/queue.js';
 import { decryptSecret, encryptSecret } from '../../lib/secrets.js';
 import { inboxIntelligenceService } from '../inbox/inbox-intelligence.service.js';
+import { signalLayerService } from '../signals/signal-layer.service.js';
 import {
     injectLinkTracking,
     injectTrackingPixel,
@@ -282,7 +283,7 @@ export class EmailService {
 
         for (const lead of leads) {
             if (!lead.email) {
-                await prisma.message.create({
+                const failedMessage = await prisma.message.create({
                     data: {
                         type: 'EMAIL',
                         direction: 'OUTBOUND',
@@ -294,6 +295,14 @@ export class EmailService {
                             ...(input.metadata || {}),
                             error: 'Lead without email',
                         },
+                    },
+                });
+                await signalLayerService.trackMessageEvent({
+                    messageId: failedMessage.id,
+                    eventType: SignalEventType.MESSAGE_FAILED,
+                    metadata: {
+                        source: 'email.queue_send',
+                        reason: 'lead_without_email',
                     },
                 });
                 failed += 1;
@@ -492,6 +501,15 @@ export class EmailService {
             data: { emailsUsed: { increment: 1 } },
         });
 
+        await signalLayerService.trackMessageEvent({
+            messageId: message.id,
+            eventType: SignalEventType.MESSAGE_SENT,
+            metadata: {
+                source: 'email.send',
+                providerMessageId: result.messageId,
+            },
+        });
+
         return result;
     }
 
@@ -575,6 +593,14 @@ export class EmailService {
             data: { status: 'BOUNCED' },
         });
         await this.updateCampaignLeadStatus(message.metadata, 'BOUNCED');
+        await signalLayerService.trackMessageEvent({
+            messageId,
+            eventType: SignalEventType.MESSAGE_BOUNCED,
+            metadata: {
+                source: 'email.webhook_bounce',
+                reason: error ? String(error) : 'bounce',
+            },
+        });
         return true;
     }
 
@@ -601,6 +627,10 @@ export class EmailService {
             data: { status: 'UNSUBSCRIBED' },
         });
         await this.updateCampaignLeadStatus(message.metadata, 'UNSUBSCRIBED');
+        await signalLayerService.trackMessageFailure(
+            messageId,
+            error ? String(error) : 'complaint'
+        );
         return true;
     }
 
@@ -654,7 +684,7 @@ export class EmailService {
             await this.updateCampaignLeadStatus(latestOutbound.metadata, 'REPLIED');
         }
 
-        await prisma.message.create({
+        const inboundMessage = await prisma.message.create({
             data: {
                 type: 'EMAIL',
                 direction: 'INBOUND',
@@ -663,6 +693,14 @@ export class EmailService {
                 status: 'REPLIED',
                 leadId: lead.id,
                 mailboxId: mailbox.id,
+            },
+        });
+
+        await signalLayerService.trackMessageEvent({
+            messageId: inboundMessage.id,
+            eventType: SignalEventType.MESSAGE_REPLY_RECEIVED,
+            metadata: {
+                source: 'email.inbound',
             },
         });
 

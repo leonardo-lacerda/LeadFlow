@@ -57,6 +57,7 @@ model Organization {
   whatsappInstances WhatsappInstance[]
   notifications Notification[]
   invites     OrganizationInvite[]
+  signalEvents SignalEvent[]
 }
 
 model Notification {
@@ -185,6 +186,7 @@ model Lead {
   messages        Message[]
   activities      Activity[]
   notes           LeadNote[]
+  signalEvents    SignalEvent[]
   
   @@index([organizationId])
   @@index([email])
@@ -260,6 +262,7 @@ model Campaign {
   
   steps           CampaignStep[]
   leads           CampaignLead[]
+  signalEvents    SignalEvent[]
   
   @@index([organizationId])
   @@index([lastMetricsAt])
@@ -403,6 +406,52 @@ enum MessageStatus {
   REPLIED
   BOUNCED
   FAILED
+}
+
+enum SignalChannel {
+  EMAIL
+  WHATSAPP
+  MANUAL
+}
+
+enum SignalEventType {
+  MESSAGE_SENT
+  MESSAGE_REPLY_RECEIVED
+  MESSAGE_BOUNCED
+  MESSAGE_FAILED
+  MANUAL_TOUCHPOINT_CREATED
+}
+
+enum SignalEventOutcome {
+  SENT
+  REPLIED
+  BOUNCED
+  FAILED
+  MANUAL
+}
+
+model SignalEvent {
+  id             String             @id @default(cuid())
+  dedupeKey      String             @unique
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leadId         String?
+  lead           Lead?              @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  campaignId     String?
+  campaign       Campaign?          @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  eventType      SignalEventType
+  channel        SignalChannel
+  outcome        SignalEventOutcome
+  leadSegment    String?
+  eventAt        DateTime
+  metadata       Json?
+  createdAt      DateTime           @default(now())
+
+  @@index([organizationId, eventAt])
+  @@index([leadId, eventAt])
+  @@index([campaignId, eventAt])
+  @@index([leadSegment, eventAt])
+  @@index([channel, eventType, eventAt])
 }
 
 // ==================== TEMPLATES ====================

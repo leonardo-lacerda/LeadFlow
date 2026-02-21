@@ -2,6 +2,7 @@ import { Worker } from 'bullmq';
 import { redis } from '../lib/redis.js';
 import { prisma } from '../lib/prisma.js';
 import { whatsappService } from '../modules/whatsapp/whatsapp.service.js';
+import { signalLayerService } from '../modules/signals/signal-layer.service.js';
 
 interface WhatsAppJobData {
     messageId: string;
@@ -36,6 +37,7 @@ export function startWhatsappWorker() {
                         metadata: { error: message },
                     },
                 });
+                await signalLayerService.trackMessageFailure(data.messageId, message);
                 throw error;
             }
         },

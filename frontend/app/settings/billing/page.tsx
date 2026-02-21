@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { organizationApi, Organization } from "@/lib/organization-api";
+import { signalsApi, SignalCohortStatus } from "@/lib/signals-api";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -18,10 +19,16 @@ import { IconLoader } from "@tabler/icons-react";
 
 export default function BillingPage() {
     const [org, setOrg] = useState<Organization | null>(null);
+    const [cohort, setCohort] = useState<SignalCohortStatus | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        organizationApi.getOrganization().then(setOrg).finally(() => setLoading(false));
+        Promise.all([organizationApi.getOrganization(), signalsApi.getCohortStatus()])
+            .then(([organization, cohortStatus]) => {
+                setOrg(organization);
+                setCohort(cohortStatus);
+            })
+            .finally(() => setLoading(false));
     }, []);
 
     if (loading) {
@@ -35,7 +42,7 @@ export default function BillingPage() {
     if (!org) return null;
 
     const limits = {
-        signals: 100000,
+        signals: cohort?.usage.signalsLimit || 100000,
         prospects: 2000,
         emailSignals: 50000,
         whatsappSignals: 20000,
@@ -56,7 +63,7 @@ export default function BillingPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium">Billing and Plan</h3>
+                <h3 className="text-lg font-medium">Faturamento e Plano</h3>
                 <p className="text-sm text-muted-foreground">
                     Seu plano e medido por sinais consumidos e volume de operacao.
                 </p>
@@ -75,37 +82,68 @@ export default function BillingPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span>Sinais consumidos</span>
-                                <span className="font-medium">{totalSignals} / {limits.signals}</span>
+                        <div className="rounded-md border bg-background p-3">
+                            <div className="flex items-center justify-between text-sm">
+                                <span>Status do cohort</span>
+                                <Badge variant="outline">{cohort?.cohort || "beta"}</Badge>
                             </div>
-                            <Progress value={getPercentage(totalSignals, limits.signals)} className="h-2" />
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Tier sugerido: {cohort?.tierRecommendation.recommendedTier || "Starter"}.
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {cohort?.tierRecommendation.reason || "Aguardando dados de consumo."}
+                            </p>
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span>Prospects ativos</span>
+                                <span>Sinais consumidos</span>
+                                <span className="font-medium">
+                                    {cohort?.usage.signalsUsed ?? totalSignals} / {limits.signals}
+                                </span>
+                            </div>
+                            <Progress
+                                value={
+                                    cohort?.usage.usagePercent ??
+                                    getPercentage(totalSignals, limits.signals)
+                                }
+                                className="h-2"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span>Leads ativos</span>
                                 <span className="font-medium">{usage.prospects} / {limits.prospects}</span>
                             </div>
                             <Progress value={getPercentage(usage.prospects, limits.prospects)} className="h-2" />
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span>Signals de email</span>
+                                <span>Sinais de email</span>
                                 <span className="font-medium">{usage.emailSignals} / {limits.emailSignals}</span>
                             </div>
                             <Progress value={getPercentage(usage.emailSignals, limits.emailSignals)} className="h-2" />
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span>Signals de WhatsApp</span>
+                                <span>Sinais de WhatsApp</span>
                                 <span className="font-medium">{usage.whatsappSignals} / {limits.whatsappSignals}</span>
                             </div>
                             <Progress value={getPercentage(usage.whatsappSignals, limits.whatsappSignals)} className="h-2" />
                         </div>
+                        {cohort?.byChannel && cohort.byChannel.length > 0 && (
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium">Consumo por canal (mes atual)</p>
+                                {cohort.byChannel.map((item) => (
+                                    <div key={item.channel} className="flex items-center justify-between text-sm text-muted-foreground">
+                                        <span className="capitalize">{item.channel}</span>
+                                        <span>{item.signals}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full">Upgrade para mais sinais</Button>
+                        <Button className="w-full">Aumentar plano para mais sinais</Button>
                     </CardFooter>
                 </Card>
 
@@ -144,3 +182,4 @@ export default function BillingPage() {
         </div>
     );
 }
+

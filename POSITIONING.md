@@ -318,3 +318,174 @@ Estou construindo isso."
 ## Resumo em 1 Paragrafo
 
 Leadflow e a infraestrutura invisivel que SaaS B2B usam para aprender coletivamente quem comprar, quando abordar e como comunicar. Em vez de cada startup fazer aquisicao isoladamente - repetindo erros, queimando leads e pagando CAC alto - o Leadflow agrega sinais anonimos de centenas de operacoes e transforma em inteligencia acionavel. Nao entrega leads. Entrega decisoes melhores. Quanto mais SaaS participam, mais preciso fica para todos. Isso nao e ferramenta de marketing. E infraestrutura de rede.
+
+---
+
+## Roadmap de Execucao (Fase Atual)
+
+Escopo desta rodada:
+- `1` Camada de sinais no backend
+- `2` APIs de inteligencia compartilhada
+- `3` Integracao frontend da nova identidade
+- `5` Cohort + tiers de sinais (beta/monetizacao)
+
+Fora de escopo nesta rodada:
+- `4` Guardrails avancados
+
+### Ponto 1 - Signal Layer no backend
+
+Criar modulo dedicado:
+- `backend/src/modules/signals/signal-layer.service.ts`
+- `backend/src/modules/signals/signals.routes.ts`
+- registrar rotas em `backend/src/index.ts`
+
+Responsabilidades do modulo:
+- consolidar sinais anonimizados por segmento
+- calcular score compartilhado por lead/perfil
+- sugerir canal e janela de abordagem
+- expor impacto agregado por coorte/canal/segmento
+
+### Ponto 2 - APIs de inteligencia compartilhada
+
+Endpoints alvo:
+- `GET /api/signals/overview`
+- `GET /api/signals/leads/:leadId/recommendation`
+- `POST /api/signals/leads/recommendations`
+- `GET /api/signals/campaigns/:campaignId/recommendation`
+- `GET /api/signals/actionable-alerts`
+- `GET /api/signals/impact`
+- `GET /api/signals/cohort-status`
+- `POST /api/signals/backfill` (opcional)
+
+Contrato minimo de saida:
+- `sharedScore` (0-100)
+- `recommendedChannel` (`email` ou `whatsapp`)
+- `bestWindow` (dia/hora local)
+- `confidence` (0-1)
+- `actionableAlerts[]`
+- `aggregateImpact` (lift por canal/segmento)
+
+Exemplo de payload de recomendacao:
+
+```json
+{
+  "leadId": "lead_123",
+  "sharedScore": 87,
+  "recommendedChannel": "whatsapp",
+  "bestWindow": {
+    "dayOfWeek": "tuesday",
+    "hour": 10,
+    "timezone": "America/Sao_Paulo"
+  },
+  "confidence": 0.81,
+  "reasons": [
+    "segment_fintech_11_50_high_reply_tuesday_10h",
+    "tech_buyer_prefers_whatsapp"
+  ]
+}
+```
+
+### Ponto 3 - Integracao frontend (nova identidade)
+
+Cliente API:
+- `frontend/lib/signals-api.ts`
+
+Telas/componentes de entrega:
+- Leads: `frontend/app/leads/page.tsx`
+- Inbox: `frontend/app/inbox/page.tsx`
+- Campaigns: `frontend/app/campaigns/[id]/page.tsx`
+- Tabela de leads de campanha: `frontend/components/campaigns/campaign-leads-table.tsx`
+- Dashboard: `frontend/app/dashboard/page.tsx`
+- Hot leads widget: `frontend/components/dashboard/hot-leads-widget.tsx`
+- Intelligence: `frontend/app/analytics/page.tsx`
+
+UI minima por tela:
+- badge de score compartilhado
+- canal recomendado por lead
+- melhor janela de abordagem
+- alertas acionaveis de curto prazo
+- cards de impacto agregado
+
+### Ponto 5 - Cohort + tiers de sinais
+
+Backend:
+- status do cohort em `GET /api/signals/cohort-status`
+
+Frontend (billing):
+- `frontend/app/settings/billing/page.tsx`
+- mostrar cohort atual (`beta`, `early`, `scale`)
+- mostrar consumo mensal de sinais
+- mostrar sugestao de tier por consumo/uso
+
+Logica inicial de tiers (beta):
+- `Starter`: ate 5k sinais/mes
+- `Growth`: 5k-25k sinais/mes
+- `Scale`: acima de 25k sinais/mes
+
+---
+
+## Instrumentacao de Eventos Reais
+
+Captura obrigatoria de eventos:
+- outbound email: `backend/src/modules/email/email.service.ts`
+- inbound email: `backend/src/modules/email/email.service.ts`
+- outbound whatsapp: `backend/src/modules/whatsapp/whatsapp.service.ts`
+- inbound whatsapp: `backend/src/modules/whatsapp/whatsapp.service.ts`
+- envio manual inbox: `backend/src/modules/inbox/inbox.service.ts`
+
+Eventos normalizados (nome canonico):
+- `message_sent`
+- `message_reply_received`
+- `message_bounced`
+- `message_failed`
+- `manual_touchpoint_created`
+
+Campos minimos por evento:
+- `organizationId`
+- `channel`
+- `timestamp`
+- `leadSegment` (anonimizado)
+- `campaignId` (quando existir)
+- `outcome` (sent, replied, bounced, failed)
+
+---
+
+## Metricas de Sucesso da Nova Tese
+
+Produto:
+- `% de leads com recomendacao disponivel`
+- `latencia media da recomendacao por lead`
+- `% de recomendacoes com confidence >= 0.7`
+
+Negocio:
+- `lift de reply rate vs baseline`
+- `uplift por canal recomendado`
+- `tempo medio ate primeira resposta`
+
+Rede:
+- `sinais validos ingeridos por semana`
+- `numero de orgs ativas contribuindo sinais`
+- `cobertura de segmentos por cohort`
+
+---
+
+## Validacao Tecnica da Entrega
+
+Backend:
+```bash
+cd backend
+npm run build
+```
+
+Frontend:
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+Criterios de aceite desta fase:
+- rotas `/api/signals/*` respondendo sem quebrar modulos atuais
+- telas principais exibindo recomendacao e alertas
+- billing exibindo cohort, consumo e tier sugerido
+- eventos de email/whatsapp/inbox alimentando Signal Layer

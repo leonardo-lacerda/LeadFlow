@@ -9,10 +9,44 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { IconArrowLeft, IconPlayerPlay, IconPlayerPause, IconEdit } from "@tabler/icons-react";
 import { campaignsApi, Campaign } from "@/lib/campaigns-api";
+import { signalsApi } from "@/lib/signals-api";
 import { useToast } from "@/hooks/use-toast";
 import { CampaignLeadsTable } from "@/components/campaigns/campaign-leads-table";
 import { useQuery } from "@tanstack/react-query";
 import { Progress } from "@/components/ui/progress";
+
+const campaignStatusLabels: Record<string, string> = {
+    DRAFT: "Rascunho",
+    ACTIVE: "Ativa",
+    PAUSED: "Pausada",
+    COMPLETED: "Concluida",
+};
+
+const stepTypeLabels: Record<string, string> = {
+    EMAIL: "Email",
+    WHATSAPP: "WhatsApp",
+    WAIT: "Espera",
+    CONDITION: "Condicao",
+};
+
+const leadStatusLabels: Record<string, string> = {
+    PENDING: "Pendente",
+    SENT: "Enviado",
+    OPENED: "Aberto",
+    REPLIED: "Respondido",
+    BOUNCED: "Erro",
+    COMPLETED: "Concluido",
+};
+
+const WEEKDAY_LABEL: Record<string, string> = {
+    monday: "Seg",
+    tuesday: "Ter",
+    wednesday: "Qua",
+    thursday: "Qui",
+    friday: "Sex",
+    saturday: "Sab",
+    sunday: "Dom",
+};
 
 export default function CampaignDetailsPage() {
     const params = useParams<{ id: string | string[] }>();
@@ -33,7 +67,7 @@ export default function CampaignDetailsPage() {
         } catch (error) {
             console.error("Error loading campaign:", error);
             toast({
-                title: "Erro ao carregar sequence",
+                title: "Erro ao carregar sequencia",
                 description: error instanceof Error ? error.message : "Erro desconhecido",
                 variant: "destructive",
             });
@@ -52,6 +86,12 @@ export default function CampaignDetailsPage() {
         enabled: !!campaignId,
     });
 
+    const { data: signalRecommendation } = useQuery({
+        queryKey: ["signals", "campaign-recommendation", campaignId],
+        queryFn: () => signalsApi.getCampaignRecommendation(campaignId as string),
+        enabled: !!campaignId,
+    });
+
     const handleStatusToggle = async () => {
         if (!campaign) return;
 
@@ -64,7 +104,7 @@ export default function CampaignDetailsPage() {
 
             toast({
                 title: "Status atualizado",
-                description: `Sequence ${newStatus === "ACTIVE" ? "ativada" : "pausada"} com sucesso.`,
+                description: `Sequencia ${newStatus === "ACTIVE" ? "ativada" : "pausada"} com sucesso.`,
             });
 
             loadCampaign();
@@ -85,7 +125,11 @@ export default function CampaignDetailsPage() {
             COMPLETED: "secondary",
         };
 
-        return <Badge variant={variants[status] || "default"}>{status}</Badge>;
+        return (
+            <Badge variant={variants[status] || "default"}>
+                {campaignStatusLabels[status] || status}
+            </Badge>
+        );
     };
 
     if (loading) {
@@ -102,7 +146,7 @@ export default function CampaignDetailsPage() {
         return (
             <AppLayout>
                 <div className="flex items-center justify-center h-96">
-                    <p>Sequence nao encontrada.</p>
+                    <p>Sequencia nao encontrada.</p>
                 </div>
             </AppLayout>
         );
@@ -157,10 +201,10 @@ export default function CampaignDetailsPage() {
                 {/* Tabs */}
                 <Tabs defaultValue="overview" className="w-full">
                     <TabsList>
-                        <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="steps">Sequência</TabsTrigger>
-                        <TabsTrigger value="analytics">Intelligence</TabsTrigger>
-                        <TabsTrigger value="leads">Prospects ({campaign.leads?.length || 0})</TabsTrigger>
+                        <TabsTrigger value="overview">Visao Geral</TabsTrigger>
+                        <TabsTrigger value="steps">Sequencia</TabsTrigger>
+                        <TabsTrigger value="analytics">Inteligencia</TabsTrigger>
+                        <TabsTrigger value="leads">Leads ({campaign.leads?.length || 0})</TabsTrigger>
                         <TabsTrigger value="journey">Jornada</TabsTrigger>
                     </TabsList>
 
@@ -168,7 +212,7 @@ export default function CampaignDetailsPage() {
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                             <Card>
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm font-medium">Total de Prospects</CardTitle>
+                                    <CardTitle className="text-sm font-medium">Total de Leads</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">{campaign.leads?.length || 0}</div>
@@ -196,7 +240,7 @@ export default function CampaignDetailsPage() {
                             </Card>
                             <Card>
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm font-medium">Taxa de Conversão</CardTitle>
+                                    <CardTitle className="text-sm font-medium">Taxa de Conversao</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">
@@ -217,9 +261,9 @@ export default function CampaignDetailsPage() {
                     <TabsContent value="steps" className="mt-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Sequência de Passos</CardTitle>
+                                <CardTitle>Sequencia de Passos</CardTitle>
                                 <CardDescription>
-                                    Visualize a sequencia de mensagens desta sequence
+                                    Visualize a sequencia de mensagens desta sequencia
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -231,7 +275,7 @@ export default function CampaignDetailsPage() {
                                             </div>
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <Badge variant="outline">{step.type}</Badge>
+                                                    <Badge variant="outline">{stepTypeLabels[step.type] || step.type}</Badge>
                                                     {step.delayHours > 0 && (
                                                         <span className="text-xs text-muted-foreground">
                                                             Aguarda {step.delayHours}h
@@ -288,7 +332,48 @@ export default function CampaignDetailsPage() {
 
                         <Card className="mt-6">
                             <CardHeader>
-                                <CardTitle>Métricas por Passo</CardTitle>
+                                <CardTitle>Recomendacao da Signal Layer</CardTitle>
+                                <CardDescription>
+                                    Canal, score medio e janela sugerida para esta sequencia.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid gap-3 md:grid-cols-4">
+                                <div className="rounded-md border p-3">
+                                    <p className="text-xs text-muted-foreground">Score medio</p>
+                                    <p className="text-xl font-semibold">
+                                        {signalRecommendation?.averageSharedScore ?? 0}
+                                    </p>
+                                </div>
+                                <div className="rounded-md border p-3">
+                                    <p className="text-xs text-muted-foreground">Mix Email</p>
+                                    <p className="text-xl font-semibold">
+                                        {signalRecommendation
+                                            ? `${(signalRecommendation.recommendedChannelMix.email * 100).toFixed(1)}%`
+                                            : "0%"}
+                                    </p>
+                                </div>
+                                <div className="rounded-md border p-3">
+                                    <p className="text-xs text-muted-foreground">Mix WhatsApp</p>
+                                    <p className="text-xl font-semibold">
+                                        {signalRecommendation
+                                            ? `${(signalRecommendation.recommendedChannelMix.whatsapp * 100).toFixed(1)}%`
+                                            : "0%"}
+                                    </p>
+                                </div>
+                                <div className="rounded-md border p-3">
+                                    <p className="text-xs text-muted-foreground">Melhor janela</p>
+                                    <p className="text-xl font-semibold">
+                                        {signalRecommendation
+                                            ? `${WEEKDAY_LABEL[signalRecommendation.bestWindow.dayOfWeek] || signalRecommendation.bestWindow.dayOfWeek} ${String(signalRecommendation.bestWindow.hour).padStart(2, "0")}h`
+                                            : "-"}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="mt-6">
+                            <CardHeader>
+                                <CardTitle>Metricas por Passo</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-3">
@@ -298,7 +383,7 @@ export default function CampaignDetailsPage() {
                                             <div key={step.id} className="border rounded-md p-3">
                                                 <div className="flex items-center justify-between">
                                                     <span className="font-medium">{step.subject || step.content.slice(0, 40)}</span>
-                                                    <Badge variant="outline">{step.type}</Badge>
+                                                    <Badge variant="outline">{stepTypeLabels[step.type] || step.type}</Badge>
                                                 </div>
                                                 <div className="grid grid-cols-4 gap-3 mt-2 text-sm text-muted-foreground">
                                                     <div>Enviados: {stats?.sent ?? 0}</div>
@@ -317,9 +402,9 @@ export default function CampaignDetailsPage() {
                     <TabsContent value="leads" className="mt-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Prospects na Sequence</CardTitle>
+                                <CardTitle>Leads na Sequencia</CardTitle>
                                 <CardDescription>
-                                    Acompanhe o progresso e status de cada prospect
+                                    Acompanhe o progresso e status de cada lead
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -331,9 +416,9 @@ export default function CampaignDetailsPage() {
                     <TabsContent value="journey" className="mt-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Jornada dos Prospects</CardTitle>
+                                <CardTitle>Jornada dos Leads</CardTitle>
                                 <CardDescription>
-                                    Visualize o progresso dos prospects na sequence.
+                                    Visualize o progresso dos leads na sequencia.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -345,10 +430,10 @@ export default function CampaignDetailsPage() {
                                             <div key={lead.id} className="border rounded-md p-3">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <p className="font-medium">{lead.lead?.fullName || "Prospect"}</p>
+                                                        <p className="font-medium">{lead.lead?.fullName || "Lead"}</p>
                                                         <p className="text-xs text-muted-foreground">{lead.lead?.email}</p>
                                                     </div>
-                                                    <Badge variant="outline">{lead.status}</Badge>
+                                                    <Badge variant="outline">{leadStatusLabels[lead.status] || lead.status}</Badge>
                                                 </div>
                                                 <div className="mt-3">
                                                     <Progress value={progress} />
@@ -360,7 +445,7 @@ export default function CampaignDetailsPage() {
                                         );
                                     })
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">Nenhum prospect associado.</p>
+                                    <p className="text-sm text-muted-foreground">Nenhum lead associado.</p>
                                 )}
                             </CardContent>
                         </Card>
@@ -370,3 +455,6 @@ export default function CampaignDetailsPage() {
         </AppLayout>
     );
 }
+
+
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { AppLayout } from "@/components/layout/app-layout";
 import { SourceChart } from "@/components/analytics/source-chart";
@@ -16,6 +16,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { analyticsApi } from "@/lib/analytics-api";
+import { signalsApi } from "@/lib/signals-api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { IconRefresh } from "@tabler/icons-react";
 
@@ -71,6 +72,16 @@ export default function AnalyticsPage() {
         queryFn: () => analyticsApi.getFunnel(),
     });
 
+    const { data: impact } = useQuery({
+        queryKey: ["signals", "impact", "analytics"],
+        queryFn: () => signalsApi.getImpact(),
+    });
+
+    const { data: signalAlerts } = useQuery({
+        queryKey: ["signals", "alerts", "analytics"],
+        queryFn: () => signalsApi.getActionableAlerts(6),
+    });
+
     const recalculateMutation = useMutation({
         mutationFn: () => analyticsApi.recalculate(),
     });
@@ -87,7 +98,7 @@ export default function AnalyticsPage() {
             <div className="space-y-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Intelligence</h1>
+                        <h1 className="text-3xl font-bold">Inteligencia</h1>
                         <p className="text-muted-foreground">
                             Sinais coletivos para orientar prioridade, timing e canal de abordagem.
                         </p>
@@ -104,17 +115,17 @@ export default function AnalyticsPage() {
 
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <MetricCard
-                        label="Prospects capturados"
+                        label="Leads capturados"
                         value={captured}
                         helper={stats ? `Variacao mes: ${stats.changes.leads}` : undefined}
                     />
                     <MetricCard
-                        label="Prospects responderam"
+                        label="Leads responderam"
                         value={replied}
                         helper={stats ? `Taxa de resposta: ${stats.responseRate}%` : undefined}
                     />
                     <MetricCard
-                        label="Prospects convertidos"
+                        label="Leads convertidos"
                         value={converted}
                         helper={`Conversao final: ${conversionRate}`}
                     />
@@ -127,6 +138,50 @@ export default function AnalyticsPage() {
                         }
                         helper={responseTime ? `${responseTime.summary.count} respostas` : undefined}
                     />
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Impacto agregado da rede</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-sm">
+                            <p className="text-muted-foreground">
+                                Lift global estimado:{" "}
+                                <span className="font-semibold text-foreground">
+                                    {impact ? `${impact.summary.overallLift.toFixed(1)}pp` : "0pp"}
+                                </span>
+                            </p>
+                            <div className="space-y-1">
+                                {(impact?.byChannel || []).map((channel) => (
+                                    <div key={channel.channel} className="flex items-center justify-between">
+                                        <span className="capitalize">{channel.channel}</span>
+                                        <span className="font-medium">
+                                            {`${(channel.organizationReplyRate * 100).toFixed(1)}% -> ${(channel.networkReplyRate * 100).toFixed(1)}%`}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Alertas acionaveis</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            {(signalAlerts || []).slice(0, 4).map((alert) => (
+                                <div key={alert.id} className="rounded-md border p-2">
+                                    <p className="text-sm font-medium">{alert.title}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {alert.recommendedAction}
+                                    </p>
+                                </div>
+                            ))}
+                            {(!signalAlerts || signalAlerts.length === 0) && (
+                                <p className="text-sm text-muted-foreground">Sem alertas no momento.</p>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">
@@ -148,10 +203,10 @@ export default function AnalyticsPage() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Canal</TableHead>
-                                            <TableHead>Template</TableHead>
+                                            <TableHead>Modelo</TableHead>
                                             <TableHead>Segmento</TableHead>
                                             <TableHead>Envios</TableHead>
-                                            <TableHead>Reply</TableHead>
+                                            <TableHead>Resposta</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -192,9 +247,9 @@ export default function AnalyticsPage() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Faixa</TableHead>
-                                            <TableHead>Prospects</TableHead>
+                                            <TableHead>Leads</TableHead>
                                             <TableHead>Contatados</TableHead>
-                                            <TableHead>Reply</TableHead>
+                                            <TableHead>Resposta</TableHead>
                                             <TableHead>Conversao</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -228,4 +283,6 @@ export default function AnalyticsPage() {
         </AppLayout>
     );
 }
+
+
 

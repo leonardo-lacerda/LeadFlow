@@ -2,6 +2,7 @@ import { Worker } from 'bullmq';
 import { redis } from '../lib/redis.js';
 import { prisma } from '../lib/prisma.js';
 import { emailService } from '../modules/email/email.service.js';
+import { signalLayerService } from '../modules/signals/signal-layer.service.js';
 
 interface EmailJobData {
     messageId: string;
@@ -36,6 +37,7 @@ export function startEmailWorker() {
                         metadata: { error: message },
                     },
                 });
+                await signalLayerService.trackMessageFailure(data.messageId, message);
                 throw error;
             }
         },

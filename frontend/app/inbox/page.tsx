@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import { AppLayout } from "@/components/layout/app-layout";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { InboxConversation, inboxApi } from "@/lib/inbox-api";
+import { signalsApi } from "@/lib/signals-api";
 import { LeadTemperatureBadge } from "@/components/leads/lead-temperature";
 import { ObjectionBadge } from "@/components/inbox/objection-badge";
 import { HotLeadAlert } from "@/components/inbox/hot-lead-alert";
@@ -19,6 +20,7 @@ import {
     IconMail,
     IconSearch,
     IconSend,
+    IconBolt,
 } from "@tabler/icons-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -34,6 +36,16 @@ function getInitials(name: string) {
         .toUpperCase()
         .slice(0, 2);
 }
+
+const WEEKDAY_LABEL: Record<string, string> = {
+    monday: "Seg",
+    tuesday: "Ter",
+    wednesday: "Qua",
+    thursday: "Qui",
+    friday: "Sex",
+    saturday: "Sab",
+    sunday: "Dom",
+};
 
 export default function InboxPage() {
     const [selectedLead, setSelectedLead] = useState<string | null>(() => {
@@ -76,6 +88,19 @@ export default function InboxPage() {
         queryFn: () => inboxApi.getIntelligence(selectedLead!),
         enabled: !!selectedLead,
         refetchInterval: 20000,
+    });
+
+    const { data: signalRecommendation } = useQuery({
+        queryKey: ["signals", "lead-recommendation", selectedLead],
+        queryFn: () => signalsApi.getLeadRecommendation(selectedLead!),
+        enabled: !!selectedLead,
+        refetchInterval: 20000,
+    });
+
+    const { data: signalAlerts } = useQuery({
+        queryKey: ["signals", "alerts", "inbox"],
+        queryFn: () => signalsApi.getActionableAlerts(5),
+        refetchInterval: 30000,
     });
 
     const sendMessageMutation = useMutation({
@@ -137,7 +162,7 @@ export default function InboxPage() {
             <div className="flex h-[calc(100vh-4rem)]">
                 <div className="w-96 border-r bg-white dark:bg-neutral-900 flex flex-col">
                     <div className="p-4 border-b space-y-3">
-                        <h2 className="text-xl font-bold">Inbox</h2>
+                        <h2 className="text-xl font-bold">Caixa de entrada</h2>
 
                         <div className="relative">
                             <IconSearch className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -215,7 +240,7 @@ export default function InboxPage() {
                                         <div className="flex items-start gap-3">
                                             <Avatar>
                                                 <AvatarFallback>
-                                                    {getInitials(conversation.lead.fullName || "Prospect")}
+                                                    {getInitials(conversation.lead.fullName || "Lead")}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1 min-w-0">
@@ -310,7 +335,7 @@ export default function InboxPage() {
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-10 w-10">
                                             <AvatarFallback>
-                                                {getInitials(threadData?.lead?.fullName || "Prospect")}
+                                                {getInitials(threadData?.lead?.fullName || "Lead")}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="min-w-0">
@@ -329,6 +354,24 @@ export default function InboxPage() {
                                                         temperature={intelligenceData.temperature}
                                                     />
                                                 )}
+                                                {signalRecommendation && (
+                                                    <Badge variant="outline">
+                                                        Score {signalRecommendation.sharedScore}
+                                                    </Badge>
+                                                )}
+                                                {signalRecommendation && (
+                                                    <Badge variant="outline">
+                                                        {signalRecommendation.recommendedChannel === "whatsapp"
+                                                            ? "Canal: WhatsApp"
+                                                            : "Canal: Email"}
+                                                    </Badge>
+                                                )}
+                                                {signalRecommendation && (
+                                                    <Badge variant="outline">
+                                                        Janela: {WEEKDAY_LABEL[signalRecommendation.bestWindow.dayOfWeek] || signalRecommendation.bestWindow.dayOfWeek}{" "}
+                                                        {String(signalRecommendation.bestWindow.hour).padStart(2, "0")}h
+                                                    </Badge>
+                                                )}
                                                 <ObjectionBadge
                                                     objection={intelligenceData?.objection || null}
                                                 />
@@ -345,6 +388,25 @@ export default function InboxPage() {
                                         leadName={threadData?.lead?.fullName || undefined}
                                         followup={intelligenceData?.followup}
                                     />
+
+                                    {signalAlerts && signalAlerts.length > 0 && (
+                                        <div className="rounded-lg border bg-white dark:bg-neutral-900 p-3">
+                                            <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+                                                <IconBolt className="h-4 w-4 text-amber-500" />
+                                                Alertas acionaveis da rede
+                                            </div>
+                                            <div className="space-y-2">
+                                                {signalAlerts.slice(0, 3).map((alert) => (
+                                                    <div key={alert.id} className="rounded-md border p-2">
+                                                        <div className="text-sm font-medium">{alert.title}</div>
+                                                        <div className="text-xs text-muted-foreground">
+                                                            {alert.recommendedAction}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {threadLoading ? (
                                         <div className="text-center text-muted-foreground">
@@ -455,3 +517,4 @@ export default function InboxPage() {
         </AppLayout>
     );
 }
+

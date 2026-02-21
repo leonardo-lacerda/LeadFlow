@@ -23,6 +23,7 @@ import { organizationRoutes } from './modules/organization/organization.routes.j
 import { notificationRoutes } from './modules/notifications/notifications.routes.js';
 import { analyticsRoutes } from './modules/analytics/analytics.routes.js';
 import { scoringRoutes } from './modules/scoring/scoring.routes.js';
+import { signalsRoutes } from './modules/signals/signals.routes.js';
 import { startScrapingWorker } from './jobs/scraping.worker.js';
 import { startEnrichmentWorker } from './jobs/enrichment.worker.js';
 import { startEmailWorker } from './jobs/email.worker.js';
@@ -93,6 +94,7 @@ fastify.register(organizationRoutes, { prefix: '/api/organization' });
 fastify.register(notificationRoutes, { prefix: '/api/notifications' });
 fastify.register(analyticsRoutes, { prefix: '/api/analytics' });
 fastify.register(scoringRoutes, { prefix: '/api/scoring' });
+fastify.register(signalsRoutes, { prefix: '/api/signals' });
 
 if (env.RUN_WORKERS) {
     startScrapingWorker();

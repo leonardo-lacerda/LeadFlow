@@ -1,5 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
 import { Prisma } from '@prisma/client';
+import { signalLayerService } from '../signals/signal-layer.service.js';
 
 interface ListConversationsParams {
     page: number;
@@ -159,6 +160,16 @@ class InboxService {
                 content: data.content,
                 subject: data.subject,
                 // We should also link to a mailbox/wa instance ideally
+            },
+        });
+
+        await signalLayerService.trackManualTouchpoint({
+            organizationId,
+            leadId,
+            channel: data.type,
+            messageId: message.id,
+            metadata: {
+                source: 'inbox.manual_send',
             },
         });
 

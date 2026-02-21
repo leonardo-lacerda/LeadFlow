@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, SignalEventType } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { env } from '../../config/env.js';
 import { whatsappQueue } from '../../lib/queue.js';
@@ -6,6 +6,7 @@ import { fetchWithTimeout } from '../../lib/fetch.js';
 import { decryptSecret, encryptSecret } from '../../lib/secrets.js';
 import { inboxIntelligenceService } from '../inbox/inbox-intelligence.service.js';
 import { getApiBaseUrl, normalizePhone, renderTemplate } from './whatsapp.utils.js';
+import { signalLayerService } from '../signals/signal-layer.service.js';
 
 interface CreateInstanceInput {
     name: string;
@@ -332,7 +333,7 @@ export class WhatsAppService {
         for (const lead of leads) {
             const number = lead.whatsapp || lead.phone;
             if (!number) {
-                await prisma.message.create({
+                const failedMessage = await prisma.message.create({
                     data: {
                         type: 'WHATSAPP',
                         direction: 'OUTBOUND',
@@ -343,6 +344,14 @@ export class WhatsAppService {
                             ...(input.metadata || {}),
                             error: 'Lead without phone',
                         },
+                    },
+                });
+                await signalLayerService.trackMessageEvent({
+                    messageId: failedMessage.id,
+                    eventType: SignalEventType.MESSAGE_FAILED,
+                    metadata: {
+                        source: 'whatsapp.queue_send',
+                        reason: 'lead_without_phone',
                     },
                 });
                 failed += 1;
@@ -553,6 +562,15 @@ export class WhatsAppService {
             data: { whatsappUsed: { increment: 1 } },
         });
 
+        await signalLayerService.trackMessageEvent({
+            messageId: message.id,
+            eventType: SignalEventType.MESSAGE_SENT,
+            metadata: {
+                source: 'whatsapp.send',
+                externalMessageId: externalId || undefined,
+            },
+        });
+
         return response;
     }
 
@@ -663,13 +681,21 @@ export class WhatsAppService {
             await this.updateCampaignLeadStatus(latestOutbound.metadata, 'REPLIED');
         }
 
-        await prisma.message.create({
+        const inboundMessage = await prisma.message.create({
             data: {
                 type: 'WHATSAPP',
                 direction: 'INBOUND',
                 content: text,
                 status: 'REPLIED',
                 leadId: lead.id,
+            },
+        });
+
+        await signalLayerService.trackMessageEvent({
+            messageId: inboundMessage.id,
+            eventType: SignalEventType.MESSAGE_REPLY_RECEIVED,
+            metadata: {
+                source: 'whatsapp.inbound',
             },
         });
 
