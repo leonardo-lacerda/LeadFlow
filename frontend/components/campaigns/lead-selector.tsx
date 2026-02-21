@@ -97,7 +97,7 @@ export function LeadSelector({ selectedLeads, onSelectionChange }: LeadSelectorP
                         ) : leads.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={4} className="h-24 text-center">
-                                    Nenhum prospect encontrado.
+                                    Nenhum lead encontrado.
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -131,7 +131,7 @@ export function LeadSelector({ selectedLeads, onSelectionChange }: LeadSelectorP
             </div>
 
             <div className="flex items-center justify-between text-sm text-muted-foreground bg-muted/20 p-2 rounded-md">
-                <span>{selectedLeads.length} prospects selecionados</span>
+                <span>{selectedLeads.length} leads selecionados</span>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))}>
                         <IconChevronLeft className="h-4 w-4" />
@@ -145,3 +145,4 @@ export function LeadSelector({ selectedLeads, onSelectionChange }: LeadSelectorP
         </div>
     );
 }
+

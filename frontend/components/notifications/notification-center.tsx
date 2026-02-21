@@ -58,7 +58,7 @@ export function NotificationCenter() {
             for (const notification of unseen) {
                 if (!notification.read && isHotLeadReplyNotification(notification)) {
                     toast({
-                        title: "Prospect quente respondeu",
+                        title: "Lead quente respondeu",
                         description: notification.message,
                     });
                 }

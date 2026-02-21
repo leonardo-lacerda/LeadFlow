@@ -1,34 +1,34 @@
-# Leadflow
+﻿# Leadflow
 
-Leadflow is an acquisition infrastructure for B2B SaaS.
+Leadflow e uma infraestrutura de aquisicao para SaaS B2B.
 
-Core idea:
-- do not optimize outreach in isolation
-- share anonymized market signals across similar SaaS
-- execute with better timing, channel and prioritization
+Ideia central:
+- nao otimizar outreach de forma isolada
+- compartilhar sinais de mercado anonimizados entre SaaS similares
+- executar com melhor momento, canal e priorizacao
 
-## Positioning
+## Posicionamento
 
-From:
-- outbound tool focused on "getting leads"
+De:
+- ferramenta de outbound focada em "gerar leads"
 
-To:
-- `Acquisition as Infrastructure`
-- `Signals, not leads`
+Para:
+- `Aquisicao como Infraestrutura`
+- `Sinais, nao leads`
 
-Leadflow combines:
-- Prospects (operational base)
-- Signal Layer (shared intelligence)
+Leadflow combina:
+- Leads (base operacional)
+- Camada de Sinais (inteligencia compartilhada)
 
-## Product surface
+## Superficie do produto
 
-Current frontend language:
-- `Leads` -> `Prospects + Signals`
-- `Campaigns` -> `Sequences`
-- `Analytics` -> `Intelligence`
-- `Scraping` -> `Lead Discovery`
+Nomenclatura atual do frontend:
+- `Leads` -> `Leads + Sinais`
+- `Campaigns` -> `Sequencias`
+- `Analytics` -> `Inteligencia`
+- `Scraping` -> `Descoberta de Leads`
 
-## Repository layout
+## Estrutura do repositorio
 
 ```
 SDR/
@@ -38,17 +38,17 @@ SDR/
 `- docker-compose.yml
 ```
 
-## Clear branch map
+## Mapa de branchs
 
-Use these branches:
-- `main`: latest state with new positioning
-- `baseline/pre-positioning-fullstack`: fullstack baseline before repositioning
-- `baseline/pre-positioning-frontend-only`: frontend-only baseline before repositioning
-- `feature/new-positioning-v1`: same content as `main`, kept as feature branch reference
+Use estas branchs:
+- `main`: estado mais recente com o novo posicionamento
+- `baseline/pre-positioning-fullstack`: baseline fullstack antes do reposicionamento
+- `baseline/pre-positioning-frontend-only`: baseline apenas frontend antes do reposicionamento
+- `feature/new-positioning-v1`: mesmo conteudo da `main`, mantida como referencia de feature branch
 
-Deprecated snapshot branches were removed from remote.
+As branchs snapshot antigas foram removidas do remoto.
 
-## Local development
+## Desenvolvimento local
 
 ### Backend
 
@@ -69,18 +69,20 @@ npm install
 npm run dev
 ```
 
-### Docker (full stack)
+### Docker (stack completa)
 
 ```bash
 docker-compose up -d
 ```
 
-## Validation
+## Validacao
 
-Frontend checks used in this repo:
+Checks de frontend usados neste repositorio:
 
 ```bash
 cd frontend
 npm run lint
 npm run build
 ```
+
+

@@ -1,13 +1,13 @@
-"use client";
+﻿"use client";
 
 const steps = [
     {
         title: "1. Cada SaaS conecta sua operacao",
         description:
-            "ICP, canais usados, resultados e respostas entram no sistema com anonimização desde a origem.",
+            "ICP, canais usados, resultados e respostas entram no sistema com anonimizacao desde a origem.",
     },
     {
-        title: "2. O Signal Layer aprende padroes",
+        title: "2. A Camada de Sinais aprende padroes",
         description:
             "O motor identifica timing, perfil e canal com maior chance de resposta por segmento semelhante.",
     },
@@ -52,10 +52,12 @@ export function LandingHowItWorks() {
                         Regra de ouro: <span className="text-white font-semibold">ninguem recebe lead direto de outra org.</span>
                     </p>
                     <p className="text-sm text-gray-400 mt-2">
-                        O produto entrega sinais, scores e recomendacoes de timing. Isso protege qualidade, evita spam e cria data moat real.
+                        O produto entrega sinais, scores e recomendacoes de momento. Isso protege qualidade, evita spam e cria uma barreira de dados real.
                     </p>
                 </div>
             </div>
         </section>
     );
 }
+
+

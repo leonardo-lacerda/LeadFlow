@@ -1,32 +1,32 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
 const plans = [
     {
-        name: "Builder",
+        name: "Base",
         price: "R$ 299",
         description: "Para SaaS B2B pequenos iniciando operacao com sinais compartilhados.",
         features: [
             "25.000 sinais analisados/mes",
             "1 organizacao",
-            "Acesso ao Lead Pool base",
-            "Score de timing e canal",
+            "Acesso a base de leads",
+            "Score de momento e canal",
             "Suporte por email",
         ],
     },
     {
-        name: "Network",
+        name: "Rede",
         price: "R$ 799",
         popular: true,
         description: "Para times com volume constante e foco em previsibilidade de aquisicao.",
         features: [
             "120.000 sinais analisados/mes",
             "Ate 5 usuarios",
-            "Signal Layer avancado",
+            "Camada de Sinais avancada",
             "Alertas de intencao por segmento",
-            "Benchmark anonimo por cohort",
+            "Benchmark anonimo por grupo",
             "Suporte prioritario",
         ],
     },
@@ -39,7 +39,7 @@ const plans = [
             "Ate 20 usuarios",
             "Pools dedicados por vertical",
             "SLA e onboarding tecnico",
-            "Integrações e API avancada",
+            "Integracoes e API avancada",
         ],
     },
 ];
@@ -70,7 +70,7 @@ export function LandingPricing() {
                         >
                             {plan.popular && (
                                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-medium">
-                                    Cohort recomendado
+                                    Grupo recomendado
                                 </div>
                             )}
 
@@ -109,3 +109,5 @@ export function LandingPricing() {
         </section>
     );
 }
+
+

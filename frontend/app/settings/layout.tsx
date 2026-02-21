@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -17,27 +17,27 @@ interface SettingsLayoutProps {
 
 const sidebarNavItems = [
     {
-        title: "Organization",
+        title: "Organizacao",
         href: "/settings/organization",
         icon: IconBuilding,
     },
     {
-        title: "Team",
+        title: "Equipe",
         href: "/settings/team",
         icon: IconUsers,
     },
     {
-        title: "Channels",
+        title: "Canais",
         href: "/settings/integrations",
         icon: IconPlug,
     },
     {
-        title: "ICP + Cohort",
+        title: "ICP + Grupo",
         href: "/settings/icp",
         icon: IconBuilding,
     },
     {
-        title: "Billing",
+        title: "Faturamento",
         href: "/settings/billing",
         icon: IconCreditCard,
     },
@@ -73,3 +73,5 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
         </AppLayout>
     );
 }
+
+

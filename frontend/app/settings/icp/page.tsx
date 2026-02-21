@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { organizationApi } from "@/lib/organization-api";
@@ -200,7 +200,7 @@ export default function IcpSettingsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium">ICP + Cohort</h3>
+                <h3 className="text-lg font-medium">ICP + Grupo</h3>
                 <p className="text-sm text-muted-foreground">
                     Defina o perfil ideal para melhorar priorizacao e reduzir ruido na camada de sinais.
                 </p>
@@ -211,12 +211,12 @@ export default function IcpSettingsPage() {
                 <CardHeader>
                     <CardTitle>Segmentacao Principal</CardTitle>
                     <CardDescription>
-                        Use valores separados por virgula. Quanto maior a sobreposicao com outros SaaS do cohort, melhor a precisao.
+                        Use valores separados por virgula. Quanto maior a sobreposicao com outros SaaS do grupo, melhor a precisao.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label>Industries</Label>
+                        <Label>Setores</Label>
                         <Input
                             value={listToInput(config.industries)}
                             onChange={(event) =>
@@ -228,7 +228,7 @@ export default function IcpSettingsPage() {
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Company Sizes</Label>
+                        <Label>Tamanho de Empresa</Label>
                         <Input
                             placeholder="11-50, 51-200"
                             value={listToInput(config.companySizes)}
@@ -241,7 +241,7 @@ export default function IcpSettingsPage() {
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Seniority Levels</Label>
+                        <Label>Niveis de Senioridade</Label>
                         <Input
                             placeholder="director, c-level, vp"
                             value={listToInput(config.seniorityLevels)}
@@ -254,7 +254,7 @@ export default function IcpSettingsPage() {
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Locations</Label>
+                        <Label>Localizacoes</Label>
                         <Input
                             placeholder="SP, RJ, MG"
                             value={listToInput(config.locations)}
@@ -267,7 +267,7 @@ export default function IcpSettingsPage() {
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Technologies</Label>
+                        <Label>Tecnologias</Label>
                         <Input
                             placeholder="hubspot, salesforce, rdstation"
                             value={listToInput(config.technologies)}
@@ -284,7 +284,7 @@ export default function IcpSettingsPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Regras de Cohort</CardTitle>
+                    <CardTitle>Regras de Grupo</CardTitle>
                     <CardDescription>
                         Crie regras extras para aumentar a precisao sem abrir demais o perfil.
                     </CardDescription>
@@ -299,7 +299,7 @@ export default function IcpSettingsPage() {
                             <div key={index} className="grid grid-cols-12 gap-2">
                                 <Input
                                     className="col-span-4"
-                                    placeholder="field"
+                                    placeholder="campo"
                                     value={rule.field}
                                     onChange={(event) =>
                                         updateRule(index, "field", event.target.value)
@@ -325,7 +325,7 @@ export default function IcpSettingsPage() {
                                 </Select>
                                 <Input
                                     className="col-span-4"
-                                    placeholder="value"
+                                    placeholder="valor"
                                     value={rule.value}
                                     onChange={(event) =>
                                         updateRule(index, "value", event.target.value)
@@ -374,3 +374,5 @@ export default function IcpSettingsPage() {
         </div>
     );
 }
+
+

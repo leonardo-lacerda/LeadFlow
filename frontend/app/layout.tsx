@@ -7,8 +7,8 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Leadflow - Acquisition as Infrastructure",
-  description: "Shared intelligence and signal layer for B2B SaaS acquisition.",
+    title: "Leadflow - Aquisicao como infraestrutura",
+    description: "Inteligencia compartilhada e camada de sinais para aquisicao B2B SaaS.",
 };
 
 const themeScript = `
@@ -25,21 +25,21 @@ const themeScript = `
 `;
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
-      <body className={inter.className}>
-        <Providers>
-          {children}
-          <Toaster />
-        </Providers>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="pt-BR" suppressHydrationWarning>
+            <head>
+                <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+            </head>
+            <body className={inter.className}>
+                <Providers>
+                    {children}
+                    <Toaster />
+                </Providers>
+            </body>
+        </html>
+    );
 }

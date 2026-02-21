@@ -8,7 +8,7 @@ from core.http import get_json
 from core.progress import ProgressReporter
 from core.proxy import proxy_manager
 from core.rate_limiter import RateLimiter
-from .contact_utils import normalize_url
+from .contact_utils import dedupe_tags, normalize_url
 from .mock import make_mock_leads
 from .search import web_search
 
@@ -23,8 +23,15 @@ _LOW_VALUE_NAMES = {
 
 
 def _clean_title(value: str) -> str:
-    cleaned = re.sub(r"\s+-\s+LinkedIn.*$", "", value, flags=re.IGNORECASE).strip()
-    cleaned = re.sub(r"\|\s*LinkedIn.*$", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"([a-z])([A-ZÀ-ÖØ-Þ])", r"\1 \2", value).strip()
+    cleaned = re.sub(r"\s+-\s+Linked\s*In.*$", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"\|\s*Linked\s*In.*$", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(
+        r"^.*?›\s*(?:in|company)\s*›\s*[^\s]+\s+",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    ).strip()
     return cleaned or value
 
 
@@ -58,6 +65,32 @@ def _slug_to_label(value: str) -> str:
     if not tokens:
         return ""
     return " ".join(token.capitalize() for token in tokens)
+
+
+def _is_linkedin_profile_url(value: Optional[str]) -> bool:
+    normalized = normalize_url(value)
+    if not normalized:
+        return False
+    parsed = urlparse(normalized)
+    host = (parsed.hostname or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    if host != "linkedin.com" and not host.endswith(".linkedin.com"):
+        return False
+    path = (parsed.path or "").lower()
+    return "/in/" in path or "/company/" in path
+
+
+def _canonical_linkedin_url(value: Optional[str]) -> Optional[str]:
+    normalized = normalize_url(value)
+    if not normalized or not _is_linkedin_profile_url(normalized):
+        return None
+    parsed = urlparse(normalized)
+    host = (parsed.hostname or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    path = re.sub(r"/+$", "", parsed.path or "")
+    return f"https://{host}{path}"
 
 
 def _infer_identity_from_url(url: str) -> Dict[str, Optional[str]]:
@@ -133,10 +166,8 @@ async def scrape(
                     processed_items = min(progress_total, processed_items + 1)
                     await publish_progress()
 
-                    source_url = normalize_url(result.get("url"))
-                    if not source_url or "linkedin.com" not in source_url:
-                        continue
-                    if "/in/" not in source_url and "/company/" not in source_url:
+                    source_url = _canonical_linkedin_url(result.get("url"))
+                    if not source_url:
                         continue
                     if source_url in seen:
                         continue
@@ -151,6 +182,8 @@ async def scrape(
                         company_name = inferred.get("company_name")
                     if _is_low_value_name(full_name):
                         full_name = None
+                    if not full_name and not company_name:
+                        continue
 
                     leads.append(
                         {
@@ -159,7 +192,7 @@ async def scrape(
                             "linkedinUrl": source_url,
                             "source": "linkedin_dork",
                             "sourceUrl": source_url,
-                            "tags": ["linkedin", "has_linkedin"],
+                            "tags": dedupe_tags(["has_linkedin"], source_tag="linkedin"),
                         }
                     )
                     pending_leads.append(leads[-1])
@@ -192,10 +225,8 @@ async def scrape(
                 processed_items = min(progress_total, processed_items + 1)
                 await publish_progress()
 
-                link = normalize_url(item.get("link"))
+                link = _canonical_linkedin_url(item.get("link"))
                 if not link or link in seen:
-                    continue
-                if "/in/" not in link and "/company/" not in link:
                     continue
                 seen.add(link)
                 inferred = _infer_identity_from_url(link)
@@ -207,6 +238,8 @@ async def scrape(
                     company_name = inferred.get("company_name")
                 if _is_low_value_name(full_name):
                     full_name = None
+                if not full_name and not company_name:
+                    continue
 
                 leads.append(
                     {
@@ -215,7 +248,7 @@ async def scrape(
                         "linkedinUrl": link,
                         "source": "linkedin_dork",
                         "sourceUrl": link,
-                        "tags": ["linkedin", "has_linkedin"],
+                        "tags": dedupe_tags(["has_linkedin"], source_tag="linkedin"),
                     }
                 )
                 pending_leads.append(leads[-1])

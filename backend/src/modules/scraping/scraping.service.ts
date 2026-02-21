@@ -73,37 +73,304 @@ function pickValue(lead: Record<string, unknown>, camel: string, snake: string) 
     return (lead[camel] ?? lead[snake]) as unknown;
 }
 
-function normalizeLead(lead: Record<string, unknown>, source: string) {
-    const firstName = pickValue(lead, 'firstName', 'first_name') as string | undefined;
-    const lastName = pickValue(lead, 'lastName', 'last_name') as string | undefined;
-    const fullName = pickValue(lead, 'fullName', 'full_name') as string | undefined;
+const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+
+const GENERIC_BLOCKED_DOMAINS = [
+    'localhost',
+    '127.0.0.1',
+    'google.com',
+    'google.com.br',
+    'googleusercontent.com',
+    'duckduckgo.com',
+    'bing.com',
+    'search.brave.com',
+];
+
+const SOURCE_BLOCKED_DOMAINS: Record<string, string[]> = {
+    google_maps: ['google.com', 'google.com.br', 'maps.google.com', 'maps.google.com.br'],
+    indeed: ['indeed.com', 'indeed.com.br'],
+    catho: ['catho.com.br'],
+    reclame_aqui: ['reclameaqui.com.br'],
+    mercado_livre: ['mercadolivre.com.br', 'mercadolibre.com'],
+    comprasnet: ['comprasnet.gov.br', 'gov.br'],
+    linkedin_dork: ['linkedin.com'],
+    cnpj: ['cnpj.biz', 'receitaws.com.br'],
+};
+
+function asCleanString(value: unknown): string | undefined {
+    if (typeof value !== 'string') {
+        return undefined;
+    }
+    const cleaned = value.trim();
+    return cleaned.length > 0 ? cleaned : undefined;
+}
+
+function normalizeUrl(value: unknown): string | undefined {
+    const raw = asCleanString(value);
+    if (!raw) {
+        return undefined;
+    }
+    let candidate = raw;
+    if (candidate.startsWith('//')) {
+        candidate = `https:${candidate}`;
+    } else if (!/^https?:\/\//i.test(candidate)) {
+        candidate = `https://${candidate}`;
+    }
+    try {
+        const parsed = new URL(candidate);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+            return undefined;
+        }
+        return parsed.toString();
+    } catch {
+        return undefined;
+    }
+}
+
+function normalizeDomain(value: unknown): string | undefined {
+    const url = normalizeUrl(value);
+    if (url) {
+        const host = new URL(url).hostname.toLowerCase();
+        const cleanedHost = host.startsWith('www.') ? host.slice(4) : host;
+        return cleanedHost || undefined;
+    }
+    const raw = asCleanString(value)?.toLowerCase();
+    if (!raw) {
+        return undefined;
+    }
+    const withoutProtocol = raw.replace(/^https?:\/\//i, '');
+    const host = withoutProtocol.split('/', 1)[0] ?? '';
+    const cleanedHost = host.startsWith('www.') ? host.slice(4) : host;
+    if (!cleanedHost || !cleanedHost.includes('.') || /\s/.test(cleanedHost)) {
+        return undefined;
+    }
+    return cleanedHost;
+}
+
+function normalizeEmail(value: unknown): string | undefined {
+    const raw = asCleanString(value)?.toLowerCase().replace(/[.,;:<>]+$/g, '');
+    if (!raw) {
+        return undefined;
+    }
+    return EMAIL_REGEX.test(raw) ? raw : undefined;
+}
+
+function normalizePhone(value: unknown): string | undefined {
+    const raw = asCleanString(value);
+    if (!raw) {
+        return undefined;
+    }
+    const cleaned = raw.replace(/\s+/g, ' ').trim();
+    const digits = cleaned.replace(/\D/g, '');
+    if (digits.length < 8) {
+        return undefined;
+    }
+    return cleaned;
+}
+
+function normalizeTags(value: unknown, source: string): string[] {
+    const items = Array.isArray(value) ? value : [];
+    const result: string[] = [];
+    const seen = new Set<string>();
+
+    const pushTag = (raw: unknown) => {
+        const cleaned = asCleanString(raw);
+        if (!cleaned) {
+            return;
+        }
+        const key = cleaned.toLowerCase();
+        if (seen.has(key)) {
+            return;
+        }
+        seen.add(key);
+        result.push(cleaned);
+    };
+
+    pushTag(source);
+    for (const item of items) {
+        pushTag(item);
+    }
+
+    return result.slice(0, 30);
+}
+
+function toJsonObject(value: unknown): Record<string, unknown> | undefined {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return undefined;
+    }
+    return value as Record<string, unknown>;
+}
+
+function normalizeStringArray(
+    value: unknown,
+    itemNormalizer: (raw: unknown) => string | undefined
+): string[] {
+    const result: string[] = [];
+    const seen = new Set<string>();
+    if (!Array.isArray(value)) {
+        return result;
+    }
+    for (const item of value) {
+        const normalized = itemNormalizer(item);
+        if (!normalized) {
+            continue;
+        }
+        const key = normalized.toLowerCase();
+        if (seen.has(key)) {
+            continue;
+        }
+        seen.add(key);
+        result.push(normalized);
+        if (result.length >= 5) {
+            break;
+        }
+    }
+    return result;
+}
+
+function isBlockedDomainForSource(domain: string, source: string): boolean {
+    const blocklist = [...GENERIC_BLOCKED_DOMAINS, ...(SOURCE_BLOCKED_DOMAINS[source] || [])];
+    return blocklist.some((blocked) => domain === blocked || domain.endsWith(`.${blocked}`));
+}
+
+function normalizeEnrichmentData(
+    value: unknown
+): Record<string, unknown> | undefined {
+    const root = toJsonObject(value);
+    if (!root) {
+        return undefined;
+    }
+
+    const normalized: Record<string, unknown> = { ...root };
+
+    if ('website' in root) {
+        normalized.website = normalizeUrl(root.website) ?? null;
+    }
+
+    const socials = toJsonObject(root.socials);
+    if (socials) {
+        const normalizedSocials: Record<string, string> = {};
+        for (const [key, raw] of Object.entries(socials)) {
+            const url = normalizeUrl(raw);
+            if (!url) {
+                continue;
+            }
+            normalizedSocials[key] = url;
+        }
+        normalized.socials = normalizedSocials;
+    }
+
+    const contacts = toJsonObject(root.contacts);
+    if (contacts) {
+        const emails = normalizeStringArray(contacts.emails, normalizeEmail);
+        const phones = normalizeStringArray(contacts.phones, normalizePhone);
+        normalized.contacts = {
+            ...contacts,
+            emails,
+            phones,
+        };
+    }
+
+    const maps = toJsonObject(root.maps);
+    if (maps) {
+        normalized.maps = {
+            ...maps,
+            url: normalizeUrl(maps.url) ?? null,
+            rawUrl: normalizeUrl(maps.rawUrl) ?? null,
+            osmUrl: normalizeUrl(maps.osmUrl) ?? null,
+        };
+    }
+
+    return normalized;
+}
+
+function extractDomainFromEmail(value: string | undefined): string | undefined {
+    if (!value) {
+        return undefined;
+    }
+    const index = value.lastIndexOf('@');
+    if (index === -1 || index === value.length - 1) {
+        return undefined;
+    }
+    return normalizeDomain(value.slice(index + 1));
+}
+
+function hasLeadIdentity(lead: Record<string, unknown>): boolean {
+    return Boolean(
+        asCleanString(lead.fullName) ||
+            asCleanString(lead.companyName) ||
+            asCleanString(lead.email) ||
+            asCleanString(lead.phone) ||
+            asCleanString(lead.whatsapp) ||
+            asCleanString(lead.linkedinUrl) ||
+            asCleanString(lead.companyCnpj)
+    );
+}
+
+function normalizeLead(lead: Record<string, unknown>, fallbackSource: string) {
+    const firstName = asCleanString(pickValue(lead, 'firstName', 'first_name'));
+    const lastName = asCleanString(pickValue(lead, 'lastName', 'last_name'));
+    const inputFullName = asCleanString(pickValue(lead, 'fullName', 'full_name'));
+    const resolvedSource =
+        asCleanString(pickValue(lead, 'source', 'source'))?.toLowerCase() || fallbackSource;
+
+    const email = normalizeEmail(pickValue(lead, 'email', 'email'));
+    const phone = normalizePhone(pickValue(lead, 'phone', 'phone'));
+    const whatsapp = normalizePhone(pickValue(lead, 'whatsapp', 'whatsapp'));
+    const linkedinUrl = normalizeUrl(pickValue(lead, 'linkedinUrl', 'linkedin_url'));
+    const enrichmentData = normalizeEnrichmentData(
+        pickValue(lead, 'enrichmentData', 'enrichment_data')
+    );
+
+    const maps = enrichmentData
+        ? (toJsonObject(enrichmentData.maps) as Record<string, unknown> | undefined)
+        : undefined;
+    let sourceUrl = normalizeUrl(pickValue(lead, 'sourceUrl', 'source_url'));
+    if (!sourceUrl && resolvedSource === 'linkedin_dork' && linkedinUrl) {
+        sourceUrl = linkedinUrl;
+    }
+    if (!sourceUrl && maps) {
+        sourceUrl =
+            normalizeUrl(maps.url) ||
+            normalizeUrl(maps.rawUrl) ||
+            normalizeUrl(maps.osmUrl);
+    }
+
+    const companyDomainCandidates = [
+        normalizeDomain(pickValue(lead, 'companyDomain', 'company_domain')),
+        extractDomainFromEmail(email),
+        sourceUrl ? normalizeDomain(sourceUrl) : undefined,
+    ].filter((value): value is string => Boolean(value));
+    const companyDomain = companyDomainCandidates.find(
+        (candidate) => !isBlockedDomainForSource(candidate, resolvedSource)
+    );
 
     const normalized: Record<string, unknown> = {
         firstName,
         lastName,
-        fullName,
-        email: pickValue(lead, 'email', 'email'),
-        phone: pickValue(lead, 'phone', 'phone'),
-        whatsapp: pickValue(lead, 'whatsapp', 'whatsapp'),
-        linkedinUrl: pickValue(lead, 'linkedinUrl', 'linkedin_url'),
-        companyName: pickValue(lead, 'companyName', 'company_name'),
-        companyDomain: pickValue(lead, 'companyDomain', 'company_domain'),
-        companyCnpj: pickValue(lead, 'companyCnpj', 'company_cnpj'),
-        companySize: pickValue(lead, 'companySize', 'company_size'),
-        industry: pickValue(lead, 'industry', 'industry'),
-        jobTitle: pickValue(lead, 'jobTitle', 'job_title'),
-        seniority: pickValue(lead, 'seniority', 'seniority'),
-        department: pickValue(lead, 'department', 'department'),
-        city: pickValue(lead, 'city', 'city'),
-        state: pickValue(lead, 'state', 'state'),
-        country: pickValue(lead, 'country', 'country'),
-        source: pickValue(lead, 'source', 'source') || source,
-        sourceUrl: pickValue(lead, 'sourceUrl', 'source_url'),
-        enrichmentData: pickValue(lead, 'enrichmentData', 'enrichment_data'),
-        tags: (lead['tags'] as string[]) || [],
+        fullName: inputFullName,
+        email,
+        phone,
+        whatsapp,
+        linkedinUrl,
+        companyName: asCleanString(pickValue(lead, 'companyName', 'company_name')),
+        companyDomain,
+        companyCnpj: asCleanString(pickValue(lead, 'companyCnpj', 'company_cnpj')),
+        companySize: asCleanString(pickValue(lead, 'companySize', 'company_size')),
+        industry: asCleanString(pickValue(lead, 'industry', 'industry')),
+        jobTitle: asCleanString(pickValue(lead, 'jobTitle', 'job_title')),
+        seniority: asCleanString(pickValue(lead, 'seniority', 'seniority')),
+        department: asCleanString(pickValue(lead, 'department', 'department')),
+        city: asCleanString(pickValue(lead, 'city', 'city')),
+        state: asCleanString(pickValue(lead, 'state', 'state')),
+        country: asCleanString(pickValue(lead, 'country', 'country')),
+        source: resolvedSource,
+        sourceUrl,
+        enrichmentData,
+        tags: normalizeTags(lead['tags'], resolvedSource),
     };
 
-    if (!fullName && (firstName || lastName)) {
+    if (!normalized.fullName && (firstName || lastName)) {
         normalized.fullName = [firstName, lastName].filter(Boolean).join(' ');
     }
 
@@ -309,11 +576,11 @@ export class ScrapingService {
         }
 
         const leadsPayload = payload.leads || [];
-        const normalizedLeads = leadsPayload.map((lead) =>
-            normalizeLead(lead, job.source)
-        );
+        const normalizedLeads = leadsPayload.map((lead) => normalizeLead(lead, job.source));
+        const acceptedLeads = normalizedLeads.filter(hasLeadIdentity);
+        const droppedInvalid = normalizedLeads.length - acceptedLeads.length;
 
-        const leadsToCreate = normalizedLeads.map((lead) => ({
+        const leadsToCreate = acceptedLeads.map((lead) => ({
             ...lead,
             organizationId: job.organizationId,
             scrapingJobId: job.id,
@@ -365,15 +632,43 @@ export class ScrapingService {
         const processedItems =
             payload.processedItems ?? (job.processedItems || leadsToCreate.length);
         const leadsCreated = job.leadsCreated + createdCount;
+        const debugInfo =
+            payload.debug && typeof payload.debug === 'object'
+                ? (payload.debug as Record<string, unknown>)
+                : undefined;
+        const nestedScraperDebug =
+            debugInfo?.['scraperDebug'] &&
+            typeof debugInfo['scraperDebug'] === 'object' &&
+            !Array.isArray(debugInfo['scraperDebug'])
+                ? (debugInfo['scraperDebug'] as Record<string, unknown>)
+                : undefined;
+        const finalLeadCountHint =
+            typeof debugInfo?.['finalLeadCount'] === 'number'
+                ? (debugInfo['finalLeadCount'] as number)
+                : typeof nestedScraperDebug?.['finalLeadCount'] === 'number'
+                    ? (nestedScraperDebug['finalLeadCount'] as number)
+                    : undefined;
+        const persistedLeadCount =
+            status === 'COMPLETED' && leadsCreated === 0
+                ? await prisma.lead.count({ where: { scrapingJobId: job.id } })
+                : undefined;
+        const shouldWarnNoLeads =
+            status === 'COMPLETED' &&
+            leadsCreated === 0 &&
+            (persistedLeadCount ?? 0) === 0 &&
+            (finalLeadCountHint === undefined || finalLeadCountHint === 0);
 
         const diagnostics = {
             status,
             payloadLeadCount: leadsPayload.length,
             normalizedLeadCount: normalizedLeads.length,
+            acceptedLeadCount: acceptedLeads.length,
+            droppedInvalid,
             createdCount,
             droppedByLimit,
             totalItems,
             processedItems,
+            persistedLeadCount: persistedLeadCount ?? null,
             scraperDebug: payload.debug ?? null,
             at: new Date().toISOString(),
         };
@@ -388,12 +683,12 @@ export class ScrapingService {
                 error: payload.error,
                 diagnostics,
             } as Prisma.InputJsonValue;
-        } else if (status === 'COMPLETED' && createdCount === 0) {
+        } else if (shouldWarnNoLeads) {
             errorsUpdate = {
                 warning: 'Scraping completed with no leads',
                 diagnostics,
             } as Prisma.InputJsonValue;
-        } else if (status === 'COMPLETED' && createdCount > 0) {
+        } else if (status === 'COMPLETED') {
             errorsUpdate = Prisma.JsonNull;
         }
 

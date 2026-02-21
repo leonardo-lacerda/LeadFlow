@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
@@ -92,6 +92,30 @@ const STATUS_OPTIONS = [
     "BOUNCED",
     "UNSUBSCRIBED",
 ];
+
+const LEAD_STATUS_LABELS: Record<string, string> = {
+    NEW: "Novo",
+    ENRICHING: "Enriquecendo",
+    ENRICHED: "Enriquecido",
+    CONTACTED: "Contatado",
+    REPLIED: "Respondeu",
+    INTERESTED: "Interessado",
+    MEETING_SCHEDULED: "Reuniao agendada",
+    CONVERTED: "Convertido",
+    NOT_INTERESTED: "Sem interesse",
+    BOUNCED: "Erro de entrega",
+    UNSUBSCRIBED: "Descadastrado",
+};
+
+const MESSAGE_TYPE_LABELS: Record<string, string> = {
+    EMAIL: "Email",
+    WHATSAPP: "WhatsApp",
+};
+
+const MESSAGE_DIRECTION_LABELS: Record<string, string> = {
+    INBOUND: "Entrada",
+    OUTBOUND: "Saida",
+};
 
 export default function LeadDetailsPage() {
     const params = useParams<{ id: string | string[] }>();
@@ -225,12 +249,12 @@ export default function LeadDetailsPage() {
         if (!lead?.id) return;
         try {
             await leadsApi.update(lead.id, editForm);
-            toast({ title: "Prospect atualizado" });
+            toast({ title: "Lead atualizado" });
             setEditOpen(false);
             refetch();
         } catch (error) {
             console.error(error);
-            toast({ title: "Erro ao atualizar prospect", variant: "destructive" });
+            toast({ title: "Erro ao atualizar lead", variant: "destructive" });
         }
     };
 
@@ -294,9 +318,9 @@ export default function LeadDetailsPage() {
         return (
             <AppLayout>
                 <div className="flex-1 p-8 pt-6 flex flex-col items-center justify-center gap-4">
-                    <p>Prospect nao encontrado</p>
+                    <p>Lead nao encontrado</p>
                     <Button asChild>
-                        <Link href="/leads">Voltar para Prospects</Link>
+                        <Link href="/leads">Voltar para Leads</Link>
                     </Button>
                 </div>
             </AppLayout>
@@ -313,7 +337,7 @@ export default function LeadDetailsPage() {
                         </Link>
                     </Button>
                     <h2 className="text-3xl font-bold tracking-tight">{lead.fullName}</h2>
-                    <Badge>{lead.status}</Badge>
+                    <Badge>{LEAD_STATUS_LABELS[lead.status] || lead.status}</Badge>
                     <Select value={lead.status} onValueChange={handleStatusChange}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Status" />
@@ -321,7 +345,7 @@ export default function LeadDetailsPage() {
                         <SelectContent>
                             {STATUS_OPTIONS.map((status) => (
                                 <SelectItem key={status} value={status}>
-                                    {status}
+                                    {LEAD_STATUS_LABELS[status] || status}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -449,7 +473,7 @@ export default function LeadDetailsPage() {
                             <TabsContent value="activity" className="space-y-4 mt-4">
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Timeline</CardTitle>
+                                        <CardTitle>Linha do tempo</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="space-y-8">
@@ -482,7 +506,7 @@ export default function LeadDetailsPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Notas</CardTitle>
-                                        <CardDescription>Registre observacoes importantes sobre o prospect.</CardDescription>
+                                        <CardDescription>Registre observacoes importantes sobre o lead.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="flex gap-2">
@@ -526,7 +550,9 @@ export default function LeadDetailsPage() {
                                                 lead.messages.map((msg) => (
                                                     <div key={msg.id} className="p-3 border rounded-md">
                                                         <p className="text-xs text-muted-foreground">
-                                                            {msg.type} • {msg.direction} • {formatDate(msg.createdAt)}
+                                                            {MESSAGE_TYPE_LABELS[msg.type] || msg.type} -{" "}
+                                                            {MESSAGE_DIRECTION_LABELS[msg.direction] || msg.direction} -{" "}
+                                                            {formatDate(msg.createdAt)}
                                                         </p>
                                                         {msg.subject && <p className="font-medium">{msg.subject}</p>}
                                                         <p className="text-sm text-muted-foreground">{msg.content}</p>
@@ -546,7 +572,7 @@ export default function LeadDetailsPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Tags</CardTitle>
-                        <CardDescription>Organize prospects com etiquetas personalizadas.</CardDescription>
+                        <CardDescription>Organize leads com etiquetas personalizadas.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex gap-2">
@@ -577,12 +603,12 @@ export default function LeadDetailsPage() {
                 </Card>
             </div>
 
-            {/* Edit Modal */}
+            {/* Modal de edicao */}
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Editar Prospect</DialogTitle>
-                        <DialogDescription>Atualize os dados do prospect.</DialogDescription>
+                        <DialogTitle>Editar Lead</DialogTitle>
+                        <DialogDescription>Atualize os dados do lead.</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
@@ -623,7 +649,7 @@ export default function LeadDetailsPage() {
                 </DialogContent>
             </Dialog>
 
-            {/* Send Message Modal */}
+            {/* Modal de envio de mensagem */}
             <Dialog open={messageModal.open} onOpenChange={(open) => setMessageModal((prev) => ({ ...prev, open }))}>
                 <DialogContent>
                     <DialogHeader>
@@ -660,3 +686,5 @@ export default function LeadDetailsPage() {
         </AppLayout>
     );
 }
+
+

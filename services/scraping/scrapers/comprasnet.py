@@ -1,5 +1,6 @@
 import logging
 import re
+from urllib.parse import parse_qs
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
@@ -7,7 +8,7 @@ from core.config import SCRAPING_MOCK
 from core.progress import ProgressReporter
 from core.proxy import proxy_manager
 from core.rate_limiter import RateLimiter
-from .contact_utils import fetch_contact_profile, normalize_url
+from .contact_utils import dedupe_tags, fetch_contact_profile, normalize_url, sanitize_contact_profile
 from .mock import make_mock_leads
 from .search import web_search
 
@@ -29,6 +30,10 @@ def _is_low_value_title(value: Optional[str]) -> bool:
         return True
     if normalized in _LOW_VALUE_TITLES:
         return True
+    if "compras.gov.br" in normalized or "comprasnet.gov.br" in normalized:
+        return True
+    if "consultalicitacoes" in normalized or "download" in normalized or "legislacao" in normalized:
+        return True
     if normalized.startswith("![image") or normalized.startswith("image "):
         return True
     if "." in normalized and " " not in normalized:
@@ -41,6 +46,19 @@ def _name_from_source_url(value: Optional[str]) -> Optional[str]:
     if not source_url:
         return None
     parsed = urlparse(source_url)
+    query = parse_qs(parsed.query or "")
+    coduasg = ((query.get("coduasg") or [None])[0] or "").strip()
+    numprp = ((query.get("numprp") or [None])[0] or "").strip()
+    modprp = ((query.get("modprp") or [None])[0] or "").strip()
+    if coduasg or numprp:
+        label_parts = ["Licitacao"]
+        if modprp:
+            label_parts.append(f"Modalidade {modprp}")
+        if coduasg:
+            label_parts.append(f"UASG {coduasg}")
+        if numprp:
+            label_parts.append(f"Processo {numprp}")
+        return " - ".join(label_parts)
     parts = [part for part in parsed.path.split("/") if part]
     if not parts:
         return None
@@ -63,14 +81,14 @@ def _resolve_company_name(title: str, source_url: Optional[str], profile_title: 
 
 
 def _build_tags(email: Optional[str], phone: Optional[str], linkedin_url: Optional[str]) -> List[str]:
-    tags = ["comprasnet"]
+    tags = []
     if email:
         tags.append("has_email")
     if phone:
         tags.append("has_phone")
     if linkedin_url:
         tags.append("has_linkedin")
-    return tags
+    return dedupe_tags(tags, source_tag="comprasnet")
 
 
 async def scrape(
@@ -146,6 +164,10 @@ async def scrape(
                     if source_url and profile_budget > 0:
                         profile_budget -= 1
                         profile = await fetch_contact_profile(source_url, proxy=proxy)
+                    profile = sanitize_contact_profile(
+                        profile,
+                        blocked_domains=["comprasnet.gov.br", "gov.br"],
+                    )
 
                     company_name = _resolve_company_name(title, source_url, profile.get("title"))
                     if not company_name:

@@ -47,7 +47,7 @@ export function SequenceBuilder({ initialSteps = [], onStepsChange }: SequenceBu
             : [
                 { id: "1", type: "email", title: "Email 1: Introdução", content: "Olá {{firstName}}, ..." },
                 { id: "2", type: "wait", title: "Esperar 2 dias", delay: 48 },
-                { id: "3", type: "email", title: "Email 2: Follow-up", content: "Vi que você..." },
+                { id: "3", type: "email", title: "Email 2: Retomada", content: "Vi que voce..." },
             ]
     );
 

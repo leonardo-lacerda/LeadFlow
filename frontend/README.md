@@ -1,8 +1,8 @@
-# Leadflow Frontend
+﻿# Leadflow Frontend
 
-Frontend for Leadflow positioning:
-- Acquisition as Infrastructure
-- Signals, not leads
+Frontend do posicionamento Leadflow:
+- Aquisicao como Infraestrutura
+- Sinais, nao leads
 
 ## Stack
 
@@ -12,25 +12,27 @@ Frontend for Leadflow positioning:
 - React Query
 - Framer Motion
 
-## Main UX naming
+## Nomenclatura principal da UX
 
-- Prospects + Signals
-- Sequences
-- Intelligence
-- Lead Discovery
+- Leads + Sinais
+- Sequencias
+- Inteligencia
+- Descoberta de Leads
 
-## Run
+## Execucao
 
 ```bash
 npm install
 npm run dev
 ```
 
-App runs on `http://localhost:3000`.
+A aplicacao roda em `http://localhost:3000`.
 
-## Quality checks
+## Checks de qualidade
 
 ```bash
 npm run lint
 npm run build
 ```
+
+

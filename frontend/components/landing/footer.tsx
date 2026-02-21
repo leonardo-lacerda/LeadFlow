@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { IconBrandTwitter, IconBrandLinkedin, IconBrandGithub } from "@tabler/icons-react";
@@ -14,14 +14,14 @@ export function LandingFooter() {
                             <span className="font-bold text-xl text-white">Leadflow</span>
                         </div>
                         <p className="text-gray-500 text-sm leading-relaxed">
-                            Leads with context. Acquisition as infrastructure para SaaS B2B.
+                            Leads com contexto. Infraestrutura de aquisicao para SaaS B2B.
                         </p>
                     </div>
 
                     <div>
                         <h4 className="font-semibold text-white mb-4">Produto</h4>
                         <ul className="space-y-2 text-sm text-gray-400">
-                            <li><Link href="#signal-layer" className="hover:text-indigo-400 transition-colors">Signal Layer</Link></li>
+                            <li><Link href="#signal-layer" className="hover:text-indigo-400 transition-colors">Camada de Sinais</Link></li>
                             <li><Link href="#how-it-works" className="hover:text-indigo-400 transition-colors">Como funciona</Link></li>
                             <li><Link href="#pricing" className="hover:text-indigo-400 transition-colors">Precos</Link></li>
                         </ul>
@@ -30,7 +30,7 @@ export function LandingFooter() {
                     <div>
                         <h4 className="font-semibold text-white mb-4">Recursos</h4>
                         <ul className="space-y-2 text-sm text-gray-400">
-                            <li><Link href="#" className="hover:text-indigo-400 transition-colors">Build in public</Link></li>
+                            <li><Link href="#" className="hover:text-indigo-400 transition-colors">Construcao em publico</Link></li>
                             <li><Link href="#" className="hover:text-indigo-400 transition-colors">Documentacao</Link></li>
                             <li><Link href="#" className="hover:text-indigo-400 transition-colors">Roadmap</Link></li>
                         </ul>
@@ -48,7 +48,7 @@ export function LandingFooter() {
 
                 <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
                     <p className="text-gray-500 text-sm">
-                        © {new Date().getFullYear()} Leadflow. Todos os direitos reservados.
+                        (c) {new Date().getFullYear()} Leadflow. Todos os direitos reservados.
                     </p>
                     <div className="flex items-center gap-4">
                         <Link href="#" className="text-gray-500 hover:text-white transition-colors">
@@ -66,3 +66,5 @@ export function LandingFooter() {
         </footer>
     );
 }
+
+

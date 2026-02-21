@@ -1,30 +1,72 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { organizationApi } from "@/lib/organization-api";
-import { integrationsApi, Mailbox, WhatsappInstance } from "@/lib/integrations-api";
 import { useAuthStore } from "@/store/auth-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { MailboxList } from "@/components/settings/integrations/mailbox-list";
-import { WhatsappList } from "@/components/settings/integrations/whatsapp-list";
 import {
-    IconCheck,
     IconArrowRight,
+    IconBrandWhatsapp,
+    IconChartBar,
+    IconCheck,
     IconLoader,
     IconRocket,
-    IconMail,
-    IconBrandWhatsapp,
+    IconUsers,
 } from "@tabler/icons-react";
 
 const STEPS = [
-    { id: "welcome", title: "Signal Layer", icon: IconRocket },
-    { id: "mailboxes", title: "Canal Email", icon: IconMail },
-    { id: "whatsapp", title: "Canal WhatsApp", icon: IconBrandWhatsapp },
-    { id: "finish", title: "Go Live", icon: IconCheck },
+    {
+        id: "positioning",
+        title: "Aquisição como Infraestrutura",
+        icon: IconRocket,
+        description:
+            "Leadflow combina descoberta de leads com inteligência coletiva para decidir melhor quando e como abordar.",
+        bullets: [
+            "Leads com contexto, não apenas listas.",
+            "Decisões orientadas por sinais agregados.",
+            "Operação com menos tentativa e erro.",
+        ],
+    },
+    {
+        id: "lead-layer",
+        title: "Camada de Leads",
+        icon: IconUsers,
+        description:
+            "Sua base de prospecção continua no centro da operação, com organização por status, temperatura e prioridade.",
+        bullets: [
+            "Lead Discovery e enriquecimento de dados.",
+            "Gestão de pipeline em uma única visão.",
+            "Execução focada nos leads com maior potencial.",
+        ],
+    },
+    {
+        id: "signal-layer",
+        title: "Camada de Sinais",
+        icon: IconBrandWhatsapp,
+        description:
+            "A Signal Layer recomenda canal, janela e prioridade por perfil, com base no comportamento observado na rede.",
+        bullets: [
+            "Recomendação de canal (Email x WhatsApp).",
+            "Melhor dia e horário para abordagem.",
+            "Alertas acionáveis para respostas e riscos.",
+        ],
+    },
+    {
+        id: "intelligence",
+        title: "Inteligência de Impacto",
+        icon: IconChartBar,
+        description:
+            "No painel, você acompanha lift por canal e segmento para ajustar sequências de forma contínua.",
+        bullets: [
+            "Visão de impacto agregado da operação.",
+            "Aprendizado contínuo por cohort e uso.",
+            "Evolução de performance sem aumentar complexidade.",
+        ],
+    },
 ];
 
 export default function OnboardingPage() {
@@ -34,31 +76,9 @@ export default function OnboardingPage() {
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
 
-    const [mailboxes, setMailboxes] = useState<Mailbox[]>([]);
-    const [instances, setInstances] = useState<WhatsappInstance[]>([]);
-
-    const hasMailbox = mailboxes.length > 0;
-    const hasWhatsapp = instances.length > 0;
-
-    const refreshStatus = useCallback(async () => {
-        try {
-            const [emailData, whatsappData] = await Promise.all([
-                integrationsApi.listMailboxes(),
-                integrationsApi.listWhatsapp(),
-            ]);
-            setMailboxes(emailData);
-            setInstances(whatsappData);
-        } catch (error) {
-            console.error(error);
-        }
-    }, []);
-
-    useEffect(() => {
-        void refreshStatus();
-    }, [refreshStatus]);
-
     useEffect(() => {
         let active = true;
+
         organizationApi
             .getOrganization()
             .then((organization) => {
@@ -89,14 +109,6 @@ export default function OnboardingPage() {
         };
     }, [router, updateUser, user?.organization]);
 
-    const handleNext = async () => {
-        if (step < STEPS.length - 1) {
-            setStep((prev) => prev + 1);
-            return;
-        }
-        await completeOnboarding();
-    };
-
     const completeOnboarding = async () => {
         setLoading(true);
         try {
@@ -114,16 +126,24 @@ export default function OnboardingPage() {
                 });
             }
 
-            toast({ title: "Ativacao concluida" });
+            toast({ title: "Onboarding concluído" });
             router.push("/dashboard");
         } catch {
             toast({
-                title: "Erro ao finalizar ativacao",
+                title: "Erro ao finalizar onboarding",
                 variant: "destructive",
             });
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleNext = async () => {
+        if (step < STEPS.length - 1) {
+            setStep((prev) => prev + 1);
+            return;
+        }
+        await completeOnboarding();
     };
 
     const currentStep = STEPS[step];
@@ -133,9 +153,9 @@ export default function OnboardingPage() {
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
             <div className="w-full max-w-3xl space-y-6">
                 <div className="space-y-2 text-center">
-                    <h1 className="text-3xl font-bold tracking-tight">Ativacao do Signal Layer</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Onboarding Leadflow</h1>
                     <p className="text-muted-foreground">
-                        Conecte seus canais e entre no aprendizado coletivo para aquisicao B2B.
+                        Uma visão rápida do produto em 4 passos.
                     </p>
                 </div>
 
@@ -165,64 +185,19 @@ export default function OnboardingPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="min-h-[320px]">
-                            {step === 0 && (
-                                <div className="space-y-4 text-center py-8">
-                                    <div className="mx-auto w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-                                        <IconRocket className="h-12 w-12 text-primary" />
-                                    </div>
-                                    <h2 className="text-2xl font-bold">Bem-vindo ao Leadflow</h2>
-                                    <p className="text-muted-foreground max-w-xl mx-auto">
-                                        Aqui sua org nao recebe lead de outras empresas. Voce recebe sinais,
-                                        scores e recomendacoes de timing para decidir melhor.
-                                    </p>
-                                    <div className="max-w-xl mx-auto rounded-lg border bg-muted/30 p-4 text-left text-sm text-muted-foreground">
-                                        Cohort inicial: SaaS B2B com decisor tecnico, outbound leve e ICP sobreposto.
-                                    </div>
+                            <div className="space-y-5 py-2">
+                                <p className="text-muted-foreground">{currentStep.description}</p>
+                                <div className="rounded-lg border bg-muted/30 p-4">
+                                    <ul className="space-y-2 text-sm text-muted-foreground">
+                                        {currentStep.bullets.map((item) => (
+                                            <li key={item} className="flex items-start gap-2">
+                                                <IconCheck className="h-4 w-4 mt-0.5 text-primary" />
+                                                <span>{item}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
-                            )}
-
-                            {step === 1 && (
-                                <div className="space-y-4">
-                                    <p className="text-muted-foreground mb-4">
-                                        Adicione ao menos uma conta de email para enviar sequences e gerar sinais de resposta.
-                                    </p>
-                                    <MailboxList mailboxes={mailboxes} onRefresh={refreshStatus} />
-                                    {hasMailbox && (
-                                        <div className="p-4 bg-green-50 text-green-700 rounded-md flex items-center gap-2 mt-4">
-                                            <IconCheck className="h-5 w-5" />
-                                            <span>Email conectado. Signals de canal email habilitados.</span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {step === 2 && (
-                                <div className="space-y-4">
-                                    <p className="text-muted-foreground mb-4">
-                                        Opcional: conecte WhatsApp para ampliar cobertura de canal por segmento.
-                                    </p>
-                                    <WhatsappList instances={instances} onRefresh={refreshStatus} />
-                                    {hasWhatsapp && (
-                                        <div className="p-4 bg-green-50 text-green-700 rounded-md flex items-center gap-2 mt-4">
-                                            <IconCheck className="h-5 w-5" />
-                                            <span>WhatsApp conectado. Signals de canal WhatsApp habilitados.</span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {step === 3 && (
-                                <div className="space-y-4 text-center py-8">
-                                    <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                                        <IconCheck className="h-12 w-12 text-green-600" />
-                                    </div>
-                                    <h2 className="text-2xl font-bold">Tudo pronto para operar com signals</h2>
-                                    <p className="text-muted-foreground max-w-md mx-auto">
-                                        Sua base e seus canais estao ativos. Agora voce pode executar com
-                                        contexto, nao por tentativa e erro.
-                                    </p>
-                                </div>
-                            )}
+                            </div>
                         </CardContent>
                         <CardFooter className="flex justify-between border-t p-6">
                             <Button
@@ -232,9 +207,9 @@ export default function OnboardingPage() {
                             >
                                 Voltar
                             </Button>
-                            <Button onClick={handleNext} disabled={loading || (step === 1 && !hasMailbox)}>
+                            <Button onClick={handleNext} disabled={loading}>
                                 {loading && <IconLoader className="mr-2 h-4 w-4 animate-spin" />}
-                                {step === STEPS.length - 1 ? "Ir para Dashboard" : "Proximo"}
+                                {step === STEPS.length - 1 ? "Concluir e ir para o painel" : "Próximo"}
                                 {step !== STEPS.length - 1 && <IconArrowRight className="ml-2 h-4 w-4" />}
                             </Button>
                         </CardFooter>

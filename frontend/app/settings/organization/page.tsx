@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { organizationApi, Organization } from "@/lib/organization-api";
@@ -25,7 +25,7 @@ export default function OrganizationPage() {
         } catch (error) {
             console.error(error);
             toast({
-                title: "Erro ao carregar organization",
+                title: "Erro ao carregar organizacao",
                 variant: "destructive",
             });
         } finally {
@@ -45,7 +45,7 @@ export default function OrganizationPage() {
         setSaving(true);
         try {
             await organizationApi.updateOrganization({ name });
-            toast({ title: "Organization atualizada" });
+            toast({ title: "Organizacao atualizada" });
             await loadOrganization();
         } catch (error) {
             toast({
@@ -75,7 +75,7 @@ export default function OrganizationPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium">Organization Profile</h3>
+                <h3 className="text-lg font-medium">Perfil da Organizacao</h3>
                 <p className="text-sm text-muted-foreground">
                     Defina como sua empresa aparece na rede e acompanhe sua camada de sinais.
                 </p>
@@ -84,12 +84,12 @@ export default function OrganizationPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Identity</CardTitle>
+                    <CardTitle>Identidade</CardTitle>
                     <CardDescription>Nome publico da sua empresa no sistema.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Nome da organization</Label>
+                        <Label htmlFor="name">Nome da organizacao</Label>
                         <Input id="name" value={name} onChange={(event) => setName(event.target.value)} />
                     </div>
                 </CardContent>
@@ -103,7 +103,7 @@ export default function OrganizationPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Network Snapshot</CardTitle>
+                    <CardTitle>Panorama da Rede</CardTitle>
                     <CardDescription>
                         Prova social da sua participacao no modelo de aquisicao compartilhada.
                     </CardDescription>
@@ -114,7 +114,7 @@ export default function OrganizationPage() {
                         <p className="text-2xl font-semibold">{sharedSignals}</p>
                     </div>
                     <div className="rounded-lg border p-4">
-                        <p className="text-xs text-muted-foreground">Cohort ativo</p>
+                        <p className="text-xs text-muted-foreground">Grupo ativo</p>
                         <p className="text-2xl font-semibold">SaaS B2B tecnico</p>
                     </div>
                     <div className="rounded-lg border p-4">
@@ -142,3 +142,5 @@ export default function OrganizationPage() {
         </div>
     );
 }
+
+

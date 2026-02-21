@@ -128,9 +128,9 @@ export default function TeamPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium">Go-to-Market Team</h3>
+                <h3 className="text-lg font-medium">Equipe Go-to-Market</h3>
                 <p className="text-sm text-muted-foreground">
-                    Gerencie quem pode operar sequences, canais e configuracoes de sinais.
+                    Gerencie quem pode operar sequencias, canais e configuracoes de sinais.
                 </p>
             </div>
             <Separator />
@@ -241,3 +241,4 @@ export default function TeamPage() {
         </div>
     );
 }
+

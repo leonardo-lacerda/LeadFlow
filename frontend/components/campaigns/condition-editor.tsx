@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
@@ -27,9 +27,9 @@ interface ConditionEditorProps {
 }
 
 const CONDITION_OPTIONS = [
-    { value: "EMAIL_OPENED", label: "Prospect abriu o email" },
-    { value: "EMAIL_REPLIED", label: "Prospect respondeu o email" },
-    { value: "EMAIL_CLICKED", label: "Prospect clicou em um link" },
+    { value: "EMAIL_OPENED", label: "Lead abriu o email" },
+    { value: "EMAIL_REPLIED", label: "Lead respondeu o email" },
+    { value: "EMAIL_CLICKED", label: "Lead clicou em um link" },
     { value: "WAIT_TIME", label: "Tempo de espera passou" },
 ];
 
@@ -47,7 +47,7 @@ export function ConditionEditor({ value, onChange }: ConditionEditorProps) {
         <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                 <IconGitBranch className="h-4 w-4" />
-                <span>Se a condicao for verdadeira, continua sequence. Caso contrario, pausa.</span>
+                <span>Se a condicao for verdadeira, continua a sequencia. Caso contrario, pausa.</span>
             </div>
 
             <div className="space-y-2">
@@ -75,14 +75,14 @@ export function ConditionEditor({ value, onChange }: ConditionEditorProps) {
                                 <>
                                     <li>Sistema aguarda ate 48h para verificar abertura</li>
                                     <li>Se abriu: continua para proximo passo</li>
-                                    <li>Se nao abriu: pausa a sequence</li>
+                                    <li>Se nao abriu: pausa a sequencia</li>
                                 </>
                             )}
                             {conditionType === "EMAIL_REPLIED" && (
                                 <>
                                     <li>Sistema aguarda ate 7 dias para verificar resposta</li>
                                     <li>Se respondeu: marca como interessado e pausa</li>
-                                    <li>Se nao respondeu: continua sequence</li>
+                                    <li>Se nao respondeu: continua a sequencia</li>
                                 </>
                             )}
                             {conditionType === "EMAIL_CLICKED" && (
@@ -105,8 +105,9 @@ export function ConditionEditor({ value, onChange }: ConditionEditorProps) {
 
             <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 rounded-md p-3">
                 <strong>Nota:</strong> Condicoes sao verificadas automaticamente pelo sistema.
-                Prospects que nao atenderem as condicoes ficam pausados ate acao manual.
+                Leads que nao atenderem as condicoes ficam pausados ate acao manual.
             </div>
         </div>
     );
 }
+

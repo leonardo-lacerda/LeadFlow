@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import type { ComponentType } from "react";
@@ -52,8 +52,8 @@ const STATUS_CONFIG: Record<
     { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: StatusIcon }
 > = {
     PENDING: { label: "Pendente", variant: "secondary", icon: IconClock },
-    RUNNING: { label: "Em Execução", variant: "default", icon: IconPlayerPlay },
-    COMPLETED: { label: "Concluído", variant: "outline", icon: IconCheck },
+    RUNNING: { label: "Em Execucao", variant: "default", icon: IconPlayerPlay },
+    COMPLETED: { label: "Concluido", variant: "outline", icon: IconCheck },
     FAILED: { label: "Falhou", variant: "destructive", icon: IconX },
     CANCELLED: { label: "Cancelado", variant: "outline", icon: IconX },
 };
@@ -121,7 +121,7 @@ export default function ScrapingJobDetails() {
         setRerunning(true);
         try {
             await scrapingApi.rerunJob(job.id);
-            toast({ title: "Job reexecutado com sucesso!" });
+            toast({ title: "Tarefa reexecutada com sucesso!" });
             setLeadsPage(1);
             loadJob();
             loadLeads();
@@ -129,7 +129,7 @@ export default function ScrapingJobDetails() {
             setCooldownRemaining(cooldownSeconds);
         } catch (error) {
             toast({
-                title: "Erro ao reexecutar job",
+                title: "Erro ao reexecutar tarefa",
                 description: error instanceof Error ? error.message : "Erro desconhecido",
                 variant: "destructive",
             });
@@ -185,7 +185,7 @@ export default function ScrapingJobDetails() {
             <AppLayout>
                 <div className="flex flex-col items-center justify-center h-64 gap-4">
                     <IconAlertCircle className="h-12 w-12 text-muted-foreground" />
-                    <p className="text-muted-foreground">Job de discovery nao encontrado</p>
+                    <p className="text-muted-foreground">Tarefa de descoberta nao encontrada</p>
                     <Button onClick={() => router.push("/scraping")}>Voltar</Button>
                 </div>
             </AppLayout>
@@ -217,7 +217,7 @@ export default function ScrapingJobDetails() {
                                 </Badge>
                             </div>
                             <p className="text-muted-foreground">
-                                Fonte: {job.source} • Criado{" "}
+                                Fonte: {job.source} - Criado{" "}
                                 {formatDistanceToNow(new Date(job.createdAt), {
                                     addSuffix: true,
                                     locale: ptBR,
@@ -247,9 +247,9 @@ export default function ScrapingJobDetails() {
                 <Dialog open={showRerunDialog} onOpenChange={setShowRerunDialog}>
                     <DialogContent className="max-w-md">
                         <DialogHeader>
-                            <DialogTitle>Reexecutar job?</DialogTitle>
+                            <DialogTitle>Reexecutar tarefa?</DialogTitle>
                             <DialogDescription>
-                                Isso vai disparar um novo ciclo de discovery para esta fonte e pode consumir recursos.
+                                Isso vai disparar um novo ciclo de descoberta para esta fonte e pode consumir recursos.
                                 Aguarde {cooldownSeconds}s entre reexecucoes.
                             </DialogDescription>
                         </DialogHeader>
@@ -295,7 +295,7 @@ export default function ScrapingJobDetails() {
                             </div>
                             {job.status === "RUNNING" && (
                                 <p className="text-sm text-muted-foreground">
-                                    Discovery em andamento. Os prospects aparecem automaticamente abaixo.
+                                    Descoberta em andamento. Os leads aparecem automaticamente abaixo.
                                 </p>
                             )}
                             <p className="text-xs text-muted-foreground">
@@ -311,7 +311,7 @@ export default function ScrapingJobDetails() {
                         <CardHeader>
                             <CardTitle>Captura Em Tempo Real</CardTitle>
                             <CardDescription>
-                                Prospects mais recentes encontrados neste job.
+                                Leads mais recentes encontrados nesta tarefa.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
@@ -320,10 +320,10 @@ export default function ScrapingJobDetails() {
                                 Processo ativo
                             </div>
                             {leadsLoading ? (
-                                <p className="text-sm text-muted-foreground">Atualizando prospects...</p>
+                                <p className="text-sm text-muted-foreground">Atualizando leads...</p>
                             ) : leads.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">
-                                    Ainda sem prospects capturados. Continue acompanhando.
+                                    Ainda sem leads capturados. Continue acompanhando.
                                 </p>
                             ) : (
                                 <div className="space-y-2">
@@ -333,7 +333,7 @@ export default function ScrapingJobDetails() {
                                             className="flex items-center justify-between rounded border p-2 text-sm"
                                         >
                                             <span className="font-medium">
-                                                {lead.fullName || lead.companyName || "Prospect sem nome"}
+                                                {lead.fullName || lead.companyName || "Lead sem nome"}
                                             </span>
                                             <span className="text-muted-foreground">
                                                 {lead.companyName || lead.city || "-"}
@@ -352,7 +352,7 @@ export default function ScrapingJobDetails() {
                         <CardHeader className="pb-2">
                             <div className="flex items-center gap-2">
                                 <IconUsers className="h-4 w-4 text-muted-foreground" />
-                                <CardDescription>Prospects Criados</CardDescription>
+                                <CardDescription>Leads Criados</CardDescription>
                             </div>
                             <CardTitle className="text-3xl">{job.leadsCreated}</CardTitle>
                         </CardHeader>
@@ -382,9 +382,9 @@ export default function ScrapingJobDetails() {
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <IconCode className="h-5 w-5" />
-                            <CardTitle>Configuração da Query</CardTitle>
+                            <CardTitle>Configuracao da Query</CardTitle>
                         </div>
-                        <CardDescription>Parâmetros utilizados neste job</CardDescription>
+                        <CardDescription>Parametros utilizados nesta tarefa</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <ScrollArea className="h-64 w-full rounded-md border bg-muted/40">
@@ -395,19 +395,19 @@ export default function ScrapingJobDetails() {
                     </CardContent>
                 </Card>
 
-                {/* Prospects Captured */}
+                {/* Leads Capturados */}
                 <Card>
                     <CardHeader>
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <CardTitle>Prospects Capturados</CardTitle>
-                                <CardDescription>Prospects gerados por este job</CardDescription>
+                                <CardTitle>Leads Capturados</CardTitle>
+                                <CardDescription>Leads gerados por esta tarefa</CardDescription>
                             </div>
                             <div className="w-full sm:max-w-xs">
                                 <div className="relative">
                                     <IconSearch className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
-                                        placeholder="Buscar prospect..."
+                                        placeholder="Buscar lead..."
                                         className="pl-9"
                                         value={leadsSearch}
                                         onChange={(event) => {
@@ -436,13 +436,13 @@ export default function ScrapingJobDetails() {
                                 {leadsLoading ? (
                                     <TableRow>
                                         <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                                            Carregando prospects...
+                                            Carregando leads...
                                         </TableCell>
                                     </TableRow>
                                 ) : leads.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                                            Nenhum prospect associado a este job.
+                                            Nenhum lead associado a esta tarefa.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -450,7 +450,7 @@ export default function ScrapingJobDetails() {
                                         <TableRow key={lead.id}>
                                             <TableCell>
                                                 <div className="font-medium">
-                                                    {lead.fullName || "Prospect"}
+                                                    {lead.fullName || "Lead"}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
                                                     {lead.email || "-"}
@@ -547,7 +547,7 @@ export default function ScrapingJobDetails() {
                     </CardContent>
                 </Card>
 
-                {/* Error Log */}
+                {/* Log de erros */}
                 {job.errors && Object.keys(job.errors).length > 0 && (
                     <Card className="border-destructive">
                         <CardHeader>
@@ -556,7 +556,7 @@ export default function ScrapingJobDetails() {
                                 <CardTitle className="text-destructive">Log de Erros</CardTitle>
                             </div>
                             <CardDescription>
-                                Erros encontrados durante a execução
+                                Erros encontrados durante a execucao
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -572,11 +572,11 @@ export default function ScrapingJobDetails() {
                 {/* Timeline / Metadata */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Informações</CardTitle>
+                        <CardTitle>Informacoes</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">ID do Job</span>
+                            <span className="text-muted-foreground">ID da tarefa</span>
                             <span className="font-mono">{job.id}</span>
                         </div>
                         <Separator />
@@ -588,7 +588,7 @@ export default function ScrapingJobDetails() {
                             <>
                                 <Separator />
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Última execução</span>
+                                    <span className="text-muted-foreground">Ultima execucao</span>
                                     <span>{new Date(job.lastRunAt).toLocaleString("pt-BR")}</span>
                                 </div>
                             </>
@@ -608,4 +608,6 @@ export default function ScrapingJobDetails() {
         </AppLayout>
     );
 }
+
+
 

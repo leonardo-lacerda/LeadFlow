@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+﻿import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Lead } from "@/lib/leads-api";
@@ -100,11 +100,11 @@ export function EnrichmentCard({ lead }: EnrichmentCardProps) {
                 <div className="flex flex-wrap gap-2">
                     {lead.maturityLevel && (
                         <Badge variant="outline">
-                            Maturity: {maturityLabel[lead.maturityLevel] || lead.maturityLevel}
+                            Maturidade: {maturityLabel[lead.maturityLevel] || lead.maturityLevel}
                         </Badge>
                     )}
                     {typeof lead.icpMatch === "number" && (
-                        <Badge variant="outline">ICP Fit: {Math.round(lead.icpMatch * 100)}%</Badge>
+                        <Badge variant="outline">Aderencia ICP: {Math.round(lead.icpMatch * 100)}%</Badge>
                     )}
                     {(lead.technologies || []).slice(0, 4).map((tech) => (
                         <Badge key={tech} variant="secondary">
@@ -129,3 +129,4 @@ export function EnrichmentCard({ lead }: EnrichmentCardProps) {
         </Card>
     );
 }
+

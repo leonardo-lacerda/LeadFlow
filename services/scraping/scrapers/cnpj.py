@@ -9,6 +9,7 @@ from core.http import get_json, get_text
 from core.progress import ProgressReporter
 from core.proxy import proxy_manager
 from core.rate_limiter import RateLimiter
+from .contact_utils import dedupe_tags, normalize_domain
 from .mock import make_mock_leads
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,12 @@ def _extract_company_name(soup: BeautifulSoup) -> Optional[str]:
     return None
 
 
+def _provider_source_url(cleaned: str) -> str:
+    if CNPJ_WS_BASE_URL:
+        return f"{CNPJ_WS_BASE_URL.rstrip('/')}/cnpj/{cleaned}"
+    return f"https://cnpj.biz/{cleaned}"
+
+
 def _lead_from_provider(data: Dict[str, Any], cleaned: str) -> Dict[str, Any]:
     company_name = (
         data.get("razao_social")
@@ -66,6 +73,7 @@ def _lead_from_provider(data: Dict[str, Any], cleaned: str) -> Dict[str, Any]:
         or data.get("company")
     )
     address = data.get("endereco") or {}
+    website = data.get("site") or data.get("website") or data.get("dominio")
     return {
         "companyName": company_name,
         "companyCnpj": data.get("cnpj") or cleaned,
@@ -76,9 +84,10 @@ def _lead_from_provider(data: Dict[str, Any], cleaned: str) -> Dict[str, Any]:
         "country": "BR",
         "phone": data.get("telefone"),
         "email": data.get("email"),
+        "companyDomain": normalize_domain(website),
         "source": "cnpj",
-        "sourceUrl": f"{CNPJ_WS_BASE_URL.rstrip('/')}/cnpj/{cleaned}",
-        "tags": ["cnpj"],
+        "sourceUrl": _provider_source_url(cleaned),
+        "tags": dedupe_tags([], source_tag="cnpj"),
     }
 
 
@@ -103,7 +112,7 @@ def _lead_from_cnpjbiz(soup: BeautifulSoup, cleaned: str) -> Dict[str, Any]:
         "email": email,
         "source": "cnpj",
         "sourceUrl": f"https://cnpj.biz/{cleaned}",
-        "tags": ["cnpj"],
+        "tags": dedupe_tags([], source_tag="cnpj"),
     }
 
 
@@ -138,10 +147,10 @@ def _lead_from_receitaws(data: Dict[str, Any], cleaned: str) -> Optional[Dict[st
         "country": "BR",
         "phone": data.get("telefone"),
         "email": data.get("email"),
-        "companyDomain": website,
+        "companyDomain": normalize_domain(website),
         "source": "cnpj",
         "sourceUrl": f"https://www.receitaws.com.br/v1/cnpj/{cleaned}",
-        "tags": ["cnpj", "receitaws"],
+        "tags": dedupe_tags(["receitaws"], source_tag="cnpj"),
     }
 
 
@@ -172,7 +181,7 @@ async def scrape(
                             "companyCnpj": cleaned,
                             "source": "cnpj",
                             "sourceUrl": f"https://cnpj.biz/{cleaned}",
-                            "tags": ["cnpj", "partial"],
+                            "tags": dedupe_tags(["partial"], source_tag="cnpj"),
                         }
                     )
                     await reporter.update(index, leads=[leads[-1]])
@@ -221,7 +230,7 @@ async def scrape(
                             "companyCnpj": cleaned,
                             "source": "cnpj",
                             "sourceUrl": f"https://cnpj.biz/{cleaned}",
-                            "tags": ["cnpj", "partial"],
+                            "tags": dedupe_tags(["partial"], source_tag="cnpj"),
                         }
                     )
 

@@ -10,7 +10,7 @@ from core.http import get_text
 from core.progress import ProgressReporter
 from core.proxy import proxy_manager
 from core.rate_limiter import RateLimiter
-from .contact_utils import fetch_contact_profile, normalize_url
+from .contact_utils import dedupe_tags, fetch_contact_profile, normalize_url, sanitize_contact_profile
 from .mock import make_mock_leads
 from .search import web_search
 
@@ -32,6 +32,8 @@ def _is_low_value_title(value: str) -> bool:
     if not normalized:
         return True
     if normalized in _LOW_VALUE_TITLES:
+        return True
+    if "catho.com.br" in normalized:
         return True
     if "." in normalized and " " not in normalized:
         return True
@@ -55,14 +57,14 @@ def _title_from_url(value: Optional[str]) -> Optional[str]:
 
 
 def _build_tags(email: Optional[str], phone: Optional[str], linkedin_url: Optional[str]) -> List[str]:
-    tags = ["catho", "jobs"]
+    tags = ["jobs"]
     if email:
         tags.append("has_email")
     if phone:
         tags.append("has_phone")
     if linkedin_url:
         tags.append("has_linkedin")
-    return tags
+    return dedupe_tags(tags, source_tag="catho")
 
 
 async def scrape(
@@ -135,7 +137,7 @@ async def scrape(
                             "country": "BR",
                             "source": "catho",
                             "sourceUrl": url,
-                            "tags": ["catho", "jobs"],
+                            "tags": dedupe_tags(["jobs"], source_tag="catho"),
                         }
                     )
                     if len(leads) >= limit:
@@ -157,7 +159,7 @@ async def scrape(
                                 "country": "BR",
                                 "source": "catho",
                                 "sourceUrl": url,
-                                "tags": ["catho", "jobs"],
+                                "tags": dedupe_tags(["jobs"], source_tag="catho"),
                             }
                         )
                         pending_leads.append(leads[-1])
@@ -179,6 +181,8 @@ async def scrape(
                     await publish_progress()
 
                     source_url = normalize_url(result.get("url"))
+                    if not source_url:
+                        continue
                     title = _clean_title((result.get("title") or "").strip())
                     dedupe_key = source_url or title.lower()
                     if not dedupe_key or dedupe_key in seen:
@@ -197,6 +201,10 @@ async def scrape(
                     if source_url and profile_budget > 0:
                         profile_budget -= 1
                         profile = await fetch_contact_profile(source_url, proxy=proxy)
+                    profile = sanitize_contact_profile(
+                        profile,
+                        blocked_domains=["catho.com.br"],
+                    )
 
                     company_name = title
                     if _is_low_value_title(company_name):

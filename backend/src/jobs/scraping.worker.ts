@@ -72,7 +72,8 @@ export function startScrapingWorker() {
             };
 
             try {
-                const response = await fetchWithTimeout(`${env.SCRAPING_SERVICE_URL}${endpoint}`, {
+                const targetUrl = `${env.SCRAPING_SERVICE_URL}${endpoint}`;
+                const response = await fetchWithTimeout(targetUrl, {
                     method: 'POST',
                     headers: {
                         'content-type': 'application/json',
@@ -102,7 +103,17 @@ export function startScrapingWorker() {
 
                 return result;
             } catch (error) {
-                const message = error instanceof Error ? error.message : 'Unknown error';
+                const isNetworkFetchFailure =
+                    error instanceof TypeError &&
+                    (error.message === 'fetch failed' ||
+                        error.message.includes('fetch failed') ||
+                        error.message.includes('ECONNREFUSED') ||
+                        error.message.includes('ENOTFOUND'));
+                const message = isNetworkFetchFailure
+                    ? `Failed to reach scraping service at ${env.SCRAPING_SERVICE_URL}${endpoint}. Check if the 'scraping' service is running and healthy.`
+                    : error instanceof Error
+                        ? error.message
+                        : 'Unknown error';
                 await prisma.scrapingJob.update({
                     where: { id: data.jobId },
                     data: {

@@ -10,7 +10,13 @@ from core.http import get_text
 from core.progress import ProgressReporter
 from core.proxy import proxy_manager
 from core.rate_limiter import RateLimiter
-from .contact_utils import extract_domain, fetch_contact_profile, normalize_url
+from .contact_utils import (
+    dedupe_tags,
+    extract_domain,
+    fetch_contact_profile,
+    normalize_url,
+    sanitize_contact_profile,
+)
 from .mock import make_mock_leads
 from .search import web_search
 
@@ -51,14 +57,14 @@ def _company_from_source(source_url: Optional[str], fallback_title: str) -> str:
 
 
 def _build_tags(email: Optional[str], phone: Optional[str], linkedin_url: Optional[str]) -> List[str]:
-    tags = ["reclame_aqui"]
+    tags = []
     if email:
         tags.append("has_email")
     if phone:
         tags.append("has_phone")
     if linkedin_url:
         tags.append("has_linkedin")
-    return tags
+    return dedupe_tags(tags, source_tag="reclame_aqui")
 
 
 async def scrape(
@@ -134,6 +140,10 @@ async def scrape(
                     if profile_budget > 0:
                         profile_budget -= 1
                         profile = await fetch_contact_profile(source_url, proxy=proxy)
+                    profile = sanitize_contact_profile(
+                        profile,
+                        blocked_domains=["reclameaqui.com.br"],
+                    )
 
                     socials = profile.get("socials") or {}
                     linkedin_url = socials.get("linkedin") if isinstance(socials, dict) else None
@@ -195,6 +205,10 @@ async def scrape(
                     if profile_budget > 0:
                         profile_budget -= 1
                         profile = await fetch_contact_profile(source_url, proxy=proxy)
+                    profile = sanitize_contact_profile(
+                        profile,
+                        blocked_domains=["reclameaqui.com.br"],
+                    )
 
                     socials = profile.get("socials") or {}
                     linkedin_url = socials.get("linkedin") if isinstance(socials, dict) else None

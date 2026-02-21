@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { IconPlus, IconTrash, IconCheck } from "@tabler/icons-react";
+import { IconCheck, IconPlus, IconTrash } from "@tabler/icons-react";
 
 const formSchema = z.object({
     name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -50,6 +50,7 @@ const formSchema = z.object({
     imapPass: z.string().optional(),
     dailyLimit: z.coerce.number().int().positive().optional(),
 });
+
 type MailboxFormInput = z.input<typeof formSchema>;
 type MailboxFormValues = z.output<typeof formSchema>;
 
@@ -80,7 +81,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
         setLoading(true);
         try {
             await integrationsApi.createMailbox(values);
-            toast({ title: "Caixa de entrada adicionada!" });
+            toast({ title: "Caixa de entrada adicionada." });
             setOpen(false);
             form.reset();
             onRefresh();
@@ -97,10 +98,13 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Tem certeza que deseja remover esta caixa?")) return;
+        if (!confirm("Tem certeza que deseja remover esta caixa?")) {
+            return;
+        }
+
         try {
             await integrationsApi.deleteMailbox(id);
-            toast({ title: "Caixa removida!" });
+            toast({ title: "Caixa removida." });
             onRefresh();
         } catch (error) {
             console.error(error);
@@ -113,11 +117,11 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
                 <div>
                     <h3 className="text-lg font-medium">Contas de Email</h3>
                     <p className="text-sm text-muted-foreground">
-                        Configure as contas usadas para envio de sequences.
+                        Configure as contas usadas para envio das sequencias.
                     </p>
                 </div>
                 <Dialog open={open} onOpenChange={setOpen}>
@@ -129,7 +133,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                     </DialogTrigger>
                     <DialogContent className="max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle>Adicionar Nova Conta</DialogTitle>
+                            <DialogTitle>Adicionar nova conta</DialogTitle>
                             <DialogDescription>
                                 Configure as credenciais SMTP/IMAP do seu provedor.
                             </DialogDescription>
@@ -142,7 +146,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Nome Identificador</FormLabel>
+                                                <FormLabel>Nome identificador</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="Ex: Joao Vendas" {...field} />
                                                 </FormControl>
@@ -155,7 +159,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                         name="email"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Endereco de Email</FormLabel>
+                                                <FormLabel>Endereco de email</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="joao@empresa.com" {...field} />
                                                 </FormControl>
@@ -164,13 +168,14 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                         )}
                                     />
                                 </div>
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
                                         name="smtpHost"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>SMTP Host</FormLabel>
+                                                <FormLabel>Host SMTP</FormLabel>
                                                 <FormControl>
                                                     <Input {...field} />
                                                 </FormControl>
@@ -183,7 +188,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                         name="smtpPort"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>SMTP Port</FormLabel>
+                                                <FormLabel>Porta SMTP</FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="number"
@@ -191,7 +196,9 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                                         ref={field.ref}
                                                         value={typeof field.value === "number" ? field.value : ""}
                                                         onBlur={field.onBlur}
-                                                        onChange={(event) => field.onChange(event.target.value)}
+                                                        onChange={(event) =>
+                                                            field.onChange(event.target.value)
+                                                        }
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -199,13 +206,14 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                         )}
                                     />
                                 </div>
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
                                         name="smtpUser"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>SMTP User</FormLabel>
+                                                <FormLabel>Usuario SMTP</FormLabel>
                                                 <FormControl>
                                                     <Input {...field} />
                                                 </FormControl>
@@ -218,7 +226,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                         name="smtpPass"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>SMTP Password</FormLabel>
+                                                <FormLabel>Senha SMTP</FormLabel>
                                                 <FormControl>
                                                     <Input type="password" {...field} />
                                                 </FormControl>
@@ -227,12 +235,13 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                         )}
                                     />
                                 </div>
+
                                 <FormField
-                                        control={form.control}
-                                        name="dailyLimit"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                            <FormLabel>Limite Diario de Envios</FormLabel>
+                                    control={form.control}
+                                    name="dailyLimit"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Limite diario de envios</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"
@@ -240,7 +249,9 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                                     ref={field.ref}
                                                     value={typeof field.value === "number" ? field.value : ""}
                                                     onBlur={field.onBlur}
-                                                    onChange={(event) => field.onChange(event.target.value)}
+                                                    onChange={(event) =>
+                                                        field.onChange(event.target.value)
+                                                    }
                                                 />
                                             </FormControl>
                                             <FormDescription>
@@ -250,9 +261,10 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                         </FormItem>
                                     )}
                                 />
+
                                 <DialogFooter>
                                     <Button type="submit" disabled={loading}>
-                                        {loading ? "Salvando..." : "Salvar Configuracao"}
+                                        {loading ? "Salvando..." : "Salvar configuracao"}
                                     </Button>
                                 </DialogFooter>
                             </form>
@@ -261,7 +273,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                 </Dialog>
             </div>
 
-            <div className="border rounded-md">
+            <div className="rounded-md border">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -275,7 +287,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                     <TableBody>
                         {mailboxes.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                                     Nenhum email configurado.
                                 </TableCell>
                             </TableRow>
@@ -284,11 +296,17 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                             <TableRow key={mailbox.id}>
                                 <TableCell className="font-medium">{mailbox.name}</TableCell>
                                 <TableCell>{mailbox.email}</TableCell>
-                                <TableCell>{mailbox.smtpHost}:{mailbox.smtpPort}</TableCell>
+                                <TableCell>
+                                    {mailbox.smtpHost}:{mailbox.smtpPort}
+                                </TableCell>
                                 <TableCell>
                                     {mailbox.isActive ? (
-                                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                            <IconCheck className="w-3 h-3 mr-1" /> Ativo
+                                        <Badge
+                                            variant="outline"
+                                            className="border-green-200 bg-green-50 text-green-700"
+                                        >
+                                            <IconCheck className="mr-1 h-3 w-3" />
+                                            Ativo
                                         </Badge>
                                     ) : (
                                         <Badge variant="secondary">Inativo</Badge>
@@ -298,7 +316,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                                         onClick={() => handleDelete(mailbox.id)}
                                     >
                                         <IconTrash className="h-4 w-4" />
@@ -312,5 +330,3 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
         </div>
     );
 }
-
-

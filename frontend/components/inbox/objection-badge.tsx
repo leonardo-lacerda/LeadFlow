@@ -11,7 +11,7 @@ const objectionConfig: Record<
         className: "border-rose-200 bg-rose-50 text-rose-700",
     },
     TIMING: {
-        label: "Timing",
+        label: "Momento",
         className: "border-amber-200 bg-amber-50 text-amber-700",
     },
     AUTHORITY: {

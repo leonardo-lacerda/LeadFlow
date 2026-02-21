@@ -10,7 +10,7 @@ from core.http import get_text
 from core.progress import ProgressReporter
 from core.proxy import proxy_manager
 from core.rate_limiter import RateLimiter
-from .contact_utils import fetch_contact_profile, normalize_url
+from .contact_utils import dedupe_tags, fetch_contact_profile, normalize_url, sanitize_contact_profile
 from .mock import make_mock_leads
 from .search import web_search
 
@@ -20,7 +20,15 @@ _LOW_VALUE_TITLES = {"read more", "translate this page", "about", "indeed"}
 
 
 def _company_from_title(value: str) -> str:
-    cleaned = re.sub(r"\s*-\s*Indeed.*$", "", value, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"\s+", " ", value).strip()
+    cleaned = re.sub(
+        r"^Indeed\s+[a-z0-9\.-]+\s+›\s+[^\s]+\s+",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    ).strip()
+    cleaned = re.sub(r"\s*-\s*Indeed.*$", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"\s*\|\s*Indeed.*$", "", cleaned, flags=re.IGNORECASE).strip()
     cleaned = re.sub(r"\s*-\s*Empregos.*$", "", cleaned, flags=re.IGNORECASE).strip()
     cleaned = re.sub(r"^Indeed\s+[^-—|]+[—\-|]\s*", "", cleaned, flags=re.IGNORECASE).strip()
     cleaned = re.sub(r"\s+", " ", cleaned).strip(" -|")
@@ -33,6 +41,8 @@ def _is_low_value_title(value: str) -> bool:
         return True
     if normalized in _LOW_VALUE_TITLES:
         return True
+    if "indeed.com" in normalized or "indeed.com.br" in normalized:
+        return True
     if "." in normalized and " " not in normalized:
         return True
     return False
@@ -40,7 +50,9 @@ def _is_low_value_title(value: str) -> bool:
 
 def _slug_to_name(value: str) -> str:
     decoded = unquote(value or "").strip("/")
+    decoded = re.sub(r"\.html?$", "", decoded, flags=re.IGNORECASE)
     tokens = [token for token in re.split(r"[-_]+", decoded) if token]
+    tokens = [token for token in tokens if token.lower() not in {"l", "vagas"}]
     if not tokens:
         return ""
     return " ".join(token.capitalize() for token in tokens)
@@ -52,6 +64,9 @@ def _company_from_url(value: Optional[str]) -> Optional[str]:
         return None
     parsed = urlparse(source_url)
     parts = [part for part in parsed.path.split("/") if part]
+    if parts and parts[0].startswith("q-"):
+        label = _slug_to_name(parts[0][2:])
+        return label or None
     if "cmp" in parts:
         idx = parts.index("cmp")
         if idx + 1 < len(parts):
@@ -68,14 +83,14 @@ def _fallback_company_name(title: str, source_url: Optional[str]) -> str:
 
 
 def _build_tags(email: Optional[str], phone: Optional[str], linkedin_url: Optional[str]) -> List[str]:
-    tags = ["indeed", "jobs"]
+    tags = ["jobs"]
     if email:
         tags.append("has_email")
     if phone:
         tags.append("has_phone")
     if linkedin_url:
         tags.append("has_linkedin")
-    return tags
+    return dedupe_tags(tags, source_tag="indeed")
 
 
 async def scrape(
@@ -157,6 +172,10 @@ async def scrape(
                     if source_url and profile_budget > 0:
                         profile_budget -= 1
                         profile = await fetch_contact_profile(source_url, proxy=proxy)
+                    profile = sanitize_contact_profile(
+                        profile,
+                        blocked_domains=["indeed.com", "indeed.com.br"],
+                    )
 
                     socials = profile.get("socials") or {}
                     linkedin_url = socials.get("linkedin") if isinstance(socials, dict) else None
@@ -206,6 +225,8 @@ async def scrape(
 
                     source_url = normalize_url(result.get("url"))
                     title = (result.get("title") or "").strip()
+                    if not source_url:
+                        continue
                     dedupe_key = source_url or title.lower()
                     if not dedupe_key or dedupe_key in seen:
                         continue
@@ -226,6 +247,10 @@ async def scrape(
                     if source_url and profile_budget > 0:
                         profile_budget -= 1
                         profile = await fetch_contact_profile(source_url, proxy=proxy)
+                    profile = sanitize_contact_profile(
+                        profile,
+                        blocked_domains=["indeed.com", "indeed.com.br"],
+                    )
 
                     socials = profile.get("socials") or {}
                     linkedin_url = socials.get("linkedin") if isinstance(socials, dict) else None

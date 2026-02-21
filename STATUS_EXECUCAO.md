@@ -81,3 +81,36 @@ Frontend:
 
 Resultado:
 - Todos os comandos acima executaram com sucesso.
+
+## Ajustes finais (21/02/2026 - pos-homologacao)
+Status: `CONCLUIDO`
+
+### Onboarding sem formulario (4 passos)
+- Onboarding convertido para fluxo apenas de apresentacao do produto, sem campos obrigatorios.
+- Estrutura final em 4 passos e conclusao direta para dashboard.
+- Arquivo:
+  - `frontend/app/onboarding/page.tsx`
+
+### Robustez do job Maps/Scraping
+- Tratamento melhorado para falhas de rede entre backend e servico de scraping.
+- Mensagem de erro operacional adicionada quando o container `scraping` estiver indisponivel.
+- Arquivo:
+  - `backend/src/jobs/scraping.worker.ts`
+
+### Falso positivo "Scraping completed with no leads"
+- Corrigida logica do webhook para nao marcar warning quando o job finaliza com leads criados.
+- Adicionada verificacao extra com `finalLeadCount` no debug e contagem persistida no banco.
+- Warning legado removido para jobs completos com leads gravados.
+- Arquivo:
+  - `backend/src/modules/scraping/scraping.service.ts`
+
+### Validacao executada apos ajustes finais
+Backend:
+- `cd backend && npm run build`
+
+Frontend:
+- `cd frontend && npm run lint`
+- `cd frontend && npm run build`
+
+Resultado:
+- Todos os comandos acima executaram com sucesso.

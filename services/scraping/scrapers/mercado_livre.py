@@ -10,7 +10,7 @@ from core.http import get_text
 from core.progress import ProgressReporter
 from core.proxy import proxy_manager
 from core.rate_limiter import RateLimiter
-from .contact_utils import fetch_contact_profile, normalize_url
+from .contact_utils import dedupe_tags, fetch_contact_profile, normalize_url, sanitize_contact_profile
 from .mock import make_mock_leads
 from .search import web_search
 
@@ -54,14 +54,14 @@ def _name_from_url(value: Optional[str]) -> Optional[str]:
 
 
 def _build_tags(email: Optional[str], phone: Optional[str], linkedin_url: Optional[str]) -> List[str]:
-    tags = ["mercado_livre", "marketplace"]
+    tags = ["marketplace"]
     if email:
         tags.append("has_email")
     if phone:
         tags.append("has_phone")
     if linkedin_url:
         tags.append("has_linkedin")
-    return tags
+    return dedupe_tags(tags, source_tag="mercado_livre")
 
 
 async def scrape(
@@ -143,6 +143,10 @@ async def scrape(
                     if source_url and profile_budget > 0:
                         profile_budget -= 1
                         profile = await fetch_contact_profile(source_url, proxy=proxy)
+                    profile = sanitize_contact_profile(
+                        profile,
+                        blocked_domains=["mercadolivre.com.br", "mercadolibre.com"],
+                    )
 
                     socials = profile.get("socials") or {}
                     linkedin_url = socials.get("linkedin") if isinstance(socials, dict) else None
@@ -189,6 +193,8 @@ async def scrape(
 
                     title = _clean_name((result.get("title") or "").strip())
                     source_url = normalize_url(result.get("url"))
+                    if not source_url:
+                        continue
                     dedupe_key = source_url or title.lower()
                     if not dedupe_key or dedupe_key in seen:
                         continue
@@ -205,6 +211,10 @@ async def scrape(
                     if source_url and profile_budget > 0:
                         profile_budget -= 1
                         profile = await fetch_contact_profile(source_url, proxy=proxy)
+                    profile = sanitize_contact_profile(
+                        profile,
+                        blocked_domains=["mercadolivre.com.br", "mercadolibre.com"],
+                    )
 
                     company_name = title
                     if _is_low_value_title(company_name):

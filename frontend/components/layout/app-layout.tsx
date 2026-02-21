@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
@@ -47,56 +47,56 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
     const links = [
         {
-            label: "Dashboard",
+            label: "Painel",
             href: "/dashboard",
             icon: (
                 <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {
-            label: "Prospects + Signals",
+            label: "Leads + Sinais",
             href: "/leads",
             icon: (
                 <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {
-            label: "Importar Prospects",
+            label: "Importar Leads",
             href: "/leads/import",
             icon: (
                 <IconUpload className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {
-            label: "Lead Discovery",
+            label: "Descoberta de Leads",
             href: "/scraping",
             icon: (
                 <IconSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {
-            label: "Sequences",
+            label: "Sequencias",
             href: "/campaigns",
             icon: (
                 <IconMail className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {
-            label: "Inbox",
+            label: "Caixa de entrada",
             href: "/inbox",
             icon: (
                 <IconBrandWhatsapp className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {
-            label: "Intelligence",
+            label: "Inteligencia",
             href: "/analytics",
             icon: (
                 <IconChartBar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {
-            label: "Settings",
+            label: "Configuracoes",
             href: "/settings",
             icon: (
                 <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
@@ -117,7 +117,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             ),
         },
         {
-            label: "Logout",
+            label: "Sair",
             href: "#",
             icon: (
                 <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
@@ -146,7 +146,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                         <div>
                             <SidebarLink
                                 link={{
-                                    label: user?.name || "User",
+                                    label: user?.name || "Usuario",
                                     href: "/settings",
                                     icon: (
                                         <Image
@@ -204,3 +204,5 @@ export const LogoIcon = () => {
         </Link>
     );
 };
+
+

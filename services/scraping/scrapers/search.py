@@ -15,6 +15,8 @@ _SEARCH_DOMAINS = (
     "duckduckgo.com",
     "bing.com",
     "search.brave.com",
+    "search.yahoo.com",
+    "yahoo.com",
     "gstatic.com",
     "googleusercontent.com",
 )
@@ -187,7 +189,7 @@ async def duckduckgo_search(
     soup = BeautifulSoup(html, "lxml")
     results: List[Dict[str, str]] = []
     for link in soup.select("a.result__a"):
-        title = (link.get_text() or "").strip()
+        title = (link.get_text(" ", strip=True) or "").strip()
         href = link.get("href") or ""
         if not title or not href:
             continue
@@ -212,7 +214,7 @@ async def bing_search(
     soup = BeautifulSoup(html, "lxml")
     results: List[Dict[str, str]] = []
     for link in soup.select("li.b_algo h2 a"):
-        title = (link.get_text() or "").strip()
+        title = (link.get_text(" ", strip=True) or "").strip()
         href = (link.get("href") or "").strip()
         if not title or not href:
             continue
@@ -262,6 +264,54 @@ async def brave_search(
         )
         if len(results) >= limit:
             break
+    return results
+
+
+def _extract_yahoo_redirect_url(raw_url: str) -> str:
+    if not raw_url:
+        return raw_url
+    match = re.search(r"/RU=([^/]+)/RK=", raw_url)
+    if match:
+        return unquote(match.group(1))
+    return raw_url
+
+
+async def yahoo_search(
+    query: str,
+    limit: int,
+    proxy: Optional[str] = None,
+) -> List[Dict[str, str]]:
+    async with limiter:
+        html = await get_text(
+            "https://search.yahoo.com/search",
+            params={"p": query, "nojs": "1"},
+            proxy=proxy,
+        )
+
+    soup = BeautifulSoup(html, "lxml")
+    results: List[Dict[str, str]] = []
+    seen = set()
+
+    for link in soup.select("a[href*='r.search.yahoo.com'][href*='/RU=']"):
+        raw_href = (link.get("href") or "").strip()
+        if not raw_href:
+            continue
+        url = _normalize_result_url(_extract_yahoo_redirect_url(raw_href))
+        if not url or _is_search_navigation_url(url):
+            continue
+        title = (link.get_text() or "").strip()
+        if not title:
+            title = (urlparse(url).netloc or "resultado").replace("www.", "")
+        if _is_low_value_title(title):
+            continue
+        dedupe_key = (title.lower(), url.lower())
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        results.append({"title": title, "url": url})
+        if len(results) >= limit:
+            break
+
     return results
 
 
@@ -323,6 +373,7 @@ async def web_search(
     proxy: Optional[str] = None,
 ) -> List[Dict[str, str]]:
     providers = (
+        yahoo_search,
         duckduckgo_search,
         bing_search,
         brave_search,

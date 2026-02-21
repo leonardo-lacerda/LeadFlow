@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
     IconSearch,
@@ -11,21 +11,21 @@ import { cn } from "@/lib/utils";
 
 const features = [
     {
-        title: "Lead Pool Compartilhado",
-        description: "Base viva de prospects B2B para iniciar a operacao sem depender de scraping isolado em cada org.",
+        title: "Base Compartilhada de Leads",
+        description: "Base viva de leads B2B para iniciar a operacao sem depender de scraping isolado em cada org.",
         icon: <IconSearch className="h-8 w-8 text-indigo-400" />,
         className: "md:col-span-2",
         bgClass: "bg-indigo-500/10",
     },
     {
-        title: "Signal Layer",
+        title: "Camada de Sinais",
         description: "Agrega respostas anonimizadas por segmento e transforma tentativa e erro em padrao reutilizavel.",
         icon: <IconDatabase className="h-8 w-8 text-purple-400" />,
         className: "md:col-span-1",
         bgClass: "bg-purple-500/10",
     },
     {
-        title: "Timing + Canal Score",
+        title: "Momento + Score de Canal",
         description: "Recomenda o melhor dia, horario e canal para cada perfil com base em performance coletiva.",
         icon: <IconMail className="h-8 w-8 text-pink-400" />,
         className: "md:col-span-1",
@@ -90,3 +90,5 @@ export function LandingFeatures() {
         </section>
     );
 }
+
+

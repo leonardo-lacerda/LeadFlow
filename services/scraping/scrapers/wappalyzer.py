@@ -9,11 +9,22 @@ from core.http import get_json, get_text
 from core.progress import ProgressReporter
 from core.proxy import proxy_manager
 from core.rate_limiter import RateLimiter
-from .contact_utils import extract_contacts_from_html, normalize_url
+from .contact_utils import (
+    dedupe_tags,
+    extract_contacts_from_html,
+    normalize_url,
+    sanitize_contact_profile,
+)
 from .mock import make_mock_leads
 
 logger = logging.getLogger(__name__)
 limiter = RateLimiter(rpm=30)
+_LOW_VALUE_TITLES = {
+    "just a moment...",
+    "access denied",
+    "403 forbidden",
+    "404 not found",
+}
 
 TECH_SIGNATURES = {
     "WordPress": ["wp-content", "wp-includes", "wordpress"],
@@ -61,7 +72,15 @@ def _build_tags(technologies: List[str], email: Optional[str], phone: Optional[s
         tags.append("has_phone")
     if linkedin:
         tags.append("has_linkedin")
-    return tags
+    return dedupe_tags(tags, source_tag="wappalyzer")
+
+
+def _resolve_company_name(title: Optional[str], url: str) -> str:
+    if title:
+        cleaned = " ".join(str(title).split()).strip()
+        if cleaned and cleaned.lower() not in _LOW_VALUE_TITLES:
+            return cleaned
+    return _domain(url)
 
 
 async def scrape(
@@ -90,7 +109,9 @@ async def scrape(
 
                 html = ""
                 technologies: List[str] = []
-                contacts: Dict[str, Any] = {
+                profile: Dict[str, Any] = {
+                    "url": url,
+                    "domain": _domain(url),
                     "title": None,
                     "email": None,
                     "phone": None,
@@ -99,47 +120,78 @@ async def scrape(
                     "socials": {},
                 }
 
-                async with limiter:
-                    proxy = await proxy_manager.next_proxy()
-                    if SCRAPING_NO_API:
-                        html = await get_text(url, proxy=proxy)
-                        technologies = _detect_technologies(html)
-                        contacts = extract_contacts_from_html(html)
-                    else:
-                        if not WAPPALYZER_API_KEY:
-                            raise RuntimeError("WAPPALYZER_API_KEY not set")
-                        data = await get_json(
-                            "https://api.wappalyzer.com/v2/lookup/",
-                            params={"urls": url},
-                            headers={"x-api-key": WAPPALYZER_API_KEY},
-                            proxy=proxy,
-                        )
-                        if isinstance(data, list) and data:
-                            technologies = [
-                                t.get("name")
-                                for t in data[0].get("technologies", [])
-                                if t.get("name")
-                            ]
-                        try:
+                try:
+                    async with limiter:
+                        proxy = await proxy_manager.next_proxy()
+                        if SCRAPING_NO_API:
                             html = await get_text(url, proxy=proxy)
-                            contacts = extract_contacts_from_html(html)
-                        except Exception:
-                            contacts = {
-                                "title": None,
-                                "email": None,
-                                "phone": None,
-                                "emails": [],
-                                "phones": [],
-                                "socials": {},
+                            technologies = _detect_technologies(html)
+                            profile = {
+                                "url": url,
+                                "domain": _domain(url),
+                                **extract_contacts_from_html(html),
                             }
+                        else:
+                            if not WAPPALYZER_API_KEY:
+                                raise RuntimeError("WAPPALYZER_API_KEY not set")
+                            data = await get_json(
+                                "https://api.wappalyzer.com/v2/lookup/",
+                                params={"urls": url},
+                                headers={"x-api-key": WAPPALYZER_API_KEY},
+                                proxy=proxy,
+                            )
+                            if isinstance(data, list) and data:
+                                technologies = [
+                                    t.get("name")
+                                    for t in data[0].get("technologies", [])
+                                    if t.get("name")
+                                ]
+                            try:
+                                html = await get_text(url, proxy=proxy)
+                                profile = {
+                                    "url": url,
+                                    "domain": _domain(url),
+                                    **extract_contacts_from_html(html),
+                                }
+                            except Exception:
+                                profile = {
+                                    "url": url,
+                                    "domain": _domain(url),
+                                    "title": None,
+                                    "email": None,
+                                    "phone": None,
+                                    "emails": [],
+                                    "phones": [],
+                                    "socials": {},
+                                }
+                except Exception as exc:
+                    logger.warning("Wappalyzer probe failed for %s: %s", url, str(exc))
+                    fallback_domain = _domain(url)
+                    fallback_lead = {
+                        "companyName": fallback_domain,
+                        "companyDomain": fallback_domain,
+                        "source": "wappalyzer",
+                        "sourceUrl": url,
+                        "tags": _build_tags([], None, None, None),
+                        "enrichmentData": {
+                            "technologies": [],
+                            "socials": {},
+                            "contacts": {"emails": [], "phones": []},
+                            "probeError": str(exc),
+                        },
+                    }
+                    leads.append(fallback_lead)
+                    await reporter.update(index, leads=[fallback_lead])
+                    streamed_leads = True
+                    continue
 
-                socials = contacts.get("socials") if isinstance(contacts, dict) else {}
-                socials_dict = socials if isinstance(socials, dict) else {}
+                profile = sanitize_contact_profile(profile)
+                socials_dict = profile.get("socials") if isinstance(profile.get("socials"), dict) else {}
                 linkedin_url = socials_dict.get("linkedin")
-                email = contacts.get("email") if isinstance(contacts, dict) else None
-                phone = contacts.get("phone") if isinstance(contacts, dict) else None
-                title = contacts.get("title") if isinstance(contacts, dict) else None
-                company_name = title or _domain(url)
+                email = profile.get("email")
+                phone = profile.get("phone")
+                title = profile.get("title")
+                company_name = _resolve_company_name(title, url)
                 domain = _domain(url)
 
                 leads.append(
@@ -153,11 +205,11 @@ async def scrape(
                         "sourceUrl": url,
                         "tags": _build_tags(technologies, email, phone, linkedin_url),
                         "enrichmentData": {
-                            "technologies": technologies,
+                            "technologies": dedupe_tags(technologies),
                             "socials": socials_dict,
                             "contacts": {
-                                "emails": contacts.get("emails") if isinstance(contacts, dict) else [],
-                                "phones": contacts.get("phones") if isinstance(contacts, dict) else [],
+                                "emails": profile.get("emails") if isinstance(profile, dict) else [],
+                                "phones": profile.get("phones") if isinstance(profile, dict) else [],
                             },
                         },
                     }

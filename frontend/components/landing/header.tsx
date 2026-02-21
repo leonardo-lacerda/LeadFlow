@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ export function LandingHeader() {
 
                 <nav className="hidden md:flex items-center gap-8">
                     <Link href="#signal-layer" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
-                        Signal Layer
+                        Camada de Sinais
                     </Link>
                     <Link href="#how-it-works" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
                         Como funciona
@@ -35,7 +35,7 @@ export function LandingHeader() {
                     </Link>
                     <Link href="/register">
                         <Button className="bg-white text-black hover:bg-gray-200">
-                            Entrar no Cohort
+                            Entrar no Grupo
                         </Button>
                     </Link>
                 </div>
@@ -43,3 +43,4 @@ export function LandingHeader() {
         </header>
     );
 }
+

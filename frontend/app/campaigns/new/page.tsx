@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
@@ -103,7 +103,7 @@ export default function NewCampaignPage() {
 
                 setFormData((prev) => ({
                     ...prev,
-                    name: `${campaign.name} (Cópia)`,
+                    name: `${campaign.name} (Copia)`,
                     type:
                         campaign.type === "MULTI_CHANNEL"
                             ? "multi"
@@ -112,9 +112,9 @@ export default function NewCampaignPage() {
                     schedule: normalizeScheduleSettings(campaign.schedule) || prev.schedule,
                 }));
             } catch (error) {
-                console.error("Erro ao clonar sequence:", error);
+                console.error("Erro ao clonar sequencia:", error);
                 toast({
-                    title: "Erro ao carregar sequence",
+                    title: "Erro ao carregar sequencia",
                     variant: "destructive",
                 });
             }
@@ -152,7 +152,7 @@ export default function NewCampaignPage() {
             const campaign = await campaignsApi.create(campaignData);
 
             toast({
-                title: "Sequence criada!",
+                title: "Sequencia criada!",
                 description: `${campaign.name} foi criada com sucesso.`,
             });
 
@@ -160,7 +160,7 @@ export default function NewCampaignPage() {
         } catch (error) {
             console.error("Error saving campaign:", error);
             toast({
-                title: "Erro ao salvar sequence",
+                title: "Erro ao salvar sequencia",
                 description: error instanceof Error ? error.message : "Erro desconhecido",
                 variant: "destructive",
             });
@@ -179,9 +179,9 @@ export default function NewCampaignPage() {
                         </Link>
                     </Button>
                     <div>
-                        <h2 className="text-3xl font-bold tracking-tight">Nova Sequence</h2>
+                        <h2 className="text-3xl font-bold tracking-tight">Nova Sequencia</h2>
                         <p className="text-muted-foreground">
-                            Configure sua sequence em 4 passos simples.
+                            Configure sua sequencia em 4 passos simples.
                         </p>
                     </div>
                 </div>
@@ -203,7 +203,7 @@ export default function NewCampaignPage() {
                                     className={`text-sm ${step >= s ? "font-medium text-foreground" : "text-muted-foreground"
                                         }`}
                                 >
-                                    {s === 1 ? "Detalhes" : s === 2 ? "Audiencia" : s === 3 ? "Sequence" : "Agendamento"}
+                                    {s === 1 ? "Detalhes" : s === 2 ? "Audiencia" : s === 3 ? "Sequencia" : "Agendamento"}
                                 </span>
                                 {s < 4 && <div className="w-12 h-[2px] bg-muted" />}
                             </div>
@@ -222,17 +222,17 @@ export default function NewCampaignPage() {
                             >
                                 <Card className="max-w-2xl mx-auto">
                                     <CardHeader>
-                                        <CardTitle>Detalhes da Sequence</CardTitle>
+                                        <CardTitle>Detalhes da Sequencia</CardTitle>
                                         <CardDescription>
-                                            Dê um nome e escolha o canal principal.
+                                            De um nome e escolha o canal principal.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="name">Nome da Sequence</Label>
+                                            <Label htmlFor="name">Nome da Sequencia</Label>
                                             <Input
                                                 id="name"
-                                                placeholder="Ex: Prospecção CEO Tech Q3"
+                                                placeholder="Ex: Prospeccao CEO Tech Q3"
                                                 value={formData.name}
                                                 onChange={(e) =>
                                                     setFormData({ ...formData, name: e.target.value })
@@ -255,7 +255,7 @@ export default function NewCampaignPage() {
                                                     </div>
                                                     <div>
                                                         <p className="font-semibold">Email</p>
-                                                        <p className="text-xs text-muted-foreground">Cold mail sequences</p>
+                                                        <p className="text-xs text-muted-foreground">Sequencias de prospeccao por email</p>
                                                     </div>
                                                 </div>
 
@@ -271,7 +271,7 @@ export default function NewCampaignPage() {
                                                     </div>
                                                     <div>
                                                         <p className="font-semibold">WhatsApp</p>
-                                                        <p className="text-xs text-muted-foreground">Direct messages</p>
+                                                        <p className="text-xs text-muted-foreground">Mensagens diretas</p>
                                                     </div>
                                                 </div>
 
@@ -311,9 +311,9 @@ export default function NewCampaignPage() {
                             >
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Selecionar Audiência</CardTitle>
+                                        <CardTitle>Selecionar Audiencia</CardTitle>
                                         <CardDescription>
-                                            Selecione os prospects que entrarao nesta sequence.
+                                            Selecione os leads que entrarao nesta sequencia.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -327,7 +327,7 @@ export default function NewCampaignPage() {
                                             Voltar
                                         </Button>
                                         <Button onClick={nextStep} disabled={formData.audience.length === 0}>
-                                            Proximo: Sequence ({formData.audience.length}) <IconArrowRight className="ml-2 h-4 w-4" />
+                                            Proximo: Sequencia ({formData.audience.length}) <IconArrowRight className="ml-2 h-4 w-4" />
                                         </Button>
                                     </CardFooter>
                                 </Card>
@@ -344,7 +344,7 @@ export default function NewCampaignPage() {
                             >
                                 <Card className="border-0 shadow-none bg-transparent">
                                     <CardHeader className="px-0 pt-0">
-                                        <CardTitle>Construir Sequence</CardTitle>
+                                        <CardTitle>Construir Sequencia</CardTitle>
                                         <CardDescription>
                                             Defina os passos e mensagens arrastando os elementos.
                                         </CardDescription>
@@ -381,7 +381,7 @@ export default function NewCampaignPage() {
                                     <CardHeader>
                                         <CardTitle>Configurar Agendamento</CardTitle>
                                         <CardDescription>
-                                            Defina quando e como as mensagens serão enviadas.
+                                            Defina quando e como as mensagens serao enviadas.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -410,4 +410,5 @@ export default function NewCampaignPage() {
         </AppLayout>
     );
 }
+
 

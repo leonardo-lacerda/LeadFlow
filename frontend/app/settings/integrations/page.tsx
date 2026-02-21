@@ -49,7 +49,7 @@ export default function IntegrationsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium">Channels and Providers</h3>
+                <h3 className="text-lg font-medium">Canais e Provedores</h3>
                 <p className="text-sm text-muted-foreground">
                     Gerencie os canais que alimentam seus sinais e servicos externos de enrichment.
                 </p>
@@ -58,8 +58,8 @@ export default function IntegrationsPage() {
 
             <Tabs defaultValue="channels" className="space-y-4">
                 <TabsList>
-                    <TabsTrigger value="channels">Canais de outreach</TabsTrigger>
-                    <TabsTrigger value="enrichment">Data providers</TabsTrigger>
+                    <TabsTrigger value="channels">Canais de contato</TabsTrigger>
+                    <TabsTrigger value="enrichment">Provedores de dados</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="channels" className="space-y-8">
@@ -75,3 +75,4 @@ export default function IntegrationsPage() {
         </div>
     );
 }
+

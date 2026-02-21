@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -22,7 +22,7 @@ export function LandingHero() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
                         </span>
-                        Novo posicionamento: Acquisition as Infrastructure
+                        Novo posicionamento: Aquisicao como Infraestrutura
                     </div>
                 </motion.div>
 
@@ -32,9 +32,9 @@ export function LandingHero() {
                     transition={{ duration: 0.5, delay: 0.1 }}
                     className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-6"
                 >
-                    Acquisition as Infrastructure. <br />
+                    Aquisicao como Infraestrutura. <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
-                        Signals, not leads.
+                        Sinais, nao leads.
                     </span>
                 </motion.h1>
 
@@ -57,12 +57,12 @@ export function LandingHero() {
                     <Link href="/register">
                         <Button size="lg" className="h-12 px-8 text-lg bg-indigo-600 hover:bg-indigo-700 text-white rounded-full">
                             <IconRocket className="mr-2 h-5 w-5" />
-                            Entrar no Cohort Inicial
+                            Entrar no Grupo Inicial
                         </Button>
                     </Link>
                     <Link href="#how-it-works">
                         <Button size="lg" variant="outline" className="h-12 px-8 text-lg border-white/20 text-white hover:bg-white/10 rounded-full">
-                            Ver Signal Layer
+                            Ver Camada de Sinais
                         </Button>
                     </Link>
                 </motion.div>
@@ -75,7 +75,7 @@ export function LandingHero() {
                 >
                     <div className="flex items-center gap-2">
                         <IconCheck className="h-4 w-4 text-green-500" />
-                        <span>Signals, not leads</span>
+                        <span>Sinais, nao leads</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <IconCheck className="h-4 w-4 text-green-500" />
@@ -103,7 +103,7 @@ export function LandingHero() {
                     </div>
                     <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                         <p className="text-2xl font-bold text-white">+31%</p>
-                        <p className="text-xs text-gray-400">lift medio de reply com timing recomendado</p>
+                        <p className="text-xs text-gray-400">aumento medio de respostas com timing recomendado</p>
                     </div>
                 </motion.div>
             </div>
@@ -126,7 +126,7 @@ export function LandingHero() {
 
                     <div className="absolute inset-0 flex items-center justify-center">
                         <span className="px-4 py-2 bg-black/50 backdrop-blur rounded-full text-white/50 text-sm border border-white/10">
-                            Signal Layer Preview
+                            Previa da Camada de Sinais
                         </span>
                     </div>
                 </div>
@@ -134,3 +134,4 @@ export function LandingHero() {
         </section>
     );
 }
+

@@ -21,7 +21,7 @@ export function HotLeadAlert({
     }
 
     const showOverdue = followup?.overdue === true;
-    const firstName = (leadName || "").split(" ")[0] || "Prospect";
+    const firstName = (leadName || "").split(" ")[0] || "Lead";
 
     return (
         <div
@@ -32,7 +32,7 @@ export function HotLeadAlert({
         >
             <div className="flex items-center gap-2 font-semibold">
                 <Flame className="h-4 w-4" />
-                Prospect quente ativo
+                Lead quente ativo
                 <Badge className="ml-1 border-red-300 bg-white text-red-800">HOT</Badge>
             </div>
             <div className="mt-1">
@@ -42,8 +42,8 @@ export function HotLeadAlert({
                 <div className="mt-2 flex items-center gap-2 text-xs">
                     <Timer className="h-3.5 w-3.5" />
                     {showOverdue
-                        ? "Follow-up recomendado agora."
-                        : `Regra de follow-up: ${followup.delayHours}h.`}
+                        ? "Retomada recomendada agora."
+                        : `Regra de retomada: ${followup.delayHours}h.`}
                 </div>
             )}
         </div>

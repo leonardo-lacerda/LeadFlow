@@ -20,6 +20,23 @@ SOCIAL_HOSTS = {
     "youtube": "youtube.com",
     "tiktok": "tiktok.com",
 }
+DEFAULT_NON_BUSINESS_DOMAINS = (
+    "google.com",
+    "google.com.br",
+    "googleusercontent.com",
+    "duckduckgo.com",
+    "bing.com",
+    "search.brave.com",
+    "linkedin.com",
+    "indeed.com",
+    "indeed.com.br",
+    "catho.com.br",
+    "reclameaqui.com.br",
+    "mercadolivre.com.br",
+    "mercadolibre.com",
+    "comprasnet.gov.br",
+    "gov.br",
+)
 
 
 def normalize_url(value: Optional[str]) -> Optional[str]:
@@ -33,6 +50,22 @@ def normalize_url(value: Optional[str]) -> Optional[str]:
     if not re.match(r"^https?://", cleaned, flags=re.IGNORECASE):
         return f"https://{cleaned}"
     return cleaned
+
+
+def normalize_domain(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    normalized_url = normalize_url(value)
+    if normalized_url:
+        return extract_domain(normalized_url)
+    cleaned = str(value).strip().lower()
+    if not cleaned:
+        return None
+    cleaned = re.sub(r"^https?://", "", cleaned, flags=re.IGNORECASE)
+    cleaned = cleaned.split("/", 1)[0].strip()
+    if cleaned.startswith("www."):
+        cleaned = cleaned[4:]
+    return cleaned or None
 
 
 def extract_domain(value: Optional[str]) -> Optional[str]:
@@ -49,6 +82,151 @@ def is_social_domain(domain: Optional[str]) -> bool:
     if not domain:
         return False
     return any(host in domain for host in SOCIAL_HOSTS.values())
+
+
+def is_non_business_domain(
+    domain: Optional[str],
+    blocked_domains: Optional[List[str]] = None,
+) -> bool:
+    normalized = normalize_domain(domain)
+    if not normalized:
+        return True
+    merged_blocklist = list(DEFAULT_NON_BUSINESS_DOMAINS)
+    for item in blocked_domains or []:
+        value = normalize_domain(item)
+        if value:
+            merged_blocklist.append(value)
+    return any(
+        normalized == blocked or normalized.endswith(f".{blocked}")
+        for blocked in merged_blocklist
+    )
+
+
+def filter_business_domain(
+    domain: Optional[str],
+    blocked_domains: Optional[List[str]] = None,
+) -> Optional[str]:
+    normalized = normalize_domain(domain)
+    if not normalized:
+        return None
+    if is_non_business_domain(normalized, blocked_domains):
+        return None
+    return normalized
+
+
+def dedupe_tags(values: List[Optional[str]], source_tag: Optional[str] = None) -> List[str]:
+    result: List[str] = []
+    seen = set()
+
+    def _push(raw: Optional[str]) -> None:
+        if not raw:
+            return
+        cleaned = " ".join(str(raw).split()).strip()
+        if not cleaned:
+            return
+        key = cleaned.lower()
+        if key in seen:
+            return
+        seen.add(key)
+        result.append(cleaned)
+
+    _push(source_tag)
+    for value in values:
+        _push(value)
+    return result
+
+
+def _normalize_email(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    cleaned = str(value).strip().lower().strip(".,;:<>")
+    if not cleaned:
+        return None
+    if not EMAIL_PATTERN.fullmatch(cleaned):
+        return None
+    return cleaned
+
+
+def _normalize_phone(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    cleaned = " ".join(str(value).split()).strip()
+    if not cleaned:
+        return None
+    digits = re.sub(r"\D", "", cleaned)
+    if len(digits) < 8:
+        return None
+    return cleaned
+
+
+def _normalize_email_list(values: List[Optional[str]], max_items: int = 5) -> List[str]:
+    result: List[str] = []
+    seen = set()
+    for value in values:
+        normalized = _normalize_email(value)
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        result.append(normalized)
+        if len(result) >= max_items:
+            break
+    return result
+
+
+def _normalize_phone_list(values: List[Optional[str]], max_items: int = 5) -> List[str]:
+    result: List[str] = []
+    seen = set()
+    for value in values:
+        normalized = _normalize_phone(value)
+        if not normalized:
+            continue
+        digits_key = re.sub(r"\D", "", normalized)
+        if digits_key in seen:
+            continue
+        seen.add(digits_key)
+        result.append(normalized)
+        if len(result) >= max_items:
+            break
+    return result
+
+
+def sanitize_contact_profile(
+    profile: Dict[str, Any],
+    blocked_domains: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    raw_emails = profile.get("emails")
+    raw_phones = profile.get("phones")
+    emails = _normalize_email_list(
+        raw_emails if isinstance(raw_emails, list) else [profile.get("email")]
+    )
+    phones = _normalize_phone_list(
+        raw_phones if isinstance(raw_phones, list) else [profile.get("phone")]
+    )
+
+    socials_raw = profile.get("socials")
+    socials = (
+        extract_social_links(
+            list(socials_raw.values()) if isinstance(socials_raw, dict) else []
+        )
+        if socials_raw
+        else {}
+    )
+
+    title_value = profile.get("title")
+    title = " ".join(str(title_value).split()).strip() if title_value else None
+    if title == "":
+        title = None
+
+    return {
+        "url": normalize_url(profile.get("url")),
+        "domain": filter_business_domain(profile.get("domain"), blocked_domains),
+        "email": emails[0] if emails else None,
+        "phone": phones[0] if phones else None,
+        "emails": emails,
+        "phones": phones,
+        "socials": socials,
+        "title": title,
+    }
 
 
 def extract_social_links(values: List[Optional[str]]) -> Dict[str, str]:

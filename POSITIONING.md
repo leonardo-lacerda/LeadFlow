@@ -422,6 +422,22 @@ Logica inicial de tiers (beta):
 - `Growth`: 5k-25k sinais/mes
 - `Scale`: acima de 25k sinais/mes
 
+### Ajustes de experiencia e operacao (entregue nesta fase)
+
+Onboarding:
+- fluxo sem formulario e sem campos obrigatorios
+- narrativa em 4 passos de produto (contexto -> leads -> sinais -> impacto)
+- conclusao direta para dashboard
+- referencia: `frontend/app/onboarding/page.tsx`
+
+Lead Discovery / Maps:
+- mensagem de erro clara quando o servico de scraping estiver indisponivel
+- reducao de falso positivo de "completed with no leads" quando ja existem leads persistidos
+- diagnosticos com mais contexto para suporte tecnico
+- referencias:
+  - `backend/src/jobs/scraping.worker.ts`
+  - `backend/src/modules/scraping/scraping.service.ts`
+
 ---
 
 ## Instrumentacao de Eventos Reais

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
@@ -371,8 +371,8 @@ const STATUS_CONFIG: Record<
     { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: StatusIcon }
 > = {
     PENDING: { label: "Pendente", variant: "secondary", icon: IconClock },
-    RUNNING: { label: "Em Execução", variant: "default", icon: IconPlayerPlay },
-    COMPLETED: { label: "Concluído", variant: "outline", icon: IconCheck },
+    RUNNING: { label: "Em Execucao", variant: "default", icon: IconPlayerPlay },
+    COMPLETED: { label: "Concluido", variant: "outline", icon: IconCheck },
     FAILED: { label: "Falhou", variant: "destructive", icon: IconX },
     CANCELLED: { label: "Cancelado", variant: "outline", icon: IconX },
 };
@@ -458,7 +458,7 @@ export default function ScrapingPage() {
                 query,
             });
 
-            toast({ title: "Job criado com sucesso!" });
+            toast({ title: "Tarefa criada com sucesso!" });
             setShowWizard(false);
             setWizardStep(1);
             setSelectedSource("");
@@ -467,7 +467,7 @@ export default function ScrapingPage() {
             loadJobs();
         } catch (error) {
             toast({
-                title: "Erro ao criar job",
+                title: "Erro ao criar tarefa",
                 description: error instanceof Error ? error.message : "Erro desconhecido",
                 variant: "destructive",
             });
@@ -482,9 +482,9 @@ export default function ScrapingPage() {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Lead Discovery</h1>
+                        <h1 className="text-3xl font-bold">Descoberta de Leads</h1>
                         <p className="text-muted-foreground">
-                            Descubra prospects em multiplas fontes com coleta estruturada
+                            Descubra leads em multiplas fontes com coleta estruturada
                         </p>
                     </div>
                     <div className="flex gap-2">
@@ -493,7 +493,7 @@ export default function ScrapingPage() {
                         </Button>
                         <Button onClick={() => setShowWizard(true)}>
                             <IconPlus className="mr-2 h-4 w-4" />
-                            Novo Job
+                            Nova tarefa
                         </Button>
                     </div>
                 </div>
@@ -502,7 +502,7 @@ export default function ScrapingPage() {
                 <div className="grid gap-4 md:grid-cols-4">
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardDescription>Total de Jobs</CardDescription>
+                            <CardDescription>Total de tarefas</CardDescription>
                             <CardTitle className="text-3xl">
                                 {jobs.length}
                             </CardTitle>
@@ -510,7 +510,7 @@ export default function ScrapingPage() {
                     </Card>
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardDescription>Em Execução</CardDescription>
+                            <CardDescription>Em Execucao</CardDescription>
                             <CardTitle className="text-3xl">
                                 {jobs.filter((j) => j.status === "RUNNING").length}
                             </CardTitle>
@@ -518,7 +518,7 @@ export default function ScrapingPage() {
                     </Card>
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardDescription>Concluídos</CardDescription>
+                            <CardDescription>Concluidos</CardDescription>
                             <CardTitle className="text-3xl">
                                 {jobs.filter((j) => j.status === "COMPLETED").length}
                             </CardTitle>
@@ -526,7 +526,7 @@ export default function ScrapingPage() {
                     </Card>
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardDescription>Prospects Criados</CardDescription>
+                            <CardDescription>Leads Criados</CardDescription>
                             <CardTitle className="text-3xl">
                                 {jobs.reduce((sum, j) => sum + j.leadsCreated, 0)}
                             </CardTitle>
@@ -534,11 +534,11 @@ export default function ScrapingPage() {
                     </Card>
                 </div>
 
-                {/* Jobs Table */}
+                {/* Tabela de tarefas */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Jobs de Discovery</CardTitle>
-                        <CardDescription>Histórico e status dos seus jobs</CardDescription>
+                        <CardTitle>Tarefas de descoberta</CardTitle>
+                        <CardDescription>Historico e status das suas tarefas</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
@@ -547,22 +547,22 @@ export default function ScrapingPage() {
                                     <TableHead>Nome/Fonte</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Progresso</TableHead>
-                                    <TableHead>Prospects</TableHead>
+                                    <TableHead>Leads</TableHead>
                                     <TableHead>Criado</TableHead>
-                                    <TableHead className="text-right">Ações</TableHead>
+                                    <TableHead className="text-right">Acoes</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {loading ? (
                                     <TableRow>
                                         <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                                            Carregando jobs...
+                                            Carregando tarefas...
                                         </TableCell>
                                     </TableRow>
                                 ) : jobs.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                                            Nenhum job encontrado.
+                                            Nenhuma tarefa encontrada.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -634,11 +634,11 @@ export default function ScrapingPage() {
                 </Card>
             </div>
 
-            {/* Create Job Wizard */}
+            {/* Assistente de criacao de tarefa */}
             <Dialog open={showWizard} onOpenChange={setShowWizard}>
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>Novo Job de Discovery</DialogTitle>
+                        <DialogTitle>Nova tarefa de descoberta</DialogTitle>
                         <DialogDescription>
                             Passo {wizardStep} de 2: {wizardStep === 1 ? "Selecione a fonte" : "Configure os parametros"}
                         </DialogDescription>
@@ -687,7 +687,7 @@ export default function ScrapingPage() {
                     {wizardStep === 2 && (
                         <div className="space-y-4">
                             <div>
-                                <Label htmlFor="job-name">Nome do Job (opcional)</Label>
+                                <Label htmlFor="job-name">Nome da tarefa (opcional)</Label>
                                 <Input
                                     id="job-name"
                                     placeholder="Ex: Restaurantes SP"
@@ -777,11 +777,11 @@ export default function ScrapingPage() {
                         )}
                         {wizardStep === 1 ? (
                             <Button onClick={() => setWizardStep(2)} disabled={!selectedSource}>
-                                Próximo
+                                Proximo
                             </Button>
                         ) : (
                             <Button onClick={handleCreateJob} disabled={creating}>
-                                {creating ? "Criando..." : "Criar Job"}
+                                {creating ? "Criando..." : "Criar tarefa"}
                             </Button>
                         )}
                     </DialogFooter>
@@ -790,4 +790,6 @@ export default function ScrapingPage() {
         </AppLayout>
     );
 }
+
+
 
