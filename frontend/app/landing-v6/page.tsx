@@ -414,26 +414,39 @@ export default function LandingV6() {
                             outbound + signal engine
                         </span>
                     </div>
-                    <nav className="hidden items-center gap-6 md:flex">
-                        {[
-                            ["#hero-choice", "Escolha"],
-                            ["#diagnostico", "Diagnostico"],
-                            ["#simulador", "Simulador"],
-                            ["#confiabilidade", "Confianca"],
-                            ["#gerador", "Gerador"],
-                            ["#faq", "FAQ"],
-                            ["#cta-final", "Ativar"],
-                        ].map(([href, label]) => (
-                            <a
-                                key={href}
-                                href={href}
-                                className={`${mono.className} text-xs uppercase tracking-[0.12em]`}
-                                style={{ color: PALETTE.muted }}
-                            >
-                                {label}
-                            </a>
-                        ))}
-                    </nav>
+                    <div className="flex items-center gap-3">
+                        <nav className="hidden items-center gap-6 md:flex">
+                            {[
+                                ["#hero-choice", "Escolha"],
+                                ["#diagnostico", "Diagnostico"],
+                                ["#simulador", "Simulador"],
+                                ["#confiabilidade", "Confianca"],
+                                ["#gerador", "Gerador"],
+                                ["#faq", "FAQ"],
+                                ["#cta-final", "Ativar"],
+                            ].map(([href, label]) => (
+                                <a
+                                    key={href}
+                                    href={href}
+                                    className={`${mono.className} text-xs uppercase tracking-[0.12em]`}
+                                    style={{ color: PALETTE.muted }}
+                                >
+                                    {label}
+                                </a>
+                            ))}
+                        </nav>
+                        <a
+                            href="/login"
+                            className={`${mono.className} inline-flex h-9 items-center justify-center rounded-md border px-3 text-[11px] font-semibold uppercase tracking-[0.12em]`}
+                            style={{
+                                color: PALETTE.text,
+                                borderColor: PALETTE.border,
+                                background: PALETTE.surface,
+                            }}
+                        >
+                            Login
+                        </a>
+                    </div>
                 </div>
             </header>
 

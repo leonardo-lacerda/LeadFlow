@@ -48,6 +48,76 @@ function hashToken(token: string) {
     return crypto.createHash('sha256').update(token).digest('hex');
 }
 
+function buildOrganizationSlugBase(name: string) {
+    return (
+        name
+            .trim()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '') || 'org'
+    );
+}
+
+function buildOrganizationSlugCandidate(baseSlug: string, attempt: number) {
+    if (attempt === 0) {
+        return baseSlug;
+    }
+
+    return `${baseSlug}-${crypto.randomBytes(2).toString('hex')}`;
+}
+
+function isUniqueSlugConflict(error: unknown) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
+        return false;
+    }
+
+    if (error.code !== 'P2002') {
+        return false;
+    }
+
+    const target = error.meta?.target;
+    if (Array.isArray(target)) {
+        return target.includes('slug');
+    }
+
+    if (typeof target === 'string') {
+        return target.includes('slug');
+    }
+
+    return true;
+}
+
+async function createOrganizationWithUniqueSlug(
+    tx: Prisma.TransactionClient,
+    organizationName: string
+) {
+    const baseSlug = buildOrganizationSlugBase(organizationName);
+
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+        const slug = buildOrganizationSlugCandidate(baseSlug, attempt);
+
+        try {
+            return await tx.organization.create({
+                data: {
+                    name: organizationName,
+                    slug,
+                },
+                select: AUTH_ORG_SELECT,
+            });
+        } catch (error) {
+            if (isUniqueSlugConflict(error)) {
+                continue;
+            }
+
+            throw error;
+        }
+    }
+
+    throw new Error('Unable to generate unique organization slug');
+}
+
 export class AuthService {
     async register(data: RegisterBody) {
         // Check if user exists
@@ -65,13 +135,7 @@ export class AuthService {
         // Create organization + user in transaction
         const result = await prisma.$transaction(async (tx) => {
             // Create organization
-            const organization = await tx.organization.create({
-                data: {
-                    name: data.organizationName,
-                    slug: data.organizationName.toLowerCase().replace(/\s+/g, '-'),
-                },
-                select: AUTH_ORG_SELECT,
-            });
+            const organization = await createOrganizationWithUniqueSlug(tx, data.organizationName);
 
             // Create user (owner)
             const user = await tx.user.create({
