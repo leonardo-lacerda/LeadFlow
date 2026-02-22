@@ -68,54 +68,28 @@ function buildOrganizationSlugCandidate(baseSlug: string, attempt: number) {
     return `${baseSlug}-${crypto.randomBytes(2).toString('hex')}`;
 }
 
-function isUniqueSlugConflict(error: unknown) {
-    if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
-        return false;
-    }
-
-    if (error.code !== 'P2002') {
-        return false;
-    }
-
-    const target = error.meta?.target;
-    if (Array.isArray(target)) {
-        return target.includes('slug');
-    }
-
-    if (typeof target === 'string') {
-        return target.includes('slug');
-    }
-
-    return true;
-}
-
-async function createOrganizationWithUniqueSlug(
-    tx: Prisma.TransactionClient,
-    organizationName: string
-) {
-    const baseSlug = buildOrganizationSlugBase(organizationName);
-
-    for (let attempt = 0; attempt < 12; attempt += 1) {
-        const slug = buildOrganizationSlugCandidate(baseSlug, attempt);
-
-        try {
-            return await tx.organization.create({
-                data: {
-                    name: organizationName,
-                    slug,
-                },
-                select: AUTH_ORG_SELECT,
-            });
-        } catch (error) {
-            if (isUniqueSlugConflict(error)) {
-                continue;
-            }
-
-            throw error;
+function isUniqueConstraintOnField(error: unknown, field: string) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        const target = error.meta?.target;
+        if (Array.isArray(target)) {
+            return target.includes(field);
         }
+
+        if (typeof target === 'string') {
+            return target.includes(field);
+        }
+
+        return true;
     }
 
-    throw new Error('Unable to generate unique organization slug');
+    if (error instanceof Error) {
+        return (
+            error.message.includes('Unique constraint failed') &&
+            (error.message.includes(`\`${field}\``) || error.message.includes(field))
+        );
+    }
+
+    return false;
 }
 
 export class AuthService {
@@ -132,27 +106,50 @@ export class AuthService {
         // Hash password
         const passwordHash = await bcrypt.hash(data.password, 10);
 
-        // Create organization + user in transaction
-        const result = await prisma.$transaction(async (tx) => {
-            // Create organization
-            const organization = await createOrganizationWithUniqueSlug(tx, data.organizationName);
+        const baseSlug = buildOrganizationSlugBase(data.organizationName);
 
-            // Create user (owner)
-            const user = await tx.user.create({
-                data: {
-                    email: data.email,
-                    name: data.name,
-                    passwordHash,
-                    role: 'OWNER',
-                    organizationId: organization.id,
-                },
-                select: AUTH_USER_SELECT,
-            });
+        for (let attempt = 0; attempt < 12; attempt += 1) {
+            const slug = buildOrganizationSlugCandidate(baseSlug, attempt);
 
-            return { user, organization };
-        });
+            try {
+                const result = await prisma.$transaction(async (tx) => {
+                    const organization = await tx.organization.create({
+                        data: {
+                            name: data.organizationName,
+                            slug,
+                        },
+                        select: AUTH_ORG_SELECT,
+                    });
 
-        return result;
+                    const user = await tx.user.create({
+                        data: {
+                            email: data.email,
+                            name: data.name,
+                            passwordHash,
+                            role: 'OWNER',
+                            organizationId: organization.id,
+                        },
+                        select: AUTH_USER_SELECT,
+                    });
+
+                    return { user, organization };
+                });
+
+                return result;
+            } catch (error) {
+                if (isUniqueConstraintOnField(error, 'slug')) {
+                    continue;
+                }
+
+                if (isUniqueConstraintOnField(error, 'email')) {
+                    throw new Error('User already exists');
+                }
+
+                throw error;
+            }
+        }
+
+        throw new Error('Unable to generate unique organization slug');
     }
 
     async login(data: LoginBody) {
