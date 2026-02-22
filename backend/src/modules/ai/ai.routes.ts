@@ -57,6 +57,11 @@ const analyzeSchema = z.object({
     maxTokens: z.number().int().min(1).optional(),
 });
 
+const magicSuggestSchema = z.object({
+    business: z.string().min(1),
+    product: z.string().min(1),
+});
+
 const scoreSchema = z.object({
     leadId: z.string().min(1),
     icp: z.record(z.any()).optional(),
@@ -649,6 +654,58 @@ export async function aiRoutes(fastify: FastifyInstance) {
                 return reply.code(400).send({
                     success: false,
                     error: error instanceof Error ? error.message : 'Failed to update ICP',
+                });
+            }
+        }
+    );
+    fastify.post(
+        '/magic-suggest',
+        { onRequest: [fastify.authenticate] },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            try {
+                const body = magicSuggestSchema.parse(request.body);
+
+                if (!env.OPENAI_API_KEY) {
+                    return reply.status(400).send({ success: false, error: 'OpenAI API key missing' });
+                }
+
+                const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4o-mini',
+                        messages: [
+                            { role: 'system', content: 'Você é um especialista em pesquisa de leads e prospecção B2B. A partir de um tipo de negócio e do que ele quer vender, sugira no máximo 5 MÚLTIPLOS termos curtos e precisos que esta pessoa poderia colocar em uma barra de pesquisa (como Google Maps ou LinkedIn) para encontrar empresas que comprariam seu produto. Retorne APENAS um JSON array de strings contendo os termos. Sem markdown, sem explicação.' },
+                            { role: 'user', content: `Meu negócio: ${body.business}\nO que quero vender: ${body.product}` }
+                        ],
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`OpenAI error: ${errorText}`);
+                }
+                const data = (await response.json()) as any;
+                const termsText = data.choices[0].message.content.trim();
+                let terms: string[] = [];
+                try {
+                    // Sometimes it replies with markdown ```json
+                    const cleanJson = termsText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    terms = JSON.parse(cleanJson);
+                } catch {
+                    // fallback parsing
+                    terms = termsText.split('\n').map((t: string) => t.replace(/^- /, '').replace(/"/g, '').trim()).filter(Boolean);
+                }
+
+                return reply.send({ success: true, data: terms });
+            } catch (error) {
+                return reply.code(400).send({
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Failed to generate suggestions',
                 });
             }
         }

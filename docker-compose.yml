@@ -1,13 +1,13 @@
-﻿version: "3.8"
+version: "3.8"
 
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: leadflow-postgres
+    container_name: lastreia-postgres
     env_file:
       - .env
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-leadflow}
+      POSTGRES_DB: ${POSTGRES_DB:-lastreia}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     ports:
@@ -22,7 +22,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: leadflow-redis
+    container_name: lastreia-redis
     ports:
       - "6379:6379"
     volumes:
@@ -35,7 +35,7 @@ services:
 
   evolution:
     image: atendai/evolution-api:latest
-    container_name: leadflow-evolution
+    container_name: lastreia-evolution
     env_file:
       - .env
     ports:
@@ -47,7 +47,7 @@ services:
       DEL_INSTANCE: "false"
       DATABASE_ENABLED: "true"
       DATABASE_PROVIDER: postgresql
-      DATABASE_CONNECTION_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-leadflow}?schema=evolution
+      DATABASE_CONNECTION_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-lastreia}?schema=evolution
       CACHE_REDIS_ENABLED: "true"
       CACHE_REDIS_URI: redis://redis:6379/1
       CORS_ORIGIN: "*"
@@ -56,7 +56,7 @@ services:
 
   backend:
     build: ./backend
-    container_name: leadflow-backend
+    container_name: lastreia-backend
     env_file:
       - .env
     ports:
@@ -71,7 +71,7 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${PORT:-4000}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-leadflow}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-lastreia}?schema=public
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT:-6379}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
@@ -109,7 +109,7 @@ services:
 
   scraping:
     build: ./services/scraping
-    container_name: leadflow-scraping
+    container_name: lastreia-scraping
     env_file:
       - .env
     ports:
@@ -130,7 +130,7 @@ services:
 
   enrichment:
     build: ./services/enrichment
-    container_name: leadflow-enrichment
+    container_name: lastreia-enrichment
     env_file:
       - .env
     ports:
@@ -153,7 +153,7 @@ services:
 
   ai:
     build: ./services/ai
-    container_name: leadflow-ai
+    container_name: lastreia-ai
     env_file:
       - .env
     ports:
@@ -177,4 +177,4 @@ volumes:
 
 networks:
   default:
-    name: leadflow-network
+    name: lastreia-network

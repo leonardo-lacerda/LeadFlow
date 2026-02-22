@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
@@ -212,51 +212,63 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Sidebar open={open} setOpen={setOpen}>
                     <SidebarBody className="justify-between gap-10">
                         <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-                            {open ? <Logo /> : <LogoIcon />}
-                            <div className="mt-8 flex flex-col gap-1">
-                                {navSections.map((section) => (
-                                    <div key={section.title} className="mb-2">
-                                        {open && (
-                                            <p className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500 dark:text-neutral-400">
+                            <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+                                <Logo open={open} />
+                                <div className="mt-8 flex flex-col gap-1">
+                                    {navSections.map((section) => (
+                                        <div key={section.title} className="mb-2">
+                                            <motion.p
+                                                animate={{
+                                                    height: open ? "auto" : 0,
+                                                    opacity: open ? 1 : 0,
+                                                    marginBottom: open ? 4 : 0,
+                                                }}
+                                                className="px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500 dark:text-neutral-400 overflow-hidden whitespace-nowrap"
+                                            >
                                                 {section.title}
-                                            </p>
-                                        )}
-                                        <div className="flex flex-col gap-1">
-                                            {section.links.map((link) => (
-                                                <SidebarLink key={link.href} link={link} />
-                                            ))}
+                                            </motion.p>
+                                            <div className="flex flex-col gap-1">
+                                                {section.links.map((link) => (
+                                                    <SidebarLink key={link.href} link={link} />
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
 
-                                <div className="my-2 h-px bg-neutral-200 dark:bg-neutral-700" />
+                                    <div className="my-2 h-px bg-neutral-200 dark:bg-neutral-700" />
 
-                                {open && (
-                                    <p className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500 dark:text-neutral-400">
+                                    <motion.p
+                                        animate={{
+                                            height: open ? "auto" : 0,
+                                            opacity: open ? 1 : 0,
+                                            marginBottom: open ? 4 : 0,
+                                        }}
+                                        className="px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500 dark:text-neutral-400 overflow-hidden whitespace-nowrap"
+                                    >
                                         Conta
-                                    </p>
-                                )}
-                                {accountLinks.map((link) => (
-                                    <SidebarLink key={link.label} link={link} />
-                                ))}
+                                    </motion.p>
+                                    {accountLinks.map((link) => (
+                                        <SidebarLink key={link.label} link={link} />
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <SidebarLink
-                                link={{
-                                    label: user?.name || "Usuario",
-                                    href: "/settings",
-                                    icon: (
-                                        <Image
-                                            src="https://assets.aceternity.com/manu.png"
-                                            className="h-7 w-7 flex-shrink-0 rounded-full"
-                                            width={50}
-                                            height={50}
-                                            alt="Avatar"
-                                        />
-                                    ),
-                                }}
-                            />
+                            <div>
+                                <SidebarLink
+                                    link={{
+                                        label: user?.name || "Usuario",
+                                        href: "/settings",
+                                        icon: (
+                                            <Image
+                                                src="https://assets.aceternity.com/manu.png"
+                                                className="h-7 w-7 flex-shrink-0 rounded-full"
+                                                width={50}
+                                                height={50}
+                                                alt="Avatar"
+                                            />
+                                        ),
+                                    }}
+                                />
+                            </div>
                         </div>
                     </SidebarBody>
                 </Sidebar>
@@ -274,31 +286,23 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     );
 }
 
-export const Logo = () => {
+export const Logo = ({ open = true }: { open?: boolean }) => {
     return (
         <Link
             href="/dashboard"
-            className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
+            className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20 overflow-hidden"
         >
             <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
             <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                animate={{
+                    opacity: open ? 1 : 0,
+                    width: open ? "auto" : 0,
+                    display: open ? "inline-block" : "none",
+                }}
                 className="font-medium text-black dark:text-white whitespace-pre"
             >
-                Leadflow
+                Lastreia
             </motion.span>
-        </Link>
-    );
-};
-
-export const LogoIcon = () => {
-    return (
-        <Link
-            href="/dashboard"
-            className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
-        >
-            <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
         </Link>
     );
 };

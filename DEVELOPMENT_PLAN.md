@@ -1,4 +1,4 @@
-# Leadflow v2 - Plano de Desenvolvimento: Inteligencia e Decisao
+# Lastreia v2 - Plano de Desenvolvimento: Inteligencia e Decisao
 
 > De ferramenta de execucao para **motor de decisao comercial**.
 
@@ -328,7 +328,7 @@ model Campaign {
 
 ```mermaid
 gantt
-    title Leadflow v2 - Timeline
+    title Lastreia v2 - Timeline
     dateFormat  YYYY-MM-DD
     section Sprint 1 - Scoring
     Schema + Migration          :s1, 2026-02-11, 1d

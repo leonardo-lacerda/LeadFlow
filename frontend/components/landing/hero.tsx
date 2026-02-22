@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -46,7 +46,7 @@ export function LandingHero() {
                     transition={{ duration: 0.4, delay: 0.2 }}
                     className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 font-light"
                 >
-                    O Leadflow transforma seu esforco de outbound em conteudo de distribuicao.
+                    O Lastreia transforma seu esforco de outbound em conteudo de distribuicao.
                     Aquisicao como infraestrutura: capte leads, descubra padroes,
                     e gere posts validados por dados para atrair mais clientes.
                 </motion.p>

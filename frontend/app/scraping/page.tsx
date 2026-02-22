@@ -38,8 +38,10 @@ import {
     IconClock,
     IconPlayerPlay,
     IconX,
+    IconSparkles,
 } from "@tabler/icons-react";
 import { scrapingApi, ScrapingJob, ScrapingSource } from "@/lib/scraping-api";
+import { aiApi } from "@/lib/ai-api";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -391,6 +393,12 @@ export default function ScrapingPage() {
     const [formData, setFormData] = useState<FormState>(DEFAULT_FORM_STATE);
     const [creating, setCreating] = useState(false);
 
+    // AI suggestion state
+    const [aiBusiness, setAiBusiness] = useState("");
+    const [aiProduct, setAiProduct] = useState("");
+    const [suggesting, setSuggesting] = useState(false);
+    const [suggestedTerms, setSuggestedTerms] = useState<string[]>([]);
+
     useEffect(() => {
         loadJobs();
         const interval = setInterval(loadJobs, 2000); // Refresh every 2s
@@ -405,6 +413,24 @@ export default function ScrapingPage() {
             console.error("Failed to load jobs", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSuggestTerms = async () => {
+        if (!aiBusiness.trim() || !aiProduct.trim()) {
+            toast({ title: "Preencha seu negócio e o que vende", variant: "destructive" });
+            return;
+        }
+        setSuggesting(true);
+        try {
+            const terms = await aiApi.suggestTerms({ business: aiBusiness, product: aiProduct });
+            if (!terms || terms.length === 0) throw new Error("Sem sugestões retornadas");
+            setSuggestedTerms(terms);
+            toast({ title: "Termos sugeridos com sucesso!" });
+        } catch (error) {
+            toast({ title: "Erro ao gerar sugestões", variant: "destructive" });
+        } finally {
+            setSuggesting(false);
         }
     };
 
@@ -698,6 +724,62 @@ export default function ScrapingPage() {
 
                             {selectedSource ? (
                                 <div className="space-y-4">
+                                    {(REQUIRED_FIELDS[selectedSource as ScrapingSource]?.includes("query")) && (
+                                        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                                            <div className="flex items-center gap-2 text-primary font-medium">
+                                                <IconSparkles className="h-5 w-5" />
+                                                <h3>Assistente de Busca IA</h3>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                Descreva seu negócio e produto para a IA sugerir os melhores termos de busca B2B para encontrar leads qualificados.
+                                            </p>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="space-y-1">
+                                                    <Label className="text-xs">Meu negócio / Empresa</Label>
+                                                    <Input
+                                                        placeholder="Ex: Agência de Marketing"
+                                                        value={aiBusiness}
+                                                        onChange={(e) => setAiBusiness(e.target.value)}
+                                                        className="h-8 text-xs"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <Label className="text-xs">O que eu vendo</Label>
+                                                    <Input
+                                                        placeholder="Ex: Consultoria em SEO"
+                                                        value={aiProduct}
+                                                        onChange={(e) => setAiProduct(e.target.value)}
+                                                        className="h-8 text-xs"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="w-full text-xs"
+                                                onClick={handleSuggestTerms}
+                                                disabled={suggesting}
+                                            >
+                                                {suggesting ? "Sugerindo..." : "Gerar novos termos"}
+                                            </Button>
+
+                                            {suggestedTerms.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 pt-2 border-t border-primary/10">
+                                                    {suggestedTerms.map((term, i) => (
+                                                        <Badge
+                                                            key={i}
+                                                            variant="secondary"
+                                                            className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                                                            onClick={() => setFormData((prev) => ({ ...prev, query: term }))}
+                                                        >
+                                                            {term}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
                                     {SOURCE_FIELDS[selectedSource as ScrapingSource].map((field) => {
                                         const fieldId = `field-${field.key}`;
                                         const value = formData[field.key] ?? "";

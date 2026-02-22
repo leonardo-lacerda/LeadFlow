@@ -1,4 +1,4 @@
-﻿import Fastify from 'fastify';
+import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
@@ -132,7 +132,7 @@ const start = async () => {
         await fastify.listen({ port: env.PORT, host: env.HOST });
         console.log(
             [
-                'Leadflow API Server is running',
+                'Lastreia API Server is running',
                 `Address: http://${env.HOST}:${env.PORT}`,
                 `Environment: ${env.NODE_ENV}`,
                 `Health: http://${env.HOST}:${env.PORT}/health`,

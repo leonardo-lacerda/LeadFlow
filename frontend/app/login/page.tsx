@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -73,7 +73,7 @@ export default function LoginPage() {
             >
                 <div className="text-center">
                     <h2 className="mt-6 text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-                        Leadflow
+                        Lastreia
                     </h2>
                     <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
                         Entre na sua conta para continuar

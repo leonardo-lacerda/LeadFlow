@@ -88,7 +88,7 @@ export default function LandingV4() {
             >
                 <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <span className="font-black text-lg text-stone-900 tracking-tight">Leadflow</span>
+                        <span className="font-black text-lg text-stone-900 tracking-tight">Lastreia</span>
                         <Tag>signal_engine</Tag>
                     </div>
                     <div className="hidden md:flex items-center gap-8 text-sm text-stone-500">
@@ -138,7 +138,7 @@ export default function LandingV4() {
                             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
                             className="text-lg md:text-xl text-stone-500 leading-relaxed mb-12 max-w-2xl mx-auto"
                         >
-                            Leadflow captura dados reais do seu outbound, detecta padrões confiáveis
+                            Lastreia captura dados reais do seu outbound, detecta padrões confiáveis
                             e transforma isso em conteúdo que constrói autoridade e traz inbound — automaticamente.
                         </motion.p>
 
@@ -213,7 +213,7 @@ export default function LandingV4() {
                             </motion.h2>
                             <motion.div {...fadeUp(0.1)}>
                                 <p className="text-base text-stone-500 leading-relaxed mb-10">
-                                    O Leadflow trata seu outbound como um sistema observável.
+                                    O Lastreia trata seu outbound como um sistema observável.
                                     Você não escreve marketing. Você publica o que o sistema aprende.
                                 </p>
                                 <div className="font-mono text-sm space-y-0">
@@ -254,7 +254,7 @@ export default function LandingV4() {
                 <section id="exemplos" className="py-28 px-6 border-y border-stone-200" style={{ background: CARD }}>
                     <div className="max-w-5xl mx-auto">
                         <Divider label="Exemplos Concretos" />
-                        <h2 className="text-3xl font-black text-stone-900 text-center mb-4">Conteúdo que só existe porque você usa o Leadflow</h2>
+                        <h2 className="text-3xl font-black text-stone-900 text-center mb-4">Conteúdo que só existe porque você usa o Lastreia</h2>
                         <p className="text-center text-stone-400 mb-16">Não é copy de IA. É o que seus dados ensinaram.</p>
                         <div className="grid md:grid-cols-3 gap-4">
                             {/* Tweet */}
@@ -346,7 +346,7 @@ export default function LandingV4() {
 
                         <div className="space-y-0 text-sm font-mono mb-12">
                             {[
-                                ["Usa Leadflow", "dados acumulam"],
+                                ["Usa Lastreia", "dados acumulam"],
                                 ["dados acumulam", "padrões emergem"],
                                 ["padrões emergem", "conteúdo com números reais"],
                                 ["conteúdo publicado", "autoridade pública"],
@@ -447,7 +447,7 @@ export default function LandingV4() {
                             <span style={{ color: TEAL }}>Comece a publicar sinais.</span>
                         </motion.h2>
                         <motion.p {...fadeUp(0.1)} className="text-base text-stone-400 mb-10">
-                            Ative o Signal Engine no Leadflow. Leva menos de 5 minutos.
+                            Ative o Signal Engine no Lastreia. Leva menos de 5 minutos.
                         </motion.p>
                         <motion.div {...fadeUp(0.2)}>
                             {!done ? (
@@ -481,7 +481,7 @@ export default function LandingV4() {
                 <footer className="py-10 px-6 border-t border-stone-200" style={{ background: CARD }}>
                     <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div>
-                            <p className="font-black text-stone-900 mb-1">Leadflow</p>
+                            <p className="font-black text-stone-900 mb-1">Lastreia</p>
                             <p className="text-xs text-stone-400 max-w-sm leading-relaxed">
                                 Um sistema de outbound que transforma atividade comercial em aprendizado público e distribuição orgânica.
                             </p>

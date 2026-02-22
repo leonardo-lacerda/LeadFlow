@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 type Theme = "light" | "dark";
 
-const THEME_STORAGE_KEY = "leadflow-theme";
+const THEME_STORAGE_KEY = "lastreia-theme";
 
 const applyTheme = (theme: Theme) => {
     document.documentElement.classList.toggle("dark", theme === "dark");

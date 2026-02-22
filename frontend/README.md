@@ -1,6 +1,6 @@
-﻿# Leadflow Frontend
+# Lastreia Frontend
 
-Frontend do posicionamento Leadflow:
+Frontend do posicionamento Lastreia:
 - Aquisicao como Infraestrutura
 - Sinais, nao leads
 

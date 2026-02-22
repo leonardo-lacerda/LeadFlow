@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $baseUrl = "http://localhost:4000"
 $timestamp = Get-Date -Format "yyyyMMddHHmmss"
-$email = "smoke+$timestamp@leadflow.local"
+$email = "smoke+$timestamp@lastreia.local"
 $password = "Smoke12345!"
 $orgName = "Smoke Org $timestamp"
 $results = [System.Collections.Generic.List[object]]::new()

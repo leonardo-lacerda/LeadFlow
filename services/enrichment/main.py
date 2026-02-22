@@ -14,7 +14,7 @@ from pipeline import EnrichmentPipeline
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Leadflow Enrichment Service")
+app = FastAPI(title="Lastreia Enrichment Service")
 pipeline = EnrichmentPipeline()
 
 

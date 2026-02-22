@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ export function LandingHeader() {
                     <div className="h-6 w-6 bg-white flex items-center justify-center rounded-[4px]">
                         <IconTerminal2 className="h-4 w-4 text-black" />
                     </div>
-                    <span className="font-semibold text-xl text-white tracking-tight">Leadflow</span>
+                    <span className="font-semibold text-xl text-white tracking-tight">Lastreia</span>
                 </Link>
 
                 <nav className="hidden md:flex items-center gap-8">

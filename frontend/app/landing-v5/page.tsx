@@ -82,7 +82,7 @@ const workflowSteps = [
     {
         step: "02",
         title: "Prepare os contatos",
-        action: "Leadflow enriquece os dados para melhorar a abordagem.",
+        action: "Lastreia enriquece os dados para melhorar a abordagem.",
         result: "Mensagem com contexto.",
     },
     {
@@ -133,13 +133,13 @@ const signalLayers = [
 ];
 
 const cycleSteps = [
-    "Outbound no Leadflow",
+    "Outbound no Lastreia",
     "Dados reais",
     "Padrões confiáveis",
     "Conteúdo público",
     "Autoridade",
     "Inbound",
-    "Mais leads no Leadflow",
+    "Mais leads no Lastreia",
 ];
 
 const faqItems = [
@@ -153,7 +153,7 @@ const faqItems = [
     },
     {
         q: "Signal Engine é outro produto?",
-        a: "Não. Ele é uma camada acima do outbound que você já roda no Leadflow.",
+        a: "Não. Ele é uma camada acima do outbound que você já roda no Lastreia.",
     },
     {
         q: "Se eu parar de fazer outbound, ainda funciona?",
@@ -233,7 +233,7 @@ export default function LandingV5() {
             >
                 <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
                     <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold" style={{ color: PALETTE.text }}>Leadflow</span>
+                        <span className="text-sm font-semibold" style={{ color: PALETTE.text }}>Lastreia</span>
                         <span
                             className={`${mono.className} rounded-md border px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]`}
                             style={{ color: PALETTE.accent, background: PALETTE.accentSoft, borderColor: "#AFC1DE" }}
@@ -272,13 +272,13 @@ export default function LandingV5() {
                                 <span className="block">Você vende hoje, aprende com dados reais e transforma isso em autoridade amanhã.</span>
                             </h1>
                             <p className="mt-6 max-w-2xl text-base leading-relaxed md:text-lg" style={{ color: PALETTE.muted }}>
-                                Leadflow faz o trabalho de outbound de ponta a ponta.
+                                Lastreia faz o trabalho de outbound de ponta a ponta.
                                 <br className="hidden md:block" />
                                 Reaproveita os dados da operação para gerar sinais públicos com números reais, que
                                 fortalecem sua autoridade.
                             </p>
                             <p className="mt-4 max-w-2xl text-base leading-relaxed md:text-lg" style={{ color: PALETTE.text }}>
-                                Se você faz outbound e constrói em público, o Leadflow transforma sua operação
+                                Se você faz outbound e constrói em público, o Lastreia transforma sua operação
                                 comercial em sinais que você pode publicar com confiança.
                             </p>
 
@@ -362,7 +362,7 @@ export default function LandingV5() {
                             {[
                                 {
                                     title: "1) Roda outbound",
-                                    text: "Leadflow ajuda a prospectar, disparar, responder e acompanhar funil.",
+                                    text: "Lastreia ajuda a prospectar, disparar, responder e acompanhar funil.",
                                 },
                                 {
                                     title: "2) Organiza os dados",
@@ -393,7 +393,7 @@ export default function LandingV5() {
                         <p className="mt-5 max-w-3xl text-base leading-relaxed md:text-lg" style={{ color: PALETTE.muted }}>
                             Você já faz outbound.
                             <br className="hidden md:block" />
-                            O Leadflow só garante que nada do que acontece ali seja desperdiçado.
+                            O Lastreia só garante que nada do que acontece ali seja desperdiçado.
                         </p>
                         <div className="mt-8 space-y-3">
                             {workflowSteps.map((step, index) => (
@@ -462,7 +462,7 @@ export default function LandingV5() {
                                 Histórico operacional não.
                             </p>
                             <p className="mt-2 text-sm leading-relaxed md:text-[15px]" style={{ color: PALETTE.muted }}>
-                                O Leadflow acumula memória comercial proprietária da sua operação.
+                                O Lastreia acumula memória comercial proprietária da sua operação.
                             </p>
                         </div>
 
@@ -657,7 +657,7 @@ export default function LandingV5() {
                                 className={`${mono.className} inline-flex h-12 items-center justify-center rounded-md px-7 text-xs font-semibold uppercase tracking-[0.14em]`}
                                 style={{ background: PALETTE.accent, color: "#F7FAFF" }}
                             >
-                                Usar Leadflow como motor de outbound e distribuição
+                                Usar Lastreia como motor de outbound e distribuição
                             </a>
                             <p className="mt-4 text-base" style={{ color: PALETTE.muted }}>
                                 Outbound completo + Signal Engine. Sem post automático. Sem achismo.
@@ -681,7 +681,7 @@ export default function LandingV5() {
             <footer className="border-t px-6 py-10" style={{ borderColor: PALETTE.border, background: PALETTE.surface }}>
                 <div className="mx-auto max-w-6xl">
                     <p className="text-base leading-relaxed" style={{ color: PALETTE.muted }}>
-                        Leadflow é um sistema de outbound que transforma atividade comercial em sinais públicos e
+                        Lastreia é um sistema de outbound que transforma atividade comercial em sinais públicos e
                         autoridade duradoura.
                     </p>
                     <p className={`${mono.className} mt-3 text-sm uppercase tracking-[0.14em]`} style={{ color: PALETTE.accent }}>

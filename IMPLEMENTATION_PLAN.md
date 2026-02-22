@@ -1,4 +1,4 @@
-# 🚀 Leadflow - Plano de Desenvolvimento
+# 🚀 Lastreia - Plano de Desenvolvimento
 
 > **B2B Prospecting SaaS Platform**
 > Scraping + Enriquecimento + IA + Outbound (Email + WhatsApp)
@@ -9,7 +9,7 @@
 
 | Decisão | Escolha |
 |---------|---------|
-| **Nome** | Leadflow |
+| **Nome** | Lastreia |
 | **Backend API** | Node.js + Fastify |
 | **Scraping Services** | Python (microservices) |
 | **Frontend** | Next.js 14 + TailwindCSS |
@@ -70,7 +70,7 @@
 ## 📂 Estrutura de Pastas
 
 ```
-leadflow/
+lastreia/
 ├── docker-compose.yml
 ├── docker-compose.prod.yml
 ├── .env.example
@@ -670,7 +670,7 @@ model Activity {
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                         LEADFLOW - 12 WEEK ROADMAP                           │
+│                         LASTREIA - 12 WEEK ROADMAP                           │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  SEMANA   1    2    3    4    5    6    7    8    9   10   11   12          │
@@ -742,7 +742,7 @@ services:
       - postgres
       - redis
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/leadflow
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/lastreia
       - REDIS_URL=redis://redis:6379
       
   postgres:
@@ -750,7 +750,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=leadflow
+      - POSTGRES_DB=lastreia
       - POSTGRES_PASSWORD=postgres
       
   redis:
@@ -850,7 +850,7 @@ export async function authMiddleware(request: FastifyRequest) {
 from fastapi import FastAPI, BackgroundTasks
 from scrapers import google_maps, cnpj, reclame_aqui
 
-app = FastAPI(title="Leadflow Scraping Service")
+app = FastAPI(title="Lastreia Scraping Service")
 
 @app.post("/scrape/google-maps")
 async def scrape_google_maps(
@@ -1295,8 +1295,8 @@ export class WhatsAppService {
 
 ```bash
 # Clone & setup
-git clone https://github.com/you/leadflow.git
-cd leadflow
+git clone https://github.com/you/lastreia.git
+cd lastreia
 cp .env.example .env
 
 # Start everything
@@ -1318,7 +1318,7 @@ docker-compose exec backend npx prisma migrate dev
 1. Connect GitHub repo
 2. Set root directory: frontend
 3. Add environment variables:
-   - NEXT_PUBLIC_API_URL=https://api.leadflow.com.br
+   - NEXT_PUBLIC_API_URL=https://api.lastreia.com.br
 4. Deploy
 ```
 

@@ -24,7 +24,7 @@ const STEPS = [
         title: "Aquisição como Infraestrutura",
         icon: IconRocket,
         description:
-            "Leadflow combina descoberta de leads com inteligência coletiva para decidir melhor quando e como abordar.",
+            "Lastreia combina descoberta de leads com inteligência coletiva para decidir melhor quando e como abordar.",
         bullets: [
             "Leads com contexto, não apenas listas.",
             "Decisões orientadas por sinais agregados.",
@@ -153,7 +153,7 @@ export default function OnboardingPage() {
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
             <div className="w-full max-w-3xl space-y-6">
                 <div className="space-y-2 text-center">
-                    <h1 className="text-3xl font-bold tracking-tight">Onboarding Leadflow</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Onboarding Lastreia</h1>
                     <p className="text-muted-foreground">
                         Uma visão rápida do produto em 4 passos.
                     </p>

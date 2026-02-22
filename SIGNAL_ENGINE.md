@@ -1,7 +1,7 @@
-# Signal Engine - O Moat Real do Leadflow
+# Signal Engine - O Moat Real do Lastreia
 
 > **Insight central:** Todo SaaS pequeno gera dados comerciais valiosos o tempo todo.
-> Ninguem transforma isso em distribuicao. O Leadflow pode.
+> Ninguem transforma isso em distribuicao. O Lastreia pode.
 
 ---
 
@@ -14,7 +14,7 @@ Dev constroi SaaS excelente
   -> nao sabe quando postar
   -> morre no anonimato
 
-Enquanto isso, no backend do Leadflow dele:
+Enquanto isso, no backend do Lastreia dele:
   -> 200 leads contatados
   -> "CTOs respondem 3x mais as tercas"
   -> "Mensagens com case study convertem 47% mais"
@@ -33,7 +33,7 @@ O Signal Engine pega esses dados e responde uma pergunta:
 
 ### Camada 1: Captura de Eventos
 
-Tudo que ja acontece no Leadflow vira um evento tipado:
+Tudo que ja acontece no Lastreia vira um evento tipado:
 
 ```typescript
 type SignalEvent =
@@ -170,10 +170,10 @@ A barreira nao era interesse. Era canal."
 
 ---
 
-## Fluxo do Usuario no Leadflow
+## Fluxo do Usuario no Lastreia
 
 ```
-1. Usuario usa o Leadflow normalmente
+1. Usuario usa o Lastreia normalmente
    (scraping, campanhas, inbox)
         |
         v
@@ -222,7 +222,7 @@ Quem copiar o codigo nao copia os 6 meses de dados comerciais reais.
 
 ### 2. Network Effect Indireto
 ```
-Usuario posta insight gerado pelo Leadflow
+Usuario posta insight gerado pelo Lastreia
   -> Seguidores veem e perguntam "que ferramenta e essa?"
   -> Novos usuarios entram
   -> Mais dados no sistema
@@ -281,12 +281,12 @@ O usuario pode opt-in pra receber **sinais agregados** do pool inteiro, sem nunc
 
 ### Antes (1 perna)
 ```
-Leadflow = ferramenta de prospeccao
+Lastreia = ferramenta de prospeccao
 ```
 
 ### Depois (3 pernas)
 ```
-Leadflow = prospeccao + aprendizado + distribuicao
+Lastreia = prospeccao + aprendizado + distribuicao
 
 Perna 1: Captura leads e contata (como ja faz)
 Perna 2: Aprende padroes do SEU mercado (Signal Engine)
@@ -330,7 +330,7 @@ Fases 4-6 entregam a distribuicao (usuario posta).
 
 ```mermaid
 graph TD
-    A[Usuario usa Leadflow] --> B[Dados se acumulam]
+    A[Usuario usa Lastreia] --> B[Dados se acumulam]
     B --> C[Signal Engine detecta padroes]
     C --> D[Sugere conteudo baseado em dados]
     D --> E[Usuario posta no Twitter/LinkedIn]
@@ -341,6 +341,6 @@ graph TD
     style E fill:#f59e0b,color:#000
 ```
 
-**O Leadflow se torna a unica ferramenta que gera seus proprios clientes.**
+**O Lastreia se torna a unica ferramenta que gera seus proprios clientes.**
 
 Isso nao e feature. E modelo de negocio.

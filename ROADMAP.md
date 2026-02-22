@@ -1,6 +1,6 @@
-# Leadflow - Plano de Desenvolvimento em Fases
+# Lastreia - Plano de Desenvolvimento em Fases
 
-> **Visao:** Leadflow = Prospeccao + Aprendizado + Distribuicao
+> **Visao:** Lastreia = Prospeccao + Aprendizado + Distribuicao
 >
 > De "ferramenta de outbound" para "infra de aquisicao que se distribui sozinha."
 

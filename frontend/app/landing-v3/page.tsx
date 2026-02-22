@@ -80,13 +80,13 @@ const layerBlocks = [
 ];
 
 const cycleSteps = [
-    "Outbound no Leadflow",
+    "Outbound no Lastreia",
     "Dados reais",
     "Padroes confiaveis",
     "Conteudo publico",
     "Autoridade",
     "Inbound",
-    "Mais leads no Leadflow",
+    "Mais leads no Lastreia",
 ];
 
 const fitYes = [
@@ -157,7 +157,7 @@ export default function LandingV3() {
             >
                 <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
                     <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold" style={{ color: COLORS.text }}>Leadflow</span>
+                        <span className="text-sm font-semibold" style={{ color: COLORS.text }}>Lastreia</span>
                         <span
                             className={`${mono.className} rounded-md border px-2 py-0.5 text-[11px] uppercase tracking-[0.14em]`}
                             style={{ color: COLORS.accent, background: COLORS.accentSoft, borderColor: "#A7CEC4" }}
@@ -184,7 +184,7 @@ export default function LandingV3() {
                                 Outbound que gera clientes e sinais publicos automaticamente.
                             </h1>
                             <p className="mt-6 max-w-2xl text-lg leading-relaxed" style={{ color: COLORS.muted }}>
-                                Leadflow executa seu outbound B2B de ponta a ponta e transforma cada reply, ignore e
+                                Lastreia executa seu outbound B2B de ponta a ponta e transforma cada reply, ignore e
                                 conversao em sinais reais que constroem autoridade e trazem inbound.
                             </p>
 
@@ -268,7 +268,7 @@ export default function LandingV3() {
                 <section className="border-t px-6 py-20" style={{ borderColor: COLORS.border, background: COLORS.bgAlt }}>
                     <div className="mx-auto max-w-6xl">
                         <SectionLabel>03 Proposta Unica</SectionLabel>
-                        <SectionTitle>Leadflow nao substitui outbound. Ele fecha o ciclo.</SectionTitle>
+                        <SectionTitle>Lastreia nao substitui outbound. Ele fecha o ciclo.</SectionTitle>
 
                         <div className="mt-8 grid gap-4 md:grid-cols-3">
                             {[
@@ -279,7 +279,7 @@ export default function LandingV3() {
                                 <motion.div key={left} {...reveal(index * 0.08)}>
                                     <Card>
                                         <p className={`${mono.className} text-xs uppercase tracking-[0.14em]`} style={{ color: COLORS.muted }}>
-                                            no Leadflow
+                                            no Lastreia
                                         </p>
                                         <p className="mt-3 text-lg" style={{ color: COLORS.text }}>
                                             <span style={{ color: COLORS.accent }}>{left}</span> e o {right}
@@ -304,7 +304,7 @@ export default function LandingV3() {
                             style={{ borderColor: "#9FC2B9", background: COLORS.accentSoft }}
                         >
                             <span className={`${mono.className} text-xs uppercase tracking-[0.14em]`} style={{ color: COLORS.accent }}>
-                                Tudo isso ja existe no Leadflow
+                                Tudo isso ja existe no Lastreia
                             </span>
                         </div>
 
@@ -328,7 +328,7 @@ export default function LandingV3() {
                         <SectionLabel>05 Signal Engine</SectionLabel>
                         <SectionTitle>O diferencial: seu outbound vira distribuicao.</SectionTitle>
                         <p className="mt-5 max-w-3xl text-lg leading-relaxed" style={{ color: COLORS.muted }}>
-                            O Leadflow captura tudo que acontece no outbound como eventos tipados. Esses eventos
+                            O Lastreia captura tudo que acontece no outbound como eventos tipados. Esses eventos
                             alimentam o Signal Engine.
                         </p>
 
@@ -392,7 +392,7 @@ export default function LandingV3() {
                                         Exemplo 1 - Tweet
                                     </p>
                                     <p className="mt-4 text-base leading-relaxed" style={{ color: COLORS.text }}>
-                                        Analisando 427 mensagens outbound no Leadflow: SaaS B2B com ticket ate 99 dolares
+                                        Analisando 427 mensagens outbound no Lastreia: SaaS B2B com ticket ate 99 dolares
                                         respondem 2.1x mais as quartas entre 9h e 11h.
                                     </p>
                                 </Card>
@@ -544,7 +544,7 @@ export default function LandingV3() {
                                 className={`${mono.className} inline-flex h-12 items-center justify-center rounded-md px-7 text-xs font-semibold uppercase tracking-[0.14em]`}
                                 style={{ background: COLORS.accent, color: "#F6FFFC" }}
                             >
-                                Usar Leadflow como motor de outbound e distribuicao
+                                Usar Lastreia como motor de outbound e distribuicao
                             </a>
                             <p className="mt-4 text-base" style={{ color: COLORS.muted }}>
                                 Outbound completo + Signal Engine. Sem post automatico. Sem achismo.
@@ -557,7 +557,7 @@ export default function LandingV3() {
             <footer className="border-t px-6 py-10" style={{ borderColor: COLORS.border, background: COLORS.surface }}>
                 <div className="mx-auto max-w-6xl">
                     <p className="text-base leading-relaxed" style={{ color: COLORS.muted }}>
-                        Leadflow e um sistema de outbound que transforma atividade comercial em sinais publicos e
+                        Lastreia e um sistema de outbound que transforma atividade comercial em sinais publicos e
                         autoridade duradoura.
                     </p>
                     <p className={`${mono.className} mt-3 text-sm uppercase tracking-[0.14em]`} style={{ color: COLORS.accent }}>

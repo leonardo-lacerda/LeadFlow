@@ -31,7 +31,7 @@ const layers = [
     {
         id: "Layer 01",
         title: "Event Capture",
-        intro: "Tudo que ja acontece no Leadflow vira evento tipado.",
+        intro: "Tudo que ja acontece no Lastreia vira evento tipado.",
         items: [
             "mensagens enviadas",
             "replies",
@@ -92,7 +92,7 @@ const fitNo = [
 ];
 
 const cycle = [
-    "Usa Leadflow",
+    "Usa Lastreia",
     "Dados acumulam",
     "Padroes emergem",
     "Conteudo com numeros reais",
@@ -170,7 +170,7 @@ export default function LandingV5() {
             <header className="fixed top-0 z-50 w-full border-b border-slate-200 bg-[#F8FAFC]/95 backdrop-blur">
                 <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
                     <div className="flex items-center gap-3">
-                        <span className="text-base font-semibold tracking-tight">Leadflow</span>
+                        <span className="text-base font-semibold tracking-tight">Lastreia</span>
                         <span
                             className={`${mono.className} rounded-md border border-slate-300 bg-slate-100 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-slate-600`}
                         >
@@ -197,7 +197,7 @@ export default function LandingV5() {
                                 Transforme atividade comercial em sinais publicos que geram clientes.
                             </h1>
                             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-700">
-                                Leadflow captura dados reais do seu outbound, detecta padroes confiaveis e transforma
+                                Lastreia captura dados reais do seu outbound, detecta padroes confiaveis e transforma
                                 isso em conteudo que constroi autoridade e traz inbound automaticamente.
                             </p>
 
@@ -318,7 +318,7 @@ export default function LandingV5() {
                         <SectionHeading
                             label="03 Tese"
                             title="Marketing nao deveria ser criativo. Deveria ser consequencia."
-                            description="O Leadflow trata seu outbound como um sistema observavel: tudo vira evento, eventos viram padroes e padroes viram sinais publicos."
+                            description="O Lastreia trata seu outbound como um sistema observavel: tudo vira evento, eventos viram padroes e padroes viram sinais publicos."
                         />
                         <motion.div {...reveal()}>
                             <Panel>
@@ -381,7 +381,7 @@ export default function LandingV5() {
                     <div className="mx-auto max-w-6xl">
                         <SectionHeading
                             label="05 Exemplos"
-                            title="Conteudo que so existe porque voce usa o Leadflow."
+                            title="Conteudo que so existe porque voce usa o Lastreia."
                         />
                         <div className="grid gap-4 md:grid-cols-3">
                             <motion.div {...reveal()}>
@@ -574,7 +574,7 @@ export default function LandingV5() {
                                 href="#"
                                 className={`${mono.className} inline-flex h-12 items-center justify-center rounded-md bg-[#0B5FFF] px-8 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-[#0A53DE]`}
                             >
-                                Ativar Signal Engine no Leadflow
+                                Ativar Signal Engine no Lastreia
                             </a>
                             <p className="mt-4 text-base text-slate-700">
                                 Leva menos de 5 minutos. Sem postar nada automaticamente.
@@ -587,7 +587,7 @@ export default function LandingV5() {
             <footer className="border-t border-slate-200 bg-white px-6 py-10">
                 <div className="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <p className="max-w-3xl text-base leading-relaxed text-slate-700">
-                        Leadflow e um sistema de outbound que transforma atividade comercial em aprendizado publico e
+                        Lastreia e um sistema de outbound que transforma atividade comercial em aprendizado publico e
                         distribuicao organica.
                     </p>
                     <p className={`${mono.className} text-xs uppercase tracking-[0.16em] text-[#0B5FFF]`}>

@@ -58,7 +58,7 @@ export const useAuthStore = create<AuthState>()(
             },
         }),
         {
-            name: 'leadflow-auth',
+            name: 'lastreia-auth',
             storage: createJSONStorage(() => localStorage),
             partialize: (state) => ({
                 token: state.token,

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { IconArrowDown } from "@tabler/icons-react";
 
@@ -7,7 +7,7 @@ const steps = [
         title: "1 // Outbound",
         subtitle: "Aquisicao",
         description:
-            "O Leadflow fornece os leads (emails e CNPJ) e a infraestrutura do inbox. Voce realiza a prospeccao normalmente. Nenhuma mudanca no seu fluxo de trabalho.",
+            "O Lastreia fornece os leads (emails e CNPJ) e a infraestrutura do inbox. Voce realiza a prospeccao normalmente. Nenhuma mudanca no seu fluxo de trabalho.",
     },
     {
         title: "2 // Pattern Recognition",

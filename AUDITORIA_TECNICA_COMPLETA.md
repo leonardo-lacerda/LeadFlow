@@ -1,4 +1,4 @@
-# Auditoria Tecnica Completa - Leadflow
+# Auditoria Tecnica Completa - Lastreia
 
 Data da auditoria: 2026-02-11
 

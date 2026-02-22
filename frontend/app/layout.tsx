@@ -7,14 +7,14 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Leadflow - Aquisicao como infraestrutura",
+    title: "Lastreia - Aquisicao como infraestrutura",
     description: "Inteligencia compartilhada e camada de sinais para aquisicao B2B SaaS.",
 };
 
 const themeScript = `
 (() => {
   try {
-    const storageKey = "leadflow-theme";
+    const storageKey = "lastreia-theme";
     const storedTheme = localStorage.getItem(storageKey);
     const validStoredTheme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : null;
     const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";

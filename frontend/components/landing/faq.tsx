@@ -9,8 +9,8 @@ import {
 
 const faqs = [
     {
-        question: "Leadflow e so mais uma ferramenta de e-mail frio?",
-        answer: "Nao. Nosso foco e na infraestrutura por tras da operacao. O Leadflow entrega os leads, roda os disparos e principalmente: extrai sinais meta-analiticos da operacao para gerar visibilidade e autoridade para sua marca no LinkedIn/X.",
+        question: "Lastreia e so mais uma ferramenta de e-mail frio?",
+        answer: "Nao. Nosso foco e na infraestrutura por tras da operacao. O Lastreia entrega os leads, roda os disparos e principalmente: extrai sinais meta-analiticos da operacao para gerar visibilidade e autoridade para sua marca no LinkedIn/X.",
     },
     {
         question: "Como funciona a geracao de conteudo?",
@@ -21,8 +21,8 @@ const faqs = [
         answer: "Somente padroes agregados. Nome, email e dados da sua empresa JAMAIS sao compartilhados. Cuidamos do anonimato completo para que voce receba sinais confiaveis, mas sem comprometer a sua operacao.",
     },
     {
-        question: "O Leadflow faz sentido para uma operacao pequena?",
-        answer: "Sim, especialmente para equipes enxutas. Quanto menor a equipe, mais facil e cair no puro spam. O Leadflow te forca a operar como uma autoridade desde o primeiro dia: prospectando com precisao e gerando inbound como sub-produto.",
+        question: "O Lastreia faz sentido para uma operacao pequena?",
+        answer: "Sim, especialmente para equipes enxutas. Quanto menor a equipe, mais facil e cair no puro spam. O Lastreia te forca a operar como uma autoridade desde o primeiro dia: prospectando com precisao e gerando inbound como sub-produto.",
     },
 ];
 

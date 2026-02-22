@@ -24,7 +24,7 @@ from scrapers import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Leadflow Scraping Service")
+app = FastAPI(title="Lastreia Scraping Service")
 
 
 class BaseRequest(BaseModel):

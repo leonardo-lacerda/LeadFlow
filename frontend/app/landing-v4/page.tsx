@@ -67,7 +67,7 @@ const workflowSteps = [
     {
         step: "02",
         title: "Enriquece cada lead",
-        action: "Leadflow adiciona contexto e dados de contato.",
+        action: "Lastreia adiciona contexto e dados de contato.",
         output: "Mensagem com contexto real.",
     },
     {
@@ -178,7 +178,7 @@ export default function LandingV4() {
             >
                 <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
                     <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold" style={{ color: PALETTE.text }}>Leadflow</span>
+                        <span className="text-sm font-semibold" style={{ color: PALETTE.text }}>Lastreia</span>
                         <span
                             className={`${mono.className} rounded-md border px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]`}
                             style={{ color: PALETTE.accent, background: PALETTE.accentSoft, borderColor: "#AEC2E2" }}
@@ -212,7 +212,7 @@ export default function LandingV4() {
                         <motion.div {...fadeUp()}>
                             <SectionKicker>Visao Geral</SectionKicker>
                             <h1 className={`${heading.className} max-w-4xl text-4xl font-extrabold tracking-tight md:text-6xl md:leading-[1.04]`} style={{ color: PALETTE.text }}>
-                                Leadflow faz outbound de ponta a ponta e transforma a operacao em sinais publicos.
+                                Lastreia faz outbound de ponta a ponta e transforma a operacao em sinais publicos.
                             </h1>
                             <p className="mt-6 max-w-2xl text-lg leading-relaxed" style={{ color: PALETTE.muted }}>
                                 Em resumo: voce roda campanhas, concentra respostas, mede conversao e reaproveita todo
@@ -428,7 +428,7 @@ export default function LandingV4() {
                                 <Panel className="h-full">
                                     <p className={`${mono.className} text-xs uppercase tracking-[0.12em]`} style={{ color: PALETTE.muted }}>tweet</p>
                                     <p className="mt-3 text-base leading-relaxed" style={{ color: PALETTE.text }}>
-                                        Analisando 427 mensagens outbound no Leadflow: SaaS B2B ate $99 responde 2.1x
+                                        Analisando 427 mensagens outbound no Lastreia: SaaS B2B ate $99 responde 2.1x
                                         mais as quartas entre 9h e 11h.
                                     </p>
                                 </Panel>
@@ -500,7 +500,7 @@ export default function LandingV4() {
                                 className={`${mono.className} inline-flex h-12 items-center justify-center rounded-md px-7 text-xs font-semibold uppercase tracking-[0.14em]`}
                                 style={{ background: PALETTE.accent, color: "#F7FAFF" }}
                             >
-                                Usar Leadflow como motor de outbound e distribuicao
+                                Usar Lastreia como motor de outbound e distribuicao
                             </a>
                             <p className="mt-4 text-base" style={{ color: PALETTE.muted }}>
                                 Outbound completo + Signal Engine. Sem post automatico. Sem achismo.
@@ -513,7 +513,7 @@ export default function LandingV4() {
             <footer className="border-t px-6 py-10" style={{ borderColor: PALETTE.border, background: PALETTE.surface }}>
                 <div className="mx-auto max-w-6xl">
                     <p className="text-base leading-relaxed" style={{ color: PALETTE.muted }}>
-                        Leadflow e um sistema de outbound que transforma atividade comercial em sinais publicos e
+                        Lastreia e um sistema de outbound que transforma atividade comercial em sinais publicos e
                         autoridade duradoura.
                     </p>
                     <p className={`${mono.className} mt-3 text-sm uppercase tracking-[0.14em]`} style={{ color: PALETTE.accent }}>

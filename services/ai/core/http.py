@@ -6,7 +6,7 @@ from .config import AI_TIMEOUT
 from .retry import retry_async
 
 DEFAULT_HEADERS = {
-    "user-agent": "Leadflow-AI-Service",
+    "user-agent": "Lastreia-AI-Service",
 }
 
 

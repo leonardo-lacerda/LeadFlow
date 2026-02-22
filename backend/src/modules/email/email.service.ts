@@ -455,8 +455,8 @@ export class EmailService {
             throw new Error('Daily limit reached for mailbox');
         }
 
-        const domain = mailbox.email.split('@')[1] || 'leadflow.local';
-        const customMessageId = `<leadflow-${message.id}@${domain}>`;
+        const domain = mailbox.email.split('@')[1] || 'lastreia.local';
+        const customMessageId = `<lastreia-${message.id}@${domain}>`;
 
         const result = await transport.sendMail({
             from: `${mailbox.name} <${mailbox.email}>`,
@@ -466,7 +466,7 @@ export class EmailService {
             text,
             messageId: customMessageId,
             headers: {
-                'X-Leadflow-Message-Id': message.id,
+                'X-Lastreia-Message-Id': message.id,
                 'List-Unsubscribe': `<${env.API_BASE_URL || `http://${env.HOST}:${env.PORT}`}/api/email/unsubscribe?messageId=${message.id}>`,
             },
         });

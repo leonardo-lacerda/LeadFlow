@@ -61,6 +61,11 @@ export const aiApi = {
         return unwrapAiData<Record<string, unknown>>(response.data);
     },
 
+    async suggestTerms(input: { business: string; product: string }): Promise<string[]> {
+        const response = await api.post("/ai/magic-suggest", input);
+        return unwrapAiData<string[]>(response.data);
+    },
+
     async listPrompts(): Promise<AiPrompt[]> {
         const response = await api.get("/ai/prompts");
         const payload = unwrapAiData<unknown>(response.data);

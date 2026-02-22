@@ -1,6 +1,6 @@
-﻿# Leadflow
+# Lastreia
 
-Leadflow e uma infraestrutura de aquisicao para SaaS B2B.
+Lastreia e uma infraestrutura de aquisicao para SaaS B2B.
 
 Ideia central:
 - nao otimizar outreach de forma isolada
@@ -16,7 +16,7 @@ Para:
 - `Aquisicao como Infraestrutura`
 - `Sinais, nao leads`
 
-Leadflow combina:
+Lastreia combina:
 - Leads (base operacional)
 - Camada de Sinais (inteligencia compartilhada)
 

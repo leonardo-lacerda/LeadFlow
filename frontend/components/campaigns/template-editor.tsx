@@ -101,7 +101,7 @@ export function TemplateEditor({ value, onChange, showPreview = true }: Template
         []
     );
 
-    const formats = ["header", "bold", "italic", "underline", "strike", "list", "bullet", "link"];
+    const formats = ["header", "bold", "italic", "underline", "strike", "list", "link"];
 
     const insertVariable = (varKey: string) => {
         onChange(`${value}{{${varKey}}}`);
@@ -279,9 +279,8 @@ export function TemplateEditor({ value, onChange, showPreview = true }: Template
 
                         <div className="flex justify-center">
                             <div
-                                className={`rounded-lg border bg-white transition-all dark:bg-neutral-900 ${
-                                    previewDevice === "mobile" ? "w-[375px]" : "w-full"
-                                }`}
+                                className={`rounded-lg border bg-white transition-all dark:bg-neutral-900 ${previewDevice === "mobile" ? "w-[375px]" : "w-full"
+                                    }`}
                             >
                                 <div className="prose max-w-none p-6 dark:prose-invert">
                                     <div dangerouslySetInnerHTML={{ __html: previewHTML }} />

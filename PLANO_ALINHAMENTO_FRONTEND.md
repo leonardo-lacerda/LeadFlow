@@ -24,7 +24,7 @@ Este arquivo deve ser tratado como fonte de verdade operacional para o alinhamen
 ## 2) Contexto do sistema
 
 ## 2.1 Produto (resumo)
-- Produto: Leadflow (aquisicao B2B orientada por sinais).
+- Produto: Lastreia (aquisicao B2B orientada por sinais).
 - Modelo: multi-tenant por `organizationId`.
 - Fluxo principal de negocio:
   `auth -> scraping -> leads -> campaigns -> inbox -> signals -> distribution -> growth`.

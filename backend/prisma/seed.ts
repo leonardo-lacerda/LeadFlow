@@ -1,4 +1,4 @@
-﻿import bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { Prisma, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -55,7 +55,7 @@ async function syncUsage(organizationId: string) {
 }
 
 async function seed() {
-    const passwordHash = await bcrypt.hash('Leadflow@123', 10);
+    const passwordHash = await bcrypt.hash('Lastreia@123', 10);
 
     const acme = await prisma.organization.upsert({
         where: { slug: 'acme-growth' },
@@ -709,11 +709,11 @@ async function seed() {
     // eslint-disable-next-line no-console
     console.log('Usuarios de desenvolvimento:');
     // eslint-disable-next-line no-console
-    console.log('- owner@acme.local / Leadflow@123');
+    console.log('- owner@acme.local / Lastreia@123');
     // eslint-disable-next-line no-console
-    console.log('- member@acme.local / Leadflow@123');
+    console.log('- member@acme.local / Lastreia@123');
     // eslint-disable-next-line no-console
-    console.log('- owner@beta.local / Leadflow@123\n');
+    console.log('- owner@beta.local / Lastreia@123\n');
 }
 
 seed()

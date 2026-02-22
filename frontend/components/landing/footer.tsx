@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { IconBrandTwitter, IconBrandLinkedin, IconBrandGithub } from "@tabler/icons-react";
@@ -11,7 +11,7 @@ export function LandingFooter() {
                     <div className="col-span-1">
                         <div className="flex items-center gap-2 mb-4">
                             <div className="h-6 w-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg" />
-                            <span className="font-bold text-xl text-white">Leadflow</span>
+                            <span className="font-bold text-xl text-white">Lastreia</span>
                         </div>
                         <p className="text-gray-500 text-sm leading-relaxed">
                             Leads com contexto. Infraestrutura de aquisicao para SaaS B2B.
@@ -48,7 +48,7 @@ export function LandingFooter() {
 
                 <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
                     <p className="text-gray-500 text-sm">
-                        (c) {new Date().getFullYear()} Leadflow. Todos os direitos reservados.
+                        (c) {new Date().getFullYear()} Lastreia. Todos os direitos reservados.
                     </p>
                     <div className="flex items-center gap-4">
                         <Link href="#" className="text-gray-500 hover:text-white transition-colors">

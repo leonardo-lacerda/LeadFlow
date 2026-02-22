@@ -29,7 +29,7 @@ export async function seedAuthenticatedSession(page: Page) {
             version: 0,
         };
 
-        localStorage.setItem("leadflow-auth", JSON.stringify(payload));
+        localStorage.setItem("lastreia-auth", JSON.stringify(payload));
     });
 }
 

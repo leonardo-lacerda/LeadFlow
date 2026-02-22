@@ -25,7 +25,7 @@ from utils import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Leadflow AI Service")
+app = FastAPI(title="Lastreia AI Service")
 
 usage_tracker = UsageTracker()
 engine = AIEngine(TTLCache(AI_CACHE_TTL), usage_tracker)

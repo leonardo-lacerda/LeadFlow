@@ -94,13 +94,13 @@ const signalLayers = [
 ];
 
 const cycleSteps = [
-    "Outbound no Leadflow",
+    "Outbound no Lastreia",
     "Dados reais",
     "Padrões confiáveis",
     "Conteúdo público",
     "Autoridade",
     "Inbound",
-    "Mais leads no Leadflow",
+    "Mais leads no Lastreia",
 ];
 
 const faqItems = [
@@ -114,7 +114,7 @@ const faqItems = [
     },
     {
         q: "Signal Engine é outro produto?",
-        a: "Não. Ele é uma camada acima do outbound que você já roda no Leadflow.",
+        a: "Não. Ele é uma camada acima do outbound que você já roda no Lastreia.",
     },
     {
         q: "Se eu parar de fazer outbound, ainda funciona?",
@@ -162,7 +162,7 @@ const heroChoices: { id: HeroProfileId; label: string; reflection: string }[] = 
     {
         id: "not-yet",
         label: "Ainda não",
-        reflection: "Quando começar, o Leadflow garante que nada do processo se perca.",
+        reflection: "Quando começar, o Lastreia garante que nada do processo se perca.",
     },
 ];
 
@@ -406,7 +406,7 @@ export default function LandingV6() {
             >
                 <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
                     <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold" style={{ color: PALETTE.text }}>Leadflow</span>
+                        <span className="text-sm font-semibold" style={{ color: PALETTE.text }}>Lastreia</span>
                         <span
                             className={`${mono.className} rounded-md border px-2 py-0.5 text-[11px] uppercase tracking-[0.12em]`}
                             style={{ color: PALETTE.accent, background: PALETTE.accentSoft, borderColor: "#AFC1DE" }}
@@ -461,7 +461,7 @@ export default function LandingV6() {
                             <p className="mt-6 max-w-2xl text-base leading-relaxed md:text-lg" style={{ color: PALETTE.muted }}>
                                 Voce vende hoje, aprende com dados reais e transforma isso em autoridade amanha.
                                 <br className="hidden md:block" />
-                                Leadflow faz o trabalho de outbound de ponta a ponta.
+                                Lastreia faz o trabalho de outbound de ponta a ponta.
                                 <br className="hidden md:block" />
                                 Reaproveita os dados da operacao para gerar sinais publicos com numeros reais, que fortalecem sua autoridade.
                             </p>
@@ -483,7 +483,7 @@ export default function LandingV6() {
                                 </a>
                             </div>
                             <p className="mt-4 max-w-2xl text-sm leading-relaxed md:text-base" style={{ color: PALETTE.text }}>
-                                Se voce faz outbound e constroi em publico, o Leadflow transforma sua operacao comercial em sinais que voce pode publicar com confianca.
+                                Se voce faz outbound e constroi em publico, o Lastreia transforma sua operacao comercial em sinais que voce pode publicar com confianca.
                             </p>
                         </motion.div>
 
@@ -612,7 +612,7 @@ export default function LandingV6() {
                             {[
                                 {
                                     title: "1) Roda outbound",
-                                    text: "Leadflow ajuda a prospectar, disparar, responder e acompanhar funil.",
+                                    text: "Lastreia ajuda a prospectar, disparar, responder e acompanhar funil.",
                                 },
                                 {
                                     title: "2) Organiza os dados",
@@ -639,7 +639,7 @@ export default function LandingV6() {
                 <section id="simulador" className="border-t px-6 py-20" style={{ borderColor: PALETTE.border }}>
                     <div className="mx-auto max-w-6xl">
                         <SectionKicker>Como funciona</SectionKicker>
-                        <SectionTitle>Teste rapido: veja o que o Leadflow gera com uma campanha.</SectionTitle>
+                        <SectionTitle>Teste rapido: veja o que o Lastreia gera com uma campanha.</SectionTitle>
                         <p className="mt-5 max-w-3xl text-base leading-relaxed md:text-lg" style={{ color: PALETTE.muted }}>
                             Esta simulacao e didatica. Ela mostra, em 1 minuto, como o sistema transforma operacao em aprendizado reutilizavel.
                         </p>
@@ -751,7 +751,7 @@ export default function LandingV6() {
                                     </div>
                                 ) : (
                                     <p className="mt-4 text-base leading-relaxed" style={{ color: PALETTE.muted }}>
-                                        Escolha tipo de empresa, canal e meta. Depois clique em Ver simulacao para enxergar exatamente o que o Leadflow devolve.
+                                        Escolha tipo de empresa, canal e meta. Depois clique em Ver simulacao para enxergar exatamente o que o Lastreia devolve.
                                     </p>
                                 )}
                             </Panel>
@@ -795,7 +795,7 @@ export default function LandingV6() {
                                 Histórico operacional não.
                             </p>
                             <p className="mt-2 text-sm leading-relaxed md:text-[15px]" style={{ color: PALETTE.muted }}>
-                                O Leadflow acumula memória comercial proprietária da sua operação.
+                                O Lastreia acumula memória comercial proprietária da sua operação.
                             </p>
                         </div>
 
@@ -1177,7 +1177,7 @@ export default function LandingV6() {
                                     className={`${mono.className} mt-6 inline-flex h-12 w-full items-center justify-center rounded-md px-6 text-xs font-semibold uppercase tracking-[0.14em]`}
                                     style={{ background: PALETTE.accent, color: "#F7FAFF" }}
                                 >
-                                    Ativar Signal Engine no Leadflow
+                                    Ativar Signal Engine no Lastreia
                                 </a>
                                 <p className="mt-3 text-sm leading-relaxed" style={{ color: PALETTE.muted }}>
                                     Outbound completo + Signal Engine. Sem post automatico. Sem achismo.
@@ -1204,7 +1204,7 @@ export default function LandingV6() {
             <footer className="border-t px-6 py-10" style={{ borderColor: PALETTE.border, background: PALETTE.surface }}>
                 <div className="mx-auto max-w-6xl">
                     <p className="text-base leading-relaxed" style={{ color: PALETTE.muted }}>
-                        Leadflow é um sistema de outbound que transforma atividade comercial em sinais públicos e
+                        Lastreia é um sistema de outbound que transforma atividade comercial em sinais públicos e
                         autoridade duradoura.
                     </p>
                     <p className={`${mono.className} mt-3 text-sm uppercase tracking-[0.14em]`} style={{ color: PALETTE.accent }}>

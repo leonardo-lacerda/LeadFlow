@@ -1,6 +1,6 @@
-# 🚀 Leadflow Backend
+# 🚀 Lastreia Backend
 
-Backend API for Leadflow - B2B Prospecting SaaS Platform.
+Backend API for Lastreia - B2B Prospecting SaaS Platform.
 
 ## Tech Stack
 

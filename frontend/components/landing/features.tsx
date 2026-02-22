@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
     IconSearch,
@@ -57,7 +57,7 @@ export function LandingFeatures() {
                     </h2>
                     <p className="text-gray-400 max-w-2xl font-light text-lg">
                         Dezenas de insights valiosos morrem no backend todo dia.
-                        O Leadflow escuta a sua operacao e gera o seu conteudo de autoridade
+                        O Lastreia escuta a sua operacao e gera o seu conteudo de autoridade
                         baseado em dados anonimizados da rede.
                     </p>
                 </div>

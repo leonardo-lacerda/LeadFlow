@@ -1,4 +1,4 @@
-                                                                                                            # Leadflow - Novo Posicionamento Estrategico
+                                                                                                            # Lastreia - Novo Posicionamento Estrategico
 
 > **De:** "Ferramenta para conseguir clientes"
 > **Para:** "Acquisition as Infrastructure for B2B SaaS"
@@ -31,7 +31,7 @@ Todo SaaS B2B pequeno sofre com:
 Eles deveriam compartilhar sinais de mercado."
 ```
 
-### O que o Leadflow vira
+### O que o Lastreia vira
 
 ```mermaid
 graph TD
@@ -41,7 +41,7 @@ graph TD
         A3[SaaS C] -->|scraping isolado| B3[Leads frios]
     end
 
-    subgraph "Modelo Leadflow (compartilhado)"
+    subgraph "Modelo Lastreia (compartilhado)"
         C1[SaaS A] -->|sinais| D[Signal Layer]
         C2[SaaS B] -->|sinais| D
         C3[SaaS C] -->|sinais| D
@@ -59,7 +59,7 @@ graph TD
 
 ### Camada 1: Cada SaaS conecta sua operacao
 
-| Input | O que o Leadflow recebe |
+| Input | O que o Lastreia recebe |
 |-------|------------------------|
 | ICP definido | Perfil ideal (industry, cargo, tamanho) |
 | Canais usados | Email, WhatsApp, LinkedIn |
@@ -91,7 +91,7 @@ Pool de sinais agregados:
 
 ## Modelo Hibrido: Leads + Sinais
 
-O Leadflow entrega **as duas coisas** em camadas complementares:
+O Lastreia entrega **as duas coisas** em camadas complementares:
 
 ### Camada 1: Leads (a base)
 
@@ -130,8 +130,8 @@ Em cima dos leads, o sistema adiciona **context e inteligencia** baseada em dado
 ```
 
 > [!IMPORTANT]
-> **A diferenca do Leadflow:** Outros SaaS entregam leads frios OU dashboards bonitos.
-> O Leadflow entrega **o lead pronto + o contexto pra saber exatamente como e quando abordar**.
+> **A diferenca do Lastreia:** Outros SaaS entregam leads frios OU dashboards bonitos.
+> O Lastreia entrega **o lead pronto + o contexto pra saber exatamente como e quando abordar**.
 > Isso e o que transforma taxa de resposta de 5% em 25%.
 
 ---
@@ -252,7 +252,7 @@ graph LR
 ```
 "Leads sem contexto = spam.
 Contexto sem leads = teoria.
-Leadflow entrega os dois."
+Lastreia entrega os dois."
 
 "80% do esforco de aquisicao de SaaS e aprendizado
 que poderia ser compartilhado. O lead ja existe.
@@ -261,7 +261,7 @@ O que falta e saber QUANDO e COMO abordar."
 "CAC alto nao e problema de marketing.
 E problema de isolamento."
 
-"Leadflow: voce recebe o lead completo + um score
+"Lastreia: voce recebe o lead completo + um score
 que diz 'aborde por WhatsApp, terca 10h, esse
 perfil responde 3x mais assim.' Isso e infra."
 
@@ -317,7 +317,7 @@ Estou construindo isso."
 
 ## Resumo em 1 Paragrafo
 
-Leadflow e a infraestrutura invisivel que SaaS B2B usam para aprender coletivamente quem comprar, quando abordar e como comunicar. Em vez de cada startup fazer aquisicao isoladamente - repetindo erros, queimando leads e pagando CAC alto - o Leadflow agrega sinais anonimos de centenas de operacoes e transforma em inteligencia acionavel. Nao entrega leads. Entrega decisoes melhores. Quanto mais SaaS participam, mais preciso fica para todos. Isso nao e ferramenta de marketing. E infraestrutura de rede.
+Lastreia e a infraestrutura invisivel que SaaS B2B usam para aprender coletivamente quem comprar, quando abordar e como comunicar. Em vez de cada startup fazer aquisicao isoladamente - repetindo erros, queimando leads e pagando CAC alto - o Lastreia agrega sinais anonimos de centenas de operacoes e transforma em inteligencia acionavel. Nao entrega leads. Entrega decisoes melhores. Quanto mais SaaS participam, mais preciso fica para todos. Isso nao e ferramenta de marketing. E infraestrutura de rede.
 
 ---
 
