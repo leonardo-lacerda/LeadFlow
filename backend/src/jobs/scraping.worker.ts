@@ -3,6 +3,7 @@ import { env } from '../config/env.js';
 import { fetchWithTimeout } from '../lib/fetch.js';
 import { prisma } from '../lib/prisma.js';
 import { redis } from '../lib/redis.js';
+import { leadPoolService } from '../modules/lead-pool/lead-pool.service.js';
 
 interface ScrapingJobData {
     jobId: string;
@@ -64,6 +65,34 @@ export function startScrapingWorker() {
                 },
             });
 
+            let preFetchReport: { matched: number; claimed: number; cacheHint: boolean } | null = null;
+            try {
+                preFetchReport = await leadPoolService.preFetch({
+                    organizationId: data.organizationId,
+                    source: data.source,
+                    query: data.query,
+                    scrapingJobId: data.jobId,
+                });
+
+                if (preFetchReport.cacheHint) {
+                    await prisma.scrapingJob.update({
+                        where: { id: data.jobId },
+                        data: {
+                            query: {
+                                ...data.query,
+                                leadPool: {
+                                    matched: preFetchReport.matched,
+                                    claimed: preFetchReport.claimed,
+                                    preFetchedAt: new Date().toISOString(),
+                                },
+                            },
+                        },
+                    });
+                }
+            } catch (error) {
+                console.error('Lead pool pre-fetch failed:', error);
+            }
+
             const payload = {
                 ...data.query,
                 job_id: data.jobId,
@@ -87,6 +116,9 @@ export function startScrapingWorker() {
                 }
 
                 const result = (await response.json()) as Record<string, unknown>;
+                if (preFetchReport) {
+                    result['leadPool'] = preFetchReport;
+                }
 
                 const pythonJobId = result?.['job_id'] || result?.['jobId'];
                 if (pythonJobId) {

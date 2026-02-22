@@ -16,11 +16,15 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { getErrorMessage } from "@/lib/error-utils";
 
 const apiKeysSchema = z.object({
     apollo: z.string().optional(),
     hunter: z.string().optional(),
     snovio: z.string().optional(),
+    twitterAccessToken: z.string().optional(),
+    linkedinAccessToken: z.string().optional(),
+    linkedinAuthorUrn: z.string().optional(),
 });
 
 interface ApiKeysProps {
@@ -37,6 +41,9 @@ export function ApiKeys({ initialKeys = {} }: ApiKeysProps) {
             apollo: initialKeys.apollo || "",
             hunter: initialKeys.hunter || "",
             snovio: initialKeys.snovio || "",
+            twitterAccessToken: initialKeys.twitterAccessToken || "",
+            linkedinAccessToken: initialKeys.linkedinAccessToken || "",
+            linkedinAuthorUrn: initialKeys.linkedinAuthorUrn || "",
         },
     });
 
@@ -48,13 +55,16 @@ export function ApiKeys({ initialKeys = {} }: ApiKeysProps) {
             if (values.apollo) keys.apollo = values.apollo;
             if (values.hunter) keys.hunter = values.hunter;
             if (values.snovio) keys.snovio = values.snovio;
+            if (values.twitterAccessToken) keys.twitterAccessToken = values.twitterAccessToken;
+            if (values.linkedinAccessToken) keys.linkedinAccessToken = values.linkedinAccessToken;
+            if (values.linkedinAuthorUrn) keys.linkedinAuthorUrn = values.linkedinAuthorUrn;
 
             await integrationsApi.updateApiKeys(keys);
             toast({ title: "Chaves de API atualizadas!" });
         } catch (error) {
-            console.error(error);
             toast({
                 title: "Erro ao salvar chaves",
+                description: getErrorMessage(error),
                 variant: "destructive",
             });
         } finally {
@@ -99,9 +109,71 @@ export function ApiKeys({ initialKeys = {} }: ApiKeysProps) {
                             </FormItem>
                         )}
                     />
+                    <FormField
+                        control={form.control}
+                        name="snovio"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Snov.io API Key</FormLabel>
+                                <FormControl>
+                                    <Input type="password" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <Button type="submit" disabled={loading}>
                         {loading ? "Salvando..." : "Salvar Chaves"}
                     </Button>
+
+                    <div className="pt-4">
+                        <p className="text-sm font-medium">Growth Loop</p>
+                        <p className="text-xs text-muted-foreground mb-3">
+                            Tokens para publicação em redes sociais.
+                        </p>
+                    </div>
+
+                    <FormField
+                        control={form.control}
+                        name="twitterAccessToken"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Twitter Access Token</FormLabel>
+                                <FormControl>
+                                    <Input type="password" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="linkedinAccessToken"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>LinkedIn Access Token</FormLabel>
+                                <FormControl>
+                                    <Input type="password" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="linkedinAuthorUrn"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>LinkedIn Author URN (opcional)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="urn:li:person:123456789" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                 </form>
             </Form>
         </div>

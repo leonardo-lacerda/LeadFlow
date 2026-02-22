@@ -36,6 +36,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { IconCheck, IconPlus, IconTrash } from "@tabler/icons-react";
+import { getErrorMessage } from "@/lib/error-utils";
 
 const formSchema = z.object({
     name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -63,6 +64,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [actionId, setActionId] = useState<string | null>(null);
 
     const form = useForm<MailboxFormInput, unknown, MailboxFormValues>({
         resolver: zodResolver(formSchema),
@@ -86,10 +88,9 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
             form.reset();
             onRefresh();
         } catch (error) {
-            console.error(error);
             toast({
                 title: "Erro ao adicionar",
-                description: error instanceof Error ? error.message : "Erro desconhecido",
+                description: getErrorMessage(error),
                 variant: "destructive",
             });
         } finally {
@@ -107,11 +108,63 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
             toast({ title: "Caixa removida." });
             onRefresh();
         } catch (error) {
-            console.error(error);
             toast({
                 title: "Erro ao remover",
+                description: getErrorMessage(error),
                 variant: "destructive",
             });
+        }
+    };
+
+    const handleToggleActive = async (mailbox: Mailbox) => {
+        try {
+            setActionId(mailbox.id);
+            await integrationsApi.updateMailbox(mailbox.id, { isActive: !mailbox.isActive });
+            toast({
+                title: mailbox.isActive ? "Caixa desativada" : "Caixa ativada",
+            });
+            onRefresh();
+        } catch (error) {
+            toast({
+                title: "Erro ao atualizar status",
+                description: getErrorMessage(error),
+                variant: "destructive",
+            });
+        } finally {
+            setActionId(null);
+        }
+    };
+
+    const handleTest = async (mailbox: Mailbox) => {
+        try {
+            setActionId(mailbox.id);
+            await integrationsApi.testMailbox(mailbox.id);
+            toast({ title: "Teste de caixa executado" });
+        } catch (error) {
+            toast({
+                title: "Erro ao testar caixa",
+                description: getErrorMessage(error),
+                variant: "destructive",
+            });
+        } finally {
+            setActionId(null);
+        }
+    };
+
+    const handleWarmup = async (mailbox: Mailbox) => {
+        try {
+            setActionId(mailbox.id);
+            await integrationsApi.advanceMailboxWarmup(mailbox.id);
+            toast({ title: "Warmup avancado com sucesso" });
+            onRefresh();
+        } catch (error) {
+            toast({
+                title: "Erro ao avancar warmup",
+                description: getErrorMessage(error),
+                variant: "destructive",
+            });
+        } finally {
+            setActionId(null);
         }
     };
 
@@ -279,7 +332,8 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                         <TableRow>
                             <TableHead>Nome</TableHead>
                             <TableHead>Email</TableHead>
-                            <TableHead>Host SMTP</TableHead>
+                            <TableHead>SMTP</TableHead>
+                            <TableHead>Limite</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Acoes</TableHead>
                         </TableRow>
@@ -287,7 +341,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                     <TableBody>
                         {mailboxes.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                                     Nenhum email configurado.
                                 </TableCell>
                             </TableRow>
@@ -296,9 +350,8 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                             <TableRow key={mailbox.id}>
                                 <TableCell className="font-medium">{mailbox.name}</TableCell>
                                 <TableCell>{mailbox.email}</TableCell>
-                                <TableCell>
-                                    {mailbox.smtpHost}:{mailbox.smtpPort}
-                                </TableCell>
+                                <TableCell>{mailbox.smtpHost}:{mailbox.smtpPort}</TableCell>
+                                <TableCell>{mailbox.dailyLimit}/dia</TableCell>
                                 <TableCell>
                                     {mailbox.isActive ? (
                                         <Badge
@@ -313,14 +366,40 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                                     )}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                        onClick={() => handleDelete(mailbox.id)}
-                                    >
-                                        <IconTrash className="h-4 w-4" />
-                                    </Button>
+                                    <div className="flex justify-end gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleTest(mailbox)}
+                                            disabled={actionId === mailbox.id}
+                                        >
+                                            Testar
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleWarmup(mailbox)}
+                                            disabled={actionId === mailbox.id}
+                                        >
+                                            Warmup +1
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleToggleActive(mailbox)}
+                                            disabled={actionId === mailbox.id}
+                                        >
+                                            {mailbox.isActive ? "Desativar" : "Ativar"}
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                            onClick={() => handleDelete(mailbox.id)}
+                                        >
+                                            <IconTrash className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}

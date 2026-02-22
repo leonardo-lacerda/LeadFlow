@@ -3,135 +3,113 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { IconRocket, IconCheck } from "@tabler/icons-react";
+import { IconChevronRight, IconTerminal2 } from "@tabler/icons-react";
 
 export function LandingHero() {
     return (
-        <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-indigo-500/20 blur-[120px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 blur-[100px] rounded-full pointer-events-none" />
+        <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden bg-black selection:bg-white/30">
+            {/* Minimalist Grid Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+
+            {/* Subtle top spotlight */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/5 blur-[100px] pointer-events-none" />
 
             <div className="container mx-auto px-4 relative z-10 text-center">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.4 }}
+                    className="flex justify-center"
                 >
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-indigo-300 mb-6">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-                        </span>
-                        Novo posicionamento: Aquisicao como Infraestrutura
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-gray-300 mb-8 backdrop-blur-sm">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                        Signal Engine v2.0
+                        <div className="h-3 w-px bg-white/20 mx-1" />
+                        <span className="text-gray-500">Read docs</span>
+                        <IconChevronRight className="h-3 w-3" />
                     </div>
                 </motion.div>
 
                 <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                    className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-6"
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                    className="text-5xl md:text-7xl font-semibold text-white tracking-tighter mb-6 leading-[1.1]"
                 >
-                    Aquisicao como Infraestrutura. <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
-                        Sinais, nao leads.
-                    </span>
+                    Seu sistema comercial <br className="hidden md:block" />
+                    deveria falar em publico.
                 </motion.h1>
 
                 <motion.p
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto mb-10"
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                    className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 font-light"
                 >
-                    O Leadflow conecta sinais anonimizados entre SaaS B2B com ICP parecido
-                    para indicar quem abordar, quando abordar e qual canal converte melhor.
+                    O Leadflow transforma seu esforco de outbound em conteudo de distribuicao.
+                    Aquisicao como infraestrutura: capte leads, descubra padroes,
+                    e gere posts validados por dados para atrair mais clientes.
                 </motion.p>
 
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
+                    transition={{ duration: 0.4, delay: 0.3 }}
                     className="flex flex-col sm:flex-row items-center justify-center gap-4"
                 >
                     <Link href="/register">
-                        <Button size="lg" className="h-12 px-8 text-lg bg-indigo-600 hover:bg-indigo-700 text-white rounded-full">
-                            <IconRocket className="mr-2 h-5 w-5" />
-                            Entrar no Grupo Inicial
+                        <Button size="lg" className="h-12 px-8 text-base bg-white text-black hover:bg-gray-200 rounded-none font-medium">
+                            <IconTerminal2 className="mr-2 h-4 w-4" />
+                            Inicializar Engine
                         </Button>
                     </Link>
-                    <Link href="#how-it-works">
-                        <Button size="lg" variant="outline" className="h-12 px-8 text-lg border-white/20 text-white hover:bg-white/10 rounded-full">
-                            Ver Camada de Sinais
+                    <Link href="#signal-engine">
+                        <Button size="lg" variant="outline" className="h-12 px-8 text-base rounded-none border-white/10 text-white hover:bg-white/5 font-medium">
+                            Documentacao
                         </Button>
                     </Link>
                 </motion.div>
 
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.4 }}
-                    className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-gray-500"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.6 }}
+                    className="mt-20 max-w-4xl mx-auto"
                 >
-                    <div className="flex items-center gap-2">
-                        <IconCheck className="h-4 w-4 text-green-500" />
-                        <span>Sinais, nao leads</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <IconCheck className="h-4 w-4 text-green-500" />
-                        <span>Dados anonimizados por padrao</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <IconCheck className="h-4 w-4 text-green-500" />
-                        <span>Foco em SaaS B2B</span>
-                    </div>
-                </motion.div>
+                    <div className="relative rounded-lg border border-white/10 bg-black shadow-2xl shadow-white/[0.02] overflow-hidden group">
+                        <div className="absolute top-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.5 }}
-                    className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto"
-                >
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                        <p className="text-2xl font-bold text-white">4.2M+</p>
-                        <p className="text-xs text-gray-400">sinais compartilhados na rede</p>
-                    </div>
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                        <p className="text-2xl font-bold text-white">186</p>
-                        <p className="text-xs text-gray-400">SaaS B2B ativos no cohort tecnico</p>
-                    </div>
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                        <p className="text-2xl font-bold text-white">+31%</p>
-                        <p className="text-xs text-gray-400">aumento medio de respostas com timing recomendado</p>
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+                            <div className="flex items-center gap-2">
+                                <div className="h-3 w-3 rounded-full bg-red-500/20 border border-red-500/50" />
+                                <div className="h-3 w-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
+                                <div className="h-3 w-3 rounded-full bg-green-500/20 border border-green-500/50" />
+                            </div>
+                            <div className="text-xs font-mono text-gray-500 flex items-center gap-2">
+                                <IconTerminal2 className="h-3 w-3" /> signal_engine_status.log
+                            </div>
+                            <div className="w-12" /> {/* Spacer */}
+                        </div>
+
+                        <div className="p-6 md:p-8 font-mono text-sm text-left overflow-x-auto bg-[#0a0a0a]">
+                            <div className="text-gray-500 mb-2"># Analyzing recent outbound cohort_id=x7f9a</div>
+                            <div className="text-white"><span className="text-indigo-400">SELECT</span> pattern <span className="text-indigo-400">FROM</span> outbound_events</div>
+                            <div className="text-white"><span className="text-indigo-400">WHERE</span> segment = <span className="text-green-400">&apos;B2B SaaS CTO&apos;</span></div>
+                            <div className="text-gray-400 mt-4">... analyzing 4,209 interactions</div>
+                            <div className="text-gray-400">... pattern found with 84% confidence</div>
+                            <div className="text-indigo-300 mt-4 border-l-2 border-indigo-500/50 pl-4 py-2 bg-indigo-500/10">
+                                <span className="text-white block font-semibold mb-1">[SIGNAL DETECTED]</span>
+                                Timing: Tuesdays at 10:00 AM<br />
+                                Channel: WhatsApp (+47% reply rate)
+                            </div>
+                            <div className="text-gray-500 mt-4"># Generating distribution draft...</div>
+                            <div className="flex items-center mt-2 group-hover:text-white transition-colors">
+                                <span className="h-2 w-2 bg-white rounded-full animate-pulse mr-2" /> Ready to publish.
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
             </div>
-
-            <motion.div
-                initial={{ opacity: 0, y: 100, rotateX: 20 }}
-                animate={{ opacity: 1, y: 0, rotateX: 10 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                className="container mx-auto px-4 mt-16 perspective-[1000px]"
-            >
-                <div className="relative rounded-xl border border-white/10 bg-gray-900/50 backdrop-blur-sm shadow-2xl overflow-hidden aspect-video transform rotate-x-12 hover:rotate-x-0 transition-transform duration-700">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-purple-500/10" />
-                    <div className="grid grid-cols-12 gap-4 p-8 h-full opacity-50">
-                        <div className="col-span-3 bg-white/5 rounded-lg h-full" />
-                        <div className="col-span-9 flex flex-col gap-4 h-full">
-                            <div className="h-20 bg-white/5 rounded-lg w-full" />
-                            <div className="flex-1 bg-white/5 rounded-lg w-full" />
-                        </div>
-                    </div>
-
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="px-4 py-2 bg-black/50 backdrop-blur rounded-full text-white/50 text-sm border border-white/10">
-                            Previa da Camada de Sinais
-                        </span>
-                    </div>
-                </div>
-            </motion.div>
         </section>
     );
 }
-

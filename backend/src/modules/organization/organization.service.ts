@@ -11,6 +11,7 @@ interface UpdateOrganizationInput {
     webhooks?: Record<string, string>;
     onboardingCompleted?: boolean;
     notificationSettings?: Record<string, unknown>;
+    networkOptIn?: boolean;
 }
 
 interface InviteUserInput {
@@ -31,6 +32,7 @@ const ORG_BASE_SELECT = {
     slug: true,
     plan: true,
     onboardingCompleted: true,
+    networkOptIn: true,
     leadsLimit: true,
     emailsLimit: true,
     whatsappLimit: true,
@@ -101,6 +103,7 @@ export class OrganizationService {
                 webhooks: data.webhooks as Prisma.InputJsonValue | undefined,
                 onboardingCompleted: data.onboardingCompleted,
                 notificationSettings: data.notificationSettings as Prisma.InputJsonValue | undefined,
+                networkOptIn: data.networkOptIn,
             },
             select: ORG_BASE_SELECT,
         });

@@ -10,6 +10,11 @@ export interface Mailbox {
     smtpHost: string;
     smtpPort: number;
     smtpUser: string;
+    imapHost?: string | null;
+    imapPort?: number | null;
+    imapUser?: string | null;
+    warmupDays?: number;
+    warmupTarget?: number;
 }
 
 export interface WhatsappInstance {
@@ -41,6 +46,28 @@ export interface CreateWhatsappInput {
     dailyLimit?: number;
 }
 
+export interface UpdateMailboxInput {
+    name?: string;
+    email?: string;
+    smtpHost?: string;
+    smtpPort?: number;
+    smtpUser?: string;
+    smtpPass?: string;
+    imapHost?: string;
+    imapPort?: number;
+    imapUser?: string;
+    imapPass?: string;
+    dailyLimit?: number;
+    isWarming?: boolean;
+    isActive?: boolean;
+}
+
+export interface UpdateWhatsappInput {
+    name?: string;
+    dailyLimit?: number;
+    isActive?: boolean;
+}
+
 export const integrationsApi = {
     // Mailboxes
     async listMailboxes(): Promise<Mailbox[]> {
@@ -51,6 +78,18 @@ export const integrationsApi = {
     async createMailbox(data: CreateMailboxInput): Promise<Mailbox> {
         const response = await api.post("/email/mailboxes", data);
         return response.data.data;
+    },
+
+    async updateMailbox(id: string, data: UpdateMailboxInput): Promise<void> {
+        await api.patch(`/email/mailboxes/${id}`, data);
+    },
+
+    async testMailbox(id: string): Promise<void> {
+        await api.post(`/email/mailboxes/${id}/test`);
+    },
+
+    async advanceMailboxWarmup(id: string): Promise<void> {
+        await api.post(`/email/mailboxes/${id}/warmup`);
     },
 
     async deleteMailbox(id: string): Promise<void> {
@@ -68,6 +107,10 @@ export const integrationsApi = {
         return response.data.data;
     },
 
+    async updateWhatsapp(id: string, data: UpdateWhatsappInput): Promise<void> {
+        await api.patch(`/whatsapp/instances/${id}`, data);
+    },
+
     async deleteWhatsapp(id: string): Promise<void> {
         await api.delete(`/whatsapp/instances/${id}`);
     },
@@ -75,6 +118,11 @@ export const integrationsApi = {
     async getQrCode(id: string): Promise<string> {
         const response = await api.post(`/whatsapp/instances/${id}/qr`);
         return response.data.data.qrCode;
+    },
+
+    async getWhatsappStatus(id: string): Promise<string> {
+        const response = await api.get(`/whatsapp/instances/${id}/status`);
+        return response.data.data.status;
     },
 
     // API Keys (via Organization)

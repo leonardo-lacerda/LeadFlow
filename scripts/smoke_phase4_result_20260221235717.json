@@ -1,0 +1,194 @@
+﻿[
+    {
+        "flow":  "platform",
+        "step":  "health",
+        "status":  "PASS",
+        "detail":  "backend health 200"
+    },
+    {
+        "flow":  "auth",
+        "step":  "register",
+        "status":  "PASS",
+        "detail":  "user + org created"
+    },
+    {
+        "flow":  "auth",
+        "step":  "login",
+        "status":  "PASS",
+        "detail":  "login ok"
+    },
+    {
+        "flow":  "auth",
+        "step":  "me",
+        "status":  "PASS",
+        "detail":  "token valid"
+    },
+    {
+        "flow":  "leads",
+        "step":  "create",
+        "status":  "PASS",
+        "detail":  "leadId=cmlx5q5670006p8pksmlpwb8a"
+    },
+    {
+        "flow":  "leads",
+        "step":  "list",
+        "status":  "PASS",
+        "detail":  "total=1"
+    },
+    {
+        "flow":  "scraping",
+        "step":  "create-job",
+        "status":  "PASS",
+        "detail":  "jobId=cmlx5q5ab0008p8pkw1zy28yt"
+    },
+    {
+        "flow":  "scraping",
+        "step":  "list-jobs",
+        "status":  "PASS",
+        "detail":  "total=1"
+    },
+    {
+        "flow":  "scraping",
+        "step":  "job-details",
+        "status":  "PASS",
+        "detail":  "status=PENDING"
+    },
+    {
+        "flow":  "enrichment",
+        "step":  "create-job",
+        "status":  "PASS",
+        "detail":  "jobId=cmlx5q5c6000ap8pk3u1eigim"
+    },
+    {
+        "flow":  "enrichment",
+        "step":  "list-jobs",
+        "status":  "PASS",
+        "detail":  "total=1"
+    },
+    {
+        "flow":  "enrichment",
+        "step":  "job-details",
+        "status":  "PASS",
+        "detail":  "status=PENDING"
+    },
+    {
+        "flow":  "campaigns",
+        "step":  "create",
+        "status":  "PASS",
+        "detail":  "campaignId=cmlx5q5df000cp8pkp68jv2o0"
+    },
+    {
+        "flow":  "campaigns",
+        "step":  "launch",
+        "status":  "PASS",
+        "detail":  "launch ok"
+    },
+    {
+        "flow":  "campaigns",
+        "step":  "pause",
+        "status":  "PASS",
+        "detail":  "pause ok"
+    },
+    {
+        "flow":  "campaigns",
+        "step":  "resume",
+        "status":  "PASS",
+        "detail":  "resume ok"
+    },
+    {
+        "flow":  "inbox",
+        "step":  "list-conversations",
+        "status":  "PASS",
+        "detail":  "total=0"
+    },
+    {
+        "flow":  "inbox",
+        "step":  "thread",
+        "status":  "PASS",
+        "detail":  "messages loaded"
+    },
+    {
+        "flow":  "inbox",
+        "step":  "intelligence",
+        "status":  "PASS",
+        "detail":  "intelligence loaded"
+    },
+    {
+        "flow":  "signals",
+        "step":  "summary",
+        "status":  "PASS",
+        "detail":  "summary ok"
+    },
+    {
+        "flow":  "signals",
+        "step":  "overview",
+        "status":  "PASS",
+        "detail":  "overview ok"
+    },
+    {
+        "flow":  "signals",
+        "step":  "detect",
+        "status":  "PASS",
+        "detail":  "queued=True"
+    },
+    {
+        "flow":  "signals",
+        "step":  "lead-recommendations",
+        "status":  "PASS",
+        "detail":  "recommendations ok"
+    },
+    {
+        "flow":  "distribution",
+        "step":  "seed-signal",
+        "status":  "PASS",
+        "detail":  "signalId=cmlx5q65100013so2y8l2knaa"
+    },
+    {
+        "flow":  "distribution",
+        "step":  "generate",
+        "status":  "PASS",
+        "detail":  "draftId=cmlx5q673000hp8pkjp6v1ckl"
+    },
+    {
+        "flow":  "distribution",
+        "step":  "draft-detail",
+        "status":  "PASS",
+        "detail":  "format=CHART"
+    },
+    {
+        "flow":  "distribution",
+        "step":  "publish",
+        "status":  "PASS",
+        "detail":  "status=PUBLISHED"
+    },
+    {
+        "flow":  "distribution",
+        "step":  "track",
+        "status":  "PASS",
+        "detail":  "engagement updated"
+    },
+    {
+        "flow":  "distribution",
+        "step":  "export",
+        "status":  "PASS",
+        "detail":  "png url generated"
+    },
+    {
+        "flow":  "growth",
+        "step":  "integration-status",
+        "status":  "PASS",
+        "detail":  "status endpoint ok"
+    },
+    {
+        "flow":  "growth",
+        "step":  "twitter-publish-no-token",
+        "status":  "PASS",
+        "detail":  "expected 400 without token"
+    },
+    {
+        "flow":  "growth",
+        "step":  "linkedin-publish-no-token",
+        "status":  "PASS",
+        "detail":  "expected 400 without token"
+    }
+]

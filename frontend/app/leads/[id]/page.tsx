@@ -47,6 +47,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { inboxApi } from "@/lib/inbox-api";
 import { EnrichmentCard } from "@/components/leads/enrichment-card";
+import { LeadTemperatureBadge } from "@/components/leads/lead-temperature";
 
 interface LeadActivity {
     id: string;
@@ -199,6 +200,39 @@ export default function LeadDetailsPage() {
         return { website, mapUrl, socials, emails, phones };
     }, [lead?.enrichmentData, lead?.source, lead?.sourceUrl]);
 
+    const scoreDimensions = useMemo(() => {
+        if (!lead?.scoreBreakdown) {
+            return [];
+        }
+
+        return [
+            {
+                key: "enrichment",
+                label: "Enriquecimento",
+                value: lead.scoreBreakdown.enrichment,
+                max: 25,
+            },
+            {
+                key: "interaction",
+                label: "Interacao",
+                value: lead.scoreBreakdown.interaction,
+                max: 30,
+            },
+            {
+                key: "timing",
+                label: "Timing",
+                value: lead.scoreBreakdown.timing,
+                max: 20,
+            },
+            {
+                key: "icp",
+                label: "ICP Fit",
+                value: lead.scoreBreakdown.icp,
+                max: 25,
+            },
+        ];
+    }, [lead?.scoreBreakdown]);
+
     const loadNotes = async () => {
         if (!lead?.id) return;
         setNotesLoading(true);
@@ -338,6 +372,7 @@ export default function LeadDetailsPage() {
                     </Button>
                     <h2 className="text-3xl font-bold tracking-tight">{lead.fullName}</h2>
                     <Badge>{LEAD_STATUS_LABELS[lead.status] || lead.status}</Badge>
+                    {lead.temperature && <LeadTemperatureBadge temperature={lead.temperature} />}
                     <Select value={lead.status} onValueChange={handleStatusChange}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Status" />
@@ -461,6 +496,50 @@ export default function LeadDetailsPage() {
                     </Card>
 
                     <div className="md:col-span-2">
+                        <Card className="mb-4">
+                            <CardHeader>
+                                <CardTitle>Lead Intelligence</CardTitle>
+                                <CardDescription>Score atual e composicao em 4 dimensoes.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-4xl font-bold">{lead.score ?? 0}</span>
+                                    {lead.temperature && (
+                                        <LeadTemperatureBadge temperature={lead.temperature} />
+                                    )}
+                                </div>
+                                {scoreDimensions.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {scoreDimensions.map((dimension) => {
+                                            const pct = Math.max(
+                                                0,
+                                                Math.min(100, (dimension.value / dimension.max) * 100)
+                                            );
+                                            return (
+                                                <div key={dimension.key} className="space-y-1">
+                                                    <div className="flex items-center justify-between text-sm">
+                                                        <span>{dimension.label}</span>
+                                                        <span className="font-medium">
+                                                            {dimension.value}/{dimension.max}
+                                                        </span>
+                                                    </div>
+                                                    <div className="h-2 rounded bg-muted">
+                                                        <div
+                                                            className="h-2 rounded bg-primary transition-all"
+                                                            style={{ width: `${pct}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">
+                                        Score breakdown ainda nao calculado para este lead.
+                                    </p>
+                                )}
+                            </CardContent>
+                        </Card>
                         <div className="mb-4">
                             <EnrichmentCard lead={lead} />
                         </div>

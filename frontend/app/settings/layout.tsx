@@ -9,6 +9,7 @@ import {
     IconUsers,
     IconCreditCard,
     IconPlug,
+    IconWorld,
 } from "@tabler/icons-react";
 
 interface SettingsLayoutProps {
@@ -40,6 +41,11 @@ const sidebarNavItems = [
         title: "Faturamento",
         href: "/settings/billing",
         icon: IconCreditCard,
+    },
+    {
+        title: "Network",
+        href: "/settings/network",
+        icon: IconWorld,
     },
 ];
 

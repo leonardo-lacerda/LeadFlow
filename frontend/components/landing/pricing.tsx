@@ -7,100 +7,105 @@ const plans = [
     {
         name: "Base",
         price: "R$ 299",
-        description: "Para SaaS B2B pequenos iniciando operacao com sinais compartilhados.",
+        description: "Operacao de vendas com leads, inteligencia individual e CRM basico.",
         features: [
-            "25.000 sinais analisados/mes",
-            "1 organizacao",
-            "Acesso a base de leads",
-            "Score de momento e canal",
-            "Suporte por email",
+            "Leads ilimitados do Pool",
+            "1 organizacao/usuario",
+            "Score e Inteligencia basica",
+            "Disparos Email e WhatsApp",
+            "Suporte da comunidade",
         ],
     },
     {
-        name: "Rede",
+        name: "Distribution",
         price: "R$ 799",
         popular: true,
-        description: "Para times com volume constante e foco em previsibilidade de aquisicao.",
+        description: "Acesso ao Signal Engine para automatizar a geracao do seu conteudo.",
         features: [
-            "120.000 sinais analisados/mes",
-            "Ate 5 usuarios",
-            "Camada de Sinais avancada",
-            "Alertas de intencao por segmento",
-            "Benchmark anonimo por grupo",
+            "Tudo do plano Base",
+            "Signal Engine ativo",
+            "Geracao de templates de posts",
+            "Sinais compartilhados pela rede",
+            "Exportacao de charts (Data Moat)",
             "Suporte prioritario",
         ],
     },
     {
         name: "Infra",
-        price: "Sob consulta",
-        description: "Para operacoes com multiplas squads e necessidade de governanca de dados.",
+        price: "Custom",
+        description: "Para operacoes e SDRs que geram muito volume e precisam escalar a rede.",
         features: [
-            "Volume customizado de sinais",
+            "White labeling de Distribution",
             "Ate 20 usuarios",
-            "Pools dedicados por vertical",
+            "Integracoes (Salesforce, Hubspot)",
             "SLA e onboarding tecnico",
-            "Integracoes e API avancada",
+            "Acesso direto as APIs",
         ],
     },
 ];
 
 export function LandingPricing() {
     return (
-        <section id="pricing" className="py-24 relative overflow-hidden">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
-
-            <div className="container mx-auto px-4 relative z-10">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-                        Planos baseados em sinais e tamanho da org
+        <section id="pricing" className="py-24 bg-black border-t border-white/5 relative">
+            <div className="container mx-auto px-4">
+                <div className="text-center mb-16 max-w-3xl mx-auto">
+                    <p className="text-xs font-mono uppercase tracking-[0.2em] text-gray-500 mb-4 flex items-center justify-center gap-2">
+                        <span className="w-4 h-px bg-gray-600 block" /> Pricing
+                    </p>
+                    <h2 className="text-4xl md:text-5xl font-semibold text-white mb-6 tracking-tight">
+                        Ferramentas geram listas. <br />
+                        <span className="text-gray-500">A infraestrutura gera clientes.</span>
                     </h2>
-                    <p className="text-gray-400 max-w-2xl mx-auto">
-                        Voce nao paga por lista de leads. Voce paga pela infraestrutura que melhora sua decisao comercial.
+                    <p className="text-gray-400 font-light text-lg">
+                        Acesso aos canais, leads estruturados no pool coletivo,
+                        e um engine voltado pra tornar voces a autoridade no seu segmento.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
                     {plans.map((plan) => (
                         <div
                             key={plan.name}
-                            className={`relative rounded-2xl border p-8 backdrop-blur-sm ${plan.popular
-                                ? "border-indigo-500 bg-gray-900/80 shadow-2xl shadow-indigo-500/20"
-                                : "border-white/10 bg-gray-900/40 hover:border-white/20"
+                            className={`relative rounded-xl border p-8 bg-[#0a0a0a] transition-all hover:border-white/30 flex flex-col ${plan.popular ? "border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.03)]" : "border-white/10"
                                 }`}
                         >
                             {plan.popular && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-medium">
-                                    Grupo recomendado
+                                <div className="absolute -top-3 left-8 bg-white text-black px-3 py-0.5 rounded-full text-xs font-mono font-medium">
+                                    Recomendado
                                 </div>
                             )}
 
-                            <div className="mb-8">
-                                <h3 className="text-xl font-semibold text-white mb-2">{plan.name}</h3>
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-4xl font-bold text-white">{plan.price}</span>
-                                    {plan.price !== "Sob consulta" ? (
-                                        <span className="text-gray-400">/mes</span>
+                            <div className="mb-8 flex-1">
+                                <h3 className="text-lg font-mono text-gray-300 mb-4">{plan.name}</h3>
+                                <div className="flex items-baseline gap-1 mb-4">
+                                    <span className="text-4xl font-semibold text-white tracking-tight">{plan.price}</span>
+                                    {plan.price !== "Custom" ? (
+                                        <span className="text-gray-500 font-mono text-sm">/mo</span>
                                     ) : null}
                                 </div>
-                                <p className="text-gray-400 mt-4 text-sm">{plan.description}</p>
+                                <p className="text-gray-400 text-sm font-light leading-relaxed h-12">{plan.description}</p>
                             </div>
 
-                            <ul className="space-y-4 mb-8">
-                                {plan.features.map((feature) => (
-                                    <li key={feature} className="flex items-center gap-3 text-sm text-gray-300">
-                                        <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                                        {feature}
-                                    </li>
-                                ))}
-                            </ul>
+                            <div className="mb-8">
+                                <div className="h-px w-full bg-gradient-to-r from-white/10 to-transparent mb-6" />
+                                <ul className="space-y-4">
+                                    {plan.features.map((feature) => (
+                                        <li key={feature} className="flex items-start gap-3 text-sm text-gray-300 font-light">
+                                            <Check className="h-4 w-4 text-white mt-0.5 flex-shrink-0" />
+                                            {feature}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
 
                             <Button
-                                className={`w-full ${plan.popular
-                                    ? "bg-indigo-600 hover:bg-indigo-700 text-white"
-                                    : "bg-white/10 hover:bg-white/20 text-white"
+                                className={`w-full rounded-none h-11 font-medium text-sm transition-colors ${plan.popular
+                                        ? "bg-white text-black hover:bg-gray-200"
+                                        : "bg-white/5 hover:bg-white/10 text-white border border-white/10"
                                     }`}
+                                variant={plan.popular ? "default" : "outline"}
                             >
-                                Selecionar plano
+                                Get Started
                             </Button>
                         </div>
                     ))}

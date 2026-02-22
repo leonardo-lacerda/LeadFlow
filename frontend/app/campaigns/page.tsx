@@ -36,11 +36,12 @@ import {
 import { useState } from "react";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
-import { campaignsApi } from "@/lib/campaigns-api";
-import { useQuery } from "@tanstack/react-query";
+import { campaignsApi, CampaignStatus } from "@/lib/campaigns-api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getErrorMessage } from "@/lib/error-utils";
 
 const statusColors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
     ACTIVE: "default",
@@ -65,9 +66,10 @@ const channelLabels: Record<string, string> = {
 export default function CampaignsPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const queryClient = useQueryClient();
     const [search, setSearch] = useState("");
 
-    const { data, isLoading, refetch } = useQuery({
+    const { data, isLoading, isError, error } = useQuery({
         queryKey: ["campaigns", search],
         queryFn: () => campaignsApi.list({ search }),
     });
@@ -81,18 +83,25 @@ export default function CampaignsPage() {
         draft: campaigns.filter((c) => c.status === "DRAFT").length,
     };
 
-    const handleStatusToggle = async (id: string, current: string) => {
-        const next = current === "ACTIVE" ? "PAUSED" : "ACTIVE";
+    const handleStatusToggle = async (id: string, current: CampaignStatus) => {
         try {
-            await campaignsApi.updateStatus(
-                id,
-                next as "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED"
-            );
-            toast({ title: "Status atualizado" });
-            refetch();
+            if (current === "ACTIVE") {
+                await campaignsApi.pause(id);
+                toast({ title: "Sequencia pausada" });
+            } else if (current === "PAUSED") {
+                await campaignsApi.resume(id);
+                toast({ title: "Sequencia retomada" });
+            } else {
+                await campaignsApi.launch(id);
+                toast({ title: "Sequencia ativada" });
+            }
+            await queryClient.invalidateQueries({ queryKey: ["campaigns"] });
         } catch (error) {
-            console.error(error);
-            toast({ title: "Erro ao atualizar status", variant: "destructive" });
+            toast({
+                title: "Erro ao atualizar status",
+                description: getErrorMessage(error),
+                variant: "destructive",
+            });
         }
     };
 
@@ -101,10 +110,13 @@ export default function CampaignsPage() {
         try {
             await campaignsApi.delete(id);
             toast({ title: "Sequencia removida" });
-            refetch();
+            await queryClient.invalidateQueries({ queryKey: ["campaigns"] });
         } catch (error) {
-            console.error(error);
-            toast({ title: "Erro ao excluir", variant: "destructive" });
+            toast({
+                title: "Erro ao excluir",
+                description: getErrorMessage(error),
+                variant: "destructive",
+            });
         }
     };
 
@@ -116,10 +128,13 @@ export default function CampaignsPage() {
         try {
             await campaignsApi.updateStatus(id, "COMPLETED");
             toast({ title: "Sequencia arquivada" });
-            refetch();
+            await queryClient.invalidateQueries({ queryKey: ["campaigns"] });
         } catch (error) {
-            console.error(error);
-            toast({ title: "Erro ao arquivar", variant: "destructive" });
+            toast({
+                title: "Erro ao arquivar",
+                description: getErrorMessage(error),
+                variant: "destructive",
+            });
         }
     };
 
@@ -174,6 +189,12 @@ export default function CampaignsPage() {
                         />
                     </div>
                 </div>
+
+                {isError && (
+                    <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                        Erro ao carregar sequencias: {getErrorMessage(error)}
+                    </div>
+                )}
 
                 <div className="rounded-md border bg-white dark:bg-neutral-900 overflow-x-auto">
                     <Table>
@@ -270,6 +291,10 @@ export default function CampaignsPage() {
                                                         {campaign.status === "ACTIVE" ? (
                                                             <>
                                                                 <IconPlayerPause className="mr-2 h-4 w-4" /> Pausar
+                                                            </>
+                                                        ) : campaign.status === "PAUSED" ? (
+                                                            <>
+                                                                <IconPlayerPlay className="mr-2 h-4 w-4" /> Retomar
                                                             </>
                                                         ) : (
                                                             <>

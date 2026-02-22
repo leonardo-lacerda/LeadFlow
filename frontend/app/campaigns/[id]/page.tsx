@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CampaignLeadsTable } from "@/components/campaigns/campaign-leads-table";
 import { useQuery } from "@tanstack/react-query";
 import { Progress } from "@/components/ui/progress";
+import { getErrorMessage } from "@/lib/error-utils";
 
 const campaignStatusLabels: Record<string, string> = {
     DRAFT: "Rascunho",
@@ -96,22 +97,31 @@ export default function CampaignDetailsPage() {
         if (!campaign) return;
 
         try {
-            const newStatus = campaign.status === "ACTIVE" ? "PAUSED" : "ACTIVE";
-            await campaignsApi.updateStatus(
-                campaign.id,
-                newStatus as "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED"
-            );
-
-            toast({
-                title: "Status atualizado",
-                description: `Sequencia ${newStatus === "ACTIVE" ? "ativada" : "pausada"} com sucesso.`,
-            });
+            if (campaign.status === "ACTIVE") {
+                await campaignsApi.pause(campaign.id);
+                toast({
+                    title: "Status atualizado",
+                    description: "Sequencia pausada com sucesso.",
+                });
+            } else if (campaign.status === "PAUSED") {
+                await campaignsApi.resume(campaign.id);
+                toast({
+                    title: "Status atualizado",
+                    description: "Sequencia retomada com sucesso.",
+                });
+            } else {
+                await campaignsApi.launch(campaign.id);
+                toast({
+                    title: "Status atualizado",
+                    description: "Sequencia ativada com sucesso.",
+                });
+            }
 
             loadCampaign();
         } catch (error) {
             toast({
                 title: "Erro ao atualizar status",
-                description: error instanceof Error ? error.message : "Erro desconhecido",
+                description: getErrorMessage(error),
                 variant: "destructive",
             });
         }
@@ -181,12 +191,16 @@ export default function CampaignDetailsPage() {
                             variant={campaign.status === "ACTIVE" ? "outline" : "default"}
                             size="sm"
                             onClick={handleStatusToggle}
-                            disabled={campaign.status === "DRAFT"}
                         >
                             {campaign.status === "ACTIVE" ? (
                                 <>
                                     <IconPlayerPause className="h-4 w-4 mr-2" />
                                     Pausar
+                                </>
+                            ) : campaign.status === "PAUSED" ? (
+                                <>
+                                    <IconPlayerPlay className="h-4 w-4 mr-2" />
+                                    Retomar
                                 </>
                             ) : (
                                 <>

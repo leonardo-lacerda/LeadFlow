@@ -11,6 +11,7 @@ const updateOrgSchema = z.object({
     webhooks: z.record(z.string().url()).optional(),
     onboardingCompleted: z.boolean().optional(),
     notificationSettings: z.record(z.any()).optional(),
+    networkOptIn: z.boolean().optional(),
 });
 
 const inviteUserSchema = z.object({

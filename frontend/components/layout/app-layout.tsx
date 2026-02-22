@@ -10,8 +10,13 @@ import {
     IconMail,
     IconBrandWhatsapp,
     IconChartBar,
+    IconBulb,
     IconSearch,
     IconUpload,
+    IconShare3,
+    IconTrendingUp,
+    IconDatabase,
+    IconSparkles,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -75,6 +80,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             ),
         },
         {
+            label: "Lead Pool",
+            href: "/lead-pool",
+            icon: (
+                <IconDatabase className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+        },
+        {
             label: "Sequencias",
             href: "/campaigns",
             icon: (
@@ -93,6 +105,34 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             href: "/analytics",
             icon: (
                 <IconChartBar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+        },
+        {
+            label: "Signal Engine",
+            href: "/signals",
+            icon: (
+                <IconBulb className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+        },
+        {
+            label: "AI Workspace",
+            href: "/ai",
+            icon: (
+                <IconSparkles className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+        },
+        {
+            label: "Distribution",
+            href: "/distribution",
+            icon: (
+                <IconShare3 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+        },
+        {
+            label: "Growth Loop",
+            href: "/growth",
+            icon: (
+                <IconTrendingUp className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {

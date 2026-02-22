@@ -40,8 +40,11 @@ import {
     IconUsers,
     IconEye,
     IconSearch,
+    IconSparkles,
 } from "@tabler/icons-react";
 import { scrapingApi, ScrapingJob, ScrapingJobLead } from "@/lib/scraping-api";
+import { enrichmentApi } from "@/lib/enrichment-api";
+import { getErrorMessage } from "@/lib/error-utils";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -76,6 +79,8 @@ export default function ScrapingJobDetails() {
     const [showRerunDialog, setShowRerunDialog] = useState(false);
     const [rerunCooldownUntil, setRerunCooldownUntil] = useState<number | null>(null);
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
+    const [jobError, setJobError] = useState<string | null>(null);
+    const [leadsError, setLeadsError] = useState<string | null>(null);
     const cooldownSeconds = 60;
 
     const loadJob = useCallback(async () => {
@@ -86,8 +91,9 @@ export default function ScrapingJobDetails() {
             const data = await scrapingApi.getJob(jobId);
             setJob(data);
             setLastRefreshAt(new Date());
+            setJobError(null);
         } catch (error) {
-            console.error("Failed to load job", error);
+            setJobError(getErrorMessage(error));
         } finally {
             setLoading(false);
         }
@@ -107,8 +113,9 @@ export default function ScrapingJobDetails() {
             setLeads(data.leads);
             setLeadsTotalPages(data.totalPages || 1);
             setLastRefreshAt(new Date());
+            setLeadsError(null);
         } catch (error) {
-            console.error("Failed to load job leads", error);
+            setLeadsError(getErrorMessage(error));
         } finally {
             setLeadsLoading(false);
         }
@@ -194,6 +201,12 @@ export default function ScrapingJobDetails() {
 
     const config = STATUS_CONFIG[job.status];
     const Icon = config.icon;
+    const leadPoolMeta =
+        job.query && typeof job.query === "object" && !Array.isArray(job.query)
+            ? ((job.query as Record<string, unknown>).leadPool as
+                  | { matched?: number; claimed?: number; preFetchedAt?: string }
+                  | undefined)
+            : undefined;
 
     return (
         <AppLayout>
@@ -238,8 +251,8 @@ export default function ScrapingJobDetails() {
                             {rerunning
                                 ? "Reexecutando..."
                                 : cooldownRemaining > 0
-                                  ? `Aguarde ${cooldownRemaining}s`
-                                  : "Reexecutar"}
+                                    ? `Aguarde ${cooldownRemaining}s`
+                                    : "Reexecutar"}
                         </Button>
                     </div>
                 </div>
@@ -270,12 +283,23 @@ export default function ScrapingJobDetails() {
                                 {rerunning
                                     ? "Reexecutando..."
                                     : cooldownRemaining > 0
-                                      ? `Aguarde ${cooldownRemaining}s`
-                                      : "Confirmar"}
+                                        ? `Aguarde ${cooldownRemaining}s`
+                                        : "Confirmar"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                {jobError && (
+                    <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                        Erro ao carregar tarefa: {jobError}
+                    </div>
+                )}
+                {leadsError && (
+                    <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                        Erro ao carregar leads da tarefa: {leadsError}
+                    </div>
+                )}
 
                 {/* Progress Section */}
                 {(job.status === "RUNNING" || job.progress > 0) && (
@@ -302,6 +326,35 @@ export default function ScrapingJobDetails() {
                                 Atualizacao automatica a cada 2 segundos
                                 {lastRefreshAt ? ` - ultima em ${lastRefreshAt.toLocaleTimeString("pt-BR")}` : ""}.
                             </p>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {leadPoolMeta && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Lead Pool Cache</CardTitle>
+                            <CardDescription>
+                                Aproveitamento de leads compartilhados antes do scraping novo.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-3 sm:grid-cols-3">
+                            <div className="rounded border p-3">
+                                <p className="text-xs text-muted-foreground">Encontrados no cache</p>
+                                <p className="text-xl font-semibold">{leadPoolMeta.matched || 0}</p>
+                            </div>
+                            <div className="rounded border p-3">
+                                <p className="text-xs text-muted-foreground">Aproveitados da rede</p>
+                                <p className="text-xl font-semibold">{leadPoolMeta.claimed || 0}</p>
+                            </div>
+                            <div className="rounded border p-3">
+                                <p className="text-xs text-muted-foreground">Ultima pre-busca</p>
+                                <p className="text-sm font-medium">
+                                    {leadPoolMeta.preFetchedAt
+                                        ? new Date(leadPoolMeta.preFetchedAt).toLocaleString("pt-BR")
+                                        : "-"}
+                                </p>
+                            </div>
                         </CardContent>
                     </Card>
                 )}
@@ -344,6 +397,65 @@ export default function ScrapingJobDetails() {
                             )}
                         </CardContent>
                     </Card>
+                )}
+
+                {/* Post-Scraping Wizard */}
+                {job.status === "COMPLETED" && job.leadsCreated > 0 && (
+                    <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-5">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                                    <h3 className="font-semibold text-emerald-800 dark:text-emerald-200">
+                                        {job.leadsCreated} leads capturados! O que quer fazer agora?
+                                    </h3>
+                                </div>
+                                <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                                    Enriqueca os dados, adicione a uma sequencia de contato, ou visualize todos os leads.
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2 shrink-0">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-emerald-300 text-emerald-800 hover:bg-emerald-100 dark:text-emerald-200 dark:border-emerald-700"
+                                    onClick={async () => {
+                                        try {
+                                            await enrichmentApi.createJobForScrapingJob(job.id, {
+                                                name: `Enrichment ${job.name}`,
+                                            });
+                                            toast({ title: "Enriquecimento iniciado para todos os leads!" });
+                                        } catch (error) {
+                                            toast({
+                                                title: "Erro ao iniciar enriquecimento",
+                                                description: getErrorMessage(error),
+                                                variant: "destructive",
+                                            });
+                                        }
+                                    }}
+                                >
+                                    <IconSparkles className="mr-2 h-4 w-4" />
+                                    Enriquecer dados
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-emerald-300 text-emerald-800 hover:bg-emerald-100 dark:text-emerald-200 dark:border-emerald-700"
+                                    onClick={() => router.push(`/campaigns/new?scrapingJobId=${job.id}`)}
+                                >
+                                    <IconUsers className="mr-2 h-4 w-4" />
+                                    Criar sequencia
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    onClick={() => router.push(`/leads?scrapingJobId=${job.id}`)}
+                                >
+                                    Ver todos os leads
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
                 )}
 
                 {/* Stats Grid */}
@@ -608,6 +720,3 @@ export default function ScrapingJobDetails() {
         </AppLayout>
     );
 }
-
-
-

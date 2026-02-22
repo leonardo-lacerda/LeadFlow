@@ -34,4 +34,7 @@ export const analyticsQueue = new Queue('analytics', { connection });
 // Inbox follow-up queue
 export const inboxFollowupQueue = new Queue('inbox_followup', { connection });
 
+// Signal detector queue
+export const signalDetectorQueue = new Queue('signal_detector', { connection });
+
 console.log('Queues initialized');

@@ -4,6 +4,7 @@ import { enrichmentQueue } from '../../lib/queue.js';
 import { cnpjProvider } from './providers/cnpj.provider.js';
 import { domainProvider } from './providers/domain.provider.js';
 import { icpProvider, type MaturityLevel } from './providers/icp.provider.js';
+import { matchLeadAgainstIcp } from './icp-matcher.js';
 
 interface CreateEnrichmentJobInput {
     name?: string;
@@ -315,6 +316,7 @@ export class EnrichmentService {
                     technologies: true,
                     jobTitle: true,
                     seniority: true,
+                    department: true,
                     city: true,
                     state: true,
                     country: true,
@@ -406,6 +408,45 @@ export class EnrichmentService {
                 },
                 (organization?.icpDefinition as Record<string, unknown> | null) ?? null
             );
+            const matcherResult = matchLeadAgainstIcp(
+                {
+                    industry: pickNonEmpty(
+                        normalizedRecord['industry'] as string | undefined,
+                        cnpjResult.industry,
+                        existingLead.industry
+                    ),
+                    jobTitle: pickNonEmpty(
+                        normalizedRecord['jobTitle'] as string | undefined,
+                        existingLead.jobTitle
+                    ),
+                    seniority: pickNonEmpty(
+                        normalizedRecord['seniority'] as string | undefined,
+                        existingLead.seniority
+                    ),
+                    department: pickNonEmpty(
+                        normalizedRecord['department'] as string | undefined,
+                        existingLead.department
+                    ),
+                    companySize: pickNonEmpty(
+                        normalizedRecord['companySize'] as string | undefined,
+                        cnpjResult.companySize,
+                        existingLead.companySize
+                    ),
+                    city: pickNonEmpty(
+                        normalizedRecord['city'] as string | undefined,
+                        existingLead.city
+                    ),
+                    state: pickNonEmpty(
+                        normalizedRecord['state'] as string | undefined,
+                        existingLead.state
+                    ),
+                    country: pickNonEmpty(
+                        normalizedRecord['country'] as string | undefined,
+                        existingLead.country
+                    ),
+                },
+                (organization?.icpDefinition as Record<string, unknown> | null) ?? null
+            );
 
             const previousEnrichmentData = toJsonObject(existingLead.enrichmentData);
             const enrichedAt = new Date();
@@ -449,12 +490,13 @@ export class EnrichmentService {
                 icpReasons: mergeStringArrays(
                     existingLead.icpReasons,
                     normalizedRecord['icpReasons'] as string[] | undefined,
-                    icpResult.icpReasons
+                    icpResult.icpReasons,
+                    matcherResult.reasons
                 ),
                 icpMatch:
                     typeof icpResult.icpMatch === 'number'
-                        ? icpResult.icpMatch
-                        : existingLead.icpMatch ?? undefined,
+                        ? Math.max(icpResult.icpMatch, matcherResult.icpMatch)
+                        : matcherResult.icpMatch || existingLead.icpMatch || undefined,
                 enrichedAt,
                 enrichmentData: {
                     ...previousEnrichmentData,
@@ -463,8 +505,11 @@ export class EnrichmentService {
                         cnpj: cnpjResult.metadata || null,
                         domain: domainResult.metadata || null,
                         icp: {
-                            icpMatch: icpResult.icpMatch ?? null,
-                            reasons: icpResult.icpReasons,
+                            icpMatch:
+                                typeof icpResult.icpMatch === 'number'
+                                    ? Math.max(icpResult.icpMatch, matcherResult.icpMatch)
+                                    : matcherResult.icpMatch || null,
+                            reasons: mergeStringArrays(icpResult.icpReasons, matcherResult.reasons),
                             maturityLevel: icpResult.maturityLevel ?? null,
                         },
                         updatedAt: enrichedAt.toISOString(),

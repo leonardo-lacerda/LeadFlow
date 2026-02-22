@@ -9,44 +9,43 @@ import {
 
 const faqs = [
     {
-        question: "O Leadflow vende lead direto entre empresas?",
-        answer: "Nao. O Leadflow nao e marketplace de lead. A plataforma entrega sinais, score, timing e recomendacao de canal para cada org executar com autonomia.",
+        question: "Leadflow e so mais uma ferramenta de e-mail frio?",
+        answer: "Nao. Nosso foco e na infraestrutura por tras da operacao. O Leadflow entrega os leads, roda os disparos e principalmente: extrai sinais meta-analiticos da operacao para gerar visibilidade e autoridade para sua marca no LinkedIn/X.",
     },
     {
-        question: "Quais dados sao compartilhados entre SaaS?",
-        answer: "Somente padroes anonimizados por segmento (ex.: reply rate por perfil e horario). Nome, email, conteudo da mensagem e origem da org nao sao compartilhados.",
+        question: "Como funciona a geracao de conteudo?",
+        answer: "O Signal Engine acompanha sua operacao comercial. Se voce descobrir que 'CTOs de SaaS Serie A tem 47% mais chance de responder via WhatsApp', ele te avisa e monta um draft baseado NESSE DADO para voce divulgar.",
     },
     {
-        question: "Qual perfil de cliente encaixa no cohort inicial?",
-        answer: "SaaS B2B com decisor tecnico, ticket recorrente e outbound leve (email + WhatsApp). Esse recorte reduz ruido e aumenta precisao dos sinais.",
+        question: "Quais dados sao compartilhados entre os usuarios?",
+        answer: "Somente padroes agregados. Nome, email e dados da sua empresa JAMAIS sao compartilhados. Cuidamos do anonimato completo para que voce receba sinais confiaveis, mas sem comprometer a sua operacao.",
     },
     {
-        question: "Sem sinais de rede o produto ainda funciona?",
-        answer: "Sim. O Leadflow opera com seus dados proprios e evolui conforme o volume coletivo cresce. Quanto mais orgs similares entram, mais forte fica o data moat.",
-    },
-    {
-        question: "Qual resultado posso esperar?",
-        answer: "A promessa nao e cliente garantido. A promessa e decisao comercial melhor: priorizacao mais inteligente, menos tentativa e erro e aumento consistente de resposta.",
+        question: "O Leadflow faz sentido para uma operacao pequena?",
+        answer: "Sim, especialmente para equipes enxutas. Quanto menor a equipe, mais facil e cair no puro spam. O Leadflow te forca a operar como uma autoridade desde o primeiro dia: prospectando com precisao e gerando inbound como sub-produto.",
     },
 ];
 
 export function LandingFAQ() {
     return (
-        <section id="faq" className="py-24 bg-black/50">
+        <section id="faq" className="py-24 bg-black border-t border-white/5">
             <div className="container mx-auto px-4 max-w-3xl">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+                <div className="mb-16">
+                    <p className="text-xs font-mono uppercase tracking-[0.2em] text-gray-500 mb-4 flex items-center gap-2">
+                        <span className="w-4 h-px bg-gray-600 block" /> F.A.Q.
+                    </p>
+                    <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tight shrink-0">
                         Perguntas frequentes
                     </h2>
                 </div>
 
                 <Accordion type="single" collapsible className="w-full">
                     {faqs.map((faq, idx) => (
-                        <AccordionItem key={idx} value={`item-${idx}`} className="border-white/10">
-                            <AccordionTrigger className="text-white hover:text-indigo-400 transition-colors text-left md:text-lg">
+                        <AccordionItem key={idx} value={`item-${idx}`} className="border-b border-white/10">
+                            <AccordionTrigger className="text-white hover:text-gray-300 transition-colors text-left md:text-lg font-medium py-6">
                                 {faq.question}
                             </AccordionTrigger>
-                            <AccordionContent className="text-gray-400 text-base leading-relaxed">
+                            <AccordionContent className="text-gray-400 text-base leading-relaxed font-light pb-6">
                                 {faq.answer}
                             </AccordionContent>
                         </AccordionItem>

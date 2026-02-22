@@ -2,6 +2,8 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { scoringQueue } from '../../lib/queue.js';
 import { LeadTemperatureValue } from './scoring.types.js';
+import { composeLeadScore } from './score.engine.js';
+import { determineLeadTemperature } from './temperature.service.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TEMPERATURE_ORDER: LeadTemperatureValue[] = ['HOT', 'WARM', 'COLD'];
@@ -127,13 +129,6 @@ function maxDate(a: Date | null, b: Date | null): Date | null {
         return a;
     }
     return a.getTime() >= b.getTime() ? a : b;
-}
-
-function dateWithinDays(date: Date | null, days: number, now: Date): boolean {
-    if (!date) {
-        return false;
-    }
-    return now.getTime() - date.getTime() <= days * DAY_MS;
 }
 
 function getStringByPath(
@@ -497,27 +492,6 @@ export class ScoringService {
         return clampInt(scoredFromDefinition, 0, 25);
     }
 
-    private determineTemperature(
-        totalScore: number,
-        signals: InteractionSignals,
-        now: Date
-    ): LeadTemperatureValue {
-        const repliedRecently = dateWithinDays(signals.lastReplyAt, 3, now);
-        const openedRecently = dateWithinDays(signals.lastOpenAt, 7, now);
-        const inactiveMoreThan14Days = getDaysSince(signals.lastInteraction, now) > 14;
-
-        if (repliedRecently || totalScore >= 70) {
-            return 'HOT';
-        }
-        if (inactiveMoreThan14Days || totalScore < 40) {
-            return 'COLD';
-        }
-        if (openedRecently || (totalScore >= 40 && totalScore <= 69)) {
-            return 'WARM';
-        }
-        return 'COLD';
-    }
-
     private getRecommendedAction(lead: LeaderboardLead): 'EMAIL' | 'WHATSAPP' | 'CALL' | 'REVIEW' {
         if (lead.temperature === 'HOT' && lead.phone) {
             return 'CALL';
@@ -552,16 +526,14 @@ export class ScoringService {
             icp,
         };
 
-        const score = clampInt(
-            breakdown.enrichment +
-                breakdown.interaction +
-                breakdown.timing +
-                breakdown.icp,
-            0,
-            100
-        );
-
-        const temperature = this.determineTemperature(score, interactionSignals, now);
+        const score = composeLeadScore(breakdown);
+        const temperature = determineLeadTemperature({
+            score,
+            now,
+            lastInteraction: interactionSignals.lastInteraction,
+            lastReplyAt: interactionSignals.lastReplyAt,
+            lastOpenAt: interactionSignals.lastOpenAt,
+        });
 
         return {
             score,

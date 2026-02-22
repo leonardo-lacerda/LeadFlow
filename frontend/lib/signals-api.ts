@@ -1,6 +1,14 @@
 import { api } from '@/lib/api';
 
 export type SignalRecommendationChannel = 'email' | 'whatsapp';
+export type SignalRecordType =
+    | 'TIMING'
+    | 'CHANNEL'
+    | 'ICP'
+    | 'MESSAGE'
+    | 'OBJECTION'
+    | 'CONVERSION';
+export type SignalRecordStatus = 'NEW' | 'SEEN' | 'USED' | 'DISMISSED';
 
 export interface SignalLeadRecommendation {
     leadId: string;
@@ -141,7 +149,83 @@ export interface SignalCohortStatus {
     };
 }
 
+export interface SignalRecord {
+    id: string;
+    organizationId: string;
+    signature: string;
+    type: SignalRecordType;
+    confidence: number;
+    insight: string;
+    dataPoints: number;
+    suggestedFormats: string[];
+    rawData: unknown;
+    status: SignalRecordStatus;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface SignalSummary {
+    byType: Array<{
+        type: SignalRecordType;
+        count: number;
+        averageConfidence: number;
+    }>;
+    byStatus: Array<{
+        status: SignalRecordStatus;
+        count: number;
+    }>;
+    lastGeneratedAt: string | null;
+}
+
 export const signalsApi = {
+    async listSignals(params?: {
+        page?: number;
+        limit?: number;
+        type?: SignalRecordType;
+        status?: SignalRecordStatus;
+        minConfidence?: number;
+    }): Promise<{
+        items: SignalRecord[];
+        total: number;
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+        };
+    }> {
+        const response = await api.get('/signals', { params });
+        return response.data.data;
+    },
+
+    async getSignalSummary(): Promise<SignalSummary> {
+        const response = await api.get('/signals/summary');
+        return response.data.data;
+    },
+
+    async runDetection(input?: {
+        minConfidence?: number;
+        async?: boolean;
+    }): Promise<{
+        queued?: boolean;
+        jobId?: string;
+        generatedAt?: string;
+        created?: number;
+        updated?: number;
+        totalCandidates?: number;
+    }> {
+        const response = await api.post('/signals/detect', input || {});
+        return response.data.data;
+    },
+
+    async updateSignalStatus(
+        signalId: string,
+        status: SignalRecordStatus
+    ): Promise<SignalRecord> {
+        const response = await api.patch(`/signals/${signalId}/status`, { status });
+        return response.data.data;
+    },
+
     async getOverview(): Promise<SignalsOverview> {
         const response = await api.get('/signals/overview');
         return response.data.data;

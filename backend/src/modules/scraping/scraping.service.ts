@@ -1,7 +1,11 @@
-import { JobStatus, Prisma } from '@prisma/client';
+import { JobStatus, LeadStatus, Prisma } from '@prisma/client';
 import crypto from 'node:crypto';
+import { env } from '../../config/env.js';
 import { prisma } from '../../lib/prisma.js';
 import { scrapingQueue } from '../../lib/queue.js';
+import { enrichmentService } from '../enrichment/enrichment.service.js';
+import { leadPoolService } from '../lead-pool/lead-pool.service.js';
+import { scoringService } from '../scoring/scoring.service.js';
 
 export type ScrapingSource =
     | 'google_maps'
@@ -42,6 +46,20 @@ interface ScrapingWebhookPayload {
     leads?: Array<Record<string, unknown>>;
     error?: unknown;
     debug?: Record<string, unknown>;
+}
+
+interface PostCapturePipelineReport {
+    scoring: {
+        queued: boolean;
+        leadCount: number;
+        error: string | null;
+    };
+    enrichment: {
+        queued: boolean;
+        leadCount: number;
+        skippedReason: string | null;
+        error: string | null;
+    };
 }
 
 const LEAD_FIELDS = new Set([
@@ -416,6 +434,84 @@ function normalizeStatus(status?: string): JobStatus {
 }
 
 export class ScrapingService {
+    private async runPostCapturePipeline(
+        organizationId: string,
+        scrapingJobId: string
+    ): Promise<PostCapturePipelineReport> {
+        const report: PostCapturePipelineReport = {
+            scoring: {
+                queued: false,
+                leadCount: 0,
+                error: null,
+            },
+            enrichment: {
+                queued: false,
+                leadCount: 0,
+                skippedReason: null,
+                error: null,
+            },
+        };
+
+        try {
+            const unscoredLeads = await prisma.lead.findMany({
+                where: {
+                    organizationId,
+                    scrapingJobId,
+                    lastScoreUpdate: null,
+                },
+                select: { id: true },
+            });
+            const leadIds = unscoredLeads.map((lead) => lead.id);
+            report.scoring.leadCount = leadIds.length;
+
+            if (leadIds.length > 0) {
+                await scoringService.enqueueRecalculation(organizationId, {
+                    leadIds,
+                    limit: leadIds.length,
+                });
+                report.scoring.queued = true;
+            }
+        } catch (error) {
+            report.scoring.error =
+                error instanceof Error ? error.message : 'Failed to enqueue scoring recalculation';
+        }
+
+        if (!env.AUTO_ENRICH_LEADS) {
+            report.enrichment.skippedReason = 'AUTO_ENRICH_LEADS disabled';
+            return report;
+        }
+
+        try {
+            const enrichmentEligibleLeads = await prisma.lead.findMany({
+                where: {
+                    organizationId,
+                    scrapingJobId,
+                    status: LeadStatus.NEW,
+                    emailVerified: false,
+                },
+                select: { id: true },
+            });
+            const leadIds = enrichmentEligibleLeads.map((lead) => lead.id);
+            report.enrichment.leadCount = leadIds.length;
+
+            if (leadIds.length === 0) {
+                report.enrichment.skippedReason = 'No NEW leads eligible for enrichment';
+                return report;
+            }
+
+            await enrichmentService.createJob(organizationId, {
+                name: `Auto enrichment for scraping job ${scrapingJobId}`,
+                leadIds,
+            });
+            report.enrichment.queued = true;
+        } catch (error) {
+            report.enrichment.error =
+                error instanceof Error ? error.message : 'Failed to enqueue enrichment job';
+        }
+
+        return report;
+    }
+
     async createJob(organizationId: string, input: CreateScrapingJobInput) {
         const job = await prisma.scrapingJob.create({
             data: {
@@ -526,6 +622,8 @@ export class ScrapingService {
                 progress: 0,
                 processedItems: 0,
                 totalItems: 0,
+                leadsCreated: 0,
+                errors: Prisma.JsonNull,
             },
         });
 
@@ -589,6 +687,8 @@ export class ScrapingService {
 
         let createdCount = 0;
         let droppedByLimit = 0;
+        let createdLeadIds: string[] = [];
+        let createdLeadIdByFingerprint: Record<string, string> = {};
         if (leadsToCreate.length > 0) {
             const result = await prisma.$transaction(async (tx) => {
                 const organization = await tx.organization.findUnique({
@@ -602,14 +702,70 @@ export class ScrapingService {
 
                 const remaining = Math.max(organization.leadsLimit - organization.leadsUsed, 0);
                 if (remaining <= 0) {
-                    return { count: 0, dropped: leadsToCreate.length };
+                    return {
+                        count: 0,
+                        dropped: leadsToCreate.length,
+                        createdLeadIds: [] as string[],
+                        createdLeadIdByFingerprint: {} as Record<string, string>,
+                    };
                 }
 
                 const cappedLeads = leadsToCreate.slice(0, remaining);
+                const cappedFingerprints = Array.from(
+                    new Set(
+                        cappedLeads
+                            .map((lead) =>
+                                typeof lead.sourceFingerprint === 'string'
+                                    ? lead.sourceFingerprint
+                                    : undefined
+                            )
+                            .filter((value): value is string => Boolean(value))
+                    )
+                );
+                const existingFingerprints = new Set<string>();
+                if (cappedFingerprints.length > 0) {
+                    const existingLeads = await tx.lead.findMany({
+                        where: {
+                            organizationId: job.organizationId,
+                            sourceFingerprint: {
+                                in: cappedFingerprints,
+                            },
+                        },
+                        select: {
+                            sourceFingerprint: true,
+                        },
+                    });
+
+                    for (const item of existingLeads) {
+                        if (item.sourceFingerprint) {
+                            existingFingerprints.add(item.sourceFingerprint);
+                        }
+                    }
+                }
+
                 const createResult = await tx.lead.createMany({
                     data: cappedLeads,
                     skipDuplicates: true,
                 });
+
+                const insertedFingerprints = cappedFingerprints.filter(
+                    (fingerprint) => !existingFingerprints.has(fingerprint)
+                );
+                const insertedLeads =
+                    insertedFingerprints.length > 0
+                        ? await tx.lead.findMany({
+                              where: {
+                                  organizationId: job.organizationId,
+                                  sourceFingerprint: {
+                                      in: insertedFingerprints,
+                                  },
+                              },
+                              select: {
+                                  id: true,
+                                  sourceFingerprint: true,
+                              },
+                          })
+                        : [];
 
                 if (createResult.count > 0) {
                     await tx.organization.update({
@@ -621,10 +777,34 @@ export class ScrapingService {
                 return {
                     count: createResult.count,
                     dropped: Math.max(leadsToCreate.length - cappedLeads.length, 0),
+                    createdLeadIds: insertedLeads.map((lead) => lead.id),
+                    createdLeadIdByFingerprint: Object.fromEntries(
+                        insertedLeads
+                            .filter((lead) => Boolean(lead.sourceFingerprint))
+                            .map((lead) => [lead.sourceFingerprint as string, lead.id])
+                    ),
                 };
             });
             createdCount = result.count;
             droppedByLimit = result.dropped;
+            createdLeadIds = result.createdLeadIds;
+            createdLeadIdByFingerprint = result.createdLeadIdByFingerprint;
+        }
+
+        try {
+            const payloadWithFingerprint = acceptedLeads.map((lead) => ({
+                ...lead,
+                sourceFingerprint: buildLeadFingerprint(lead, job.source),
+            }));
+            await leadPoolService.ingest({
+                organizationId: job.organizationId,
+                source: job.source,
+                leads: payloadWithFingerprint,
+                scrapingJobId: job.id,
+                leadIdByFingerprint: createdLeadIdByFingerprint,
+            });
+        } catch (error) {
+            console.error(`[scraping:webhook] failed to ingest lead pool for job=${job.id}`, error);
         }
 
         const status = payload.status ? normalizeStatus(payload.status) : job.status;
@@ -657,6 +837,11 @@ export class ScrapingService {
             leadsCreated === 0 &&
             (persistedLeadCount ?? 0) === 0 &&
             (finalLeadCountHint === undefined || finalLeadCountHint === 0);
+        const isCompletionTransition = status === 'COMPLETED' && job.status !== 'COMPLETED';
+        let postCapture: PostCapturePipelineReport | null = null;
+        if (isCompletionTransition) {
+            postCapture = await this.runPostCapturePipeline(job.organizationId, job.id);
+        }
 
         const diagnostics = {
             status,
@@ -666,9 +851,11 @@ export class ScrapingService {
             droppedInvalid,
             createdCount,
             droppedByLimit,
+            createdLeadIdsCount: createdLeadIds.length,
             totalItems,
             processedItems,
             persistedLeadCount: persistedLeadCount ?? null,
+            postCapture,
             scraperDebug: payload.debug ?? null,
             at: new Date().toISOString(),
         };
@@ -704,7 +891,10 @@ export class ScrapingService {
             },
         });
 
-        return { createdCount };
+        return {
+            createdCount,
+            postCapture,
+        };
     }
 }
 

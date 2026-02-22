@@ -17,6 +17,7 @@ model Organization {
   name        String
   slug        String   @unique
   plan        Plan     @default(STARTER)
+  networkOptIn Boolean @default(false)
   
   // Limits
   leadsLimit      Int @default(1000)
@@ -58,6 +59,9 @@ model Organization {
   notifications Notification[]
   invites     OrganizationInvite[]
   signalEvents SignalEvent[]
+  signals     Signal[]
+  sharedLeadClaims SharedLeadClaim[]
+  distributionDrafts DistributionDraft[]
 }
 
 model Notification {
@@ -187,6 +191,7 @@ model Lead {
   activities      Activity[]
   notes           LeadNote[]
   signalEvents    SignalEvent[]
+  sharedLeadClaims SharedLeadClaim[]
   
   @@index([organizationId])
   @@index([email])
@@ -430,6 +435,22 @@ enum SignalEventOutcome {
   MANUAL
 }
 
+enum SignalType {
+  TIMING
+  CHANNEL
+  ICP
+  MESSAGE
+  OBJECTION
+  CONVERSION
+}
+
+enum SignalStatus {
+  NEW
+  SEEN
+  USED
+  DISMISSED
+}
+
 model SignalEvent {
   id             String             @id @default(cuid())
   dedupeKey      String             @unique
@@ -452,6 +473,108 @@ model SignalEvent {
   @@index([campaignId, eventAt])
   @@index([leadSegment, eventAt])
   @@index([channel, eventType, eventAt])
+}
+
+model Signal {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  signature       String
+  type            SignalType
+  confidence      Int
+  insight         String
+  dataPoints      Int
+  suggestedFormats String[]     @default([])
+  rawData         Json
+  status          SignalStatus @default(NEW)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  distributionDrafts DistributionDraft[]
+
+  @@unique([organizationId, signature])
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([confidence])
+  @@index([createdAt])
+}
+
+model SharedLead {
+  id              String   @id @default(cuid())
+  googlePlaceId   String?  @unique
+  companyCnpj     String?  @unique
+  linkedinUrl     String?  @unique
+  email           String?
+  phone           String?
+  fullName        String?
+  companyName     String?
+  website         String?
+  city            String?
+  state           String?
+  category        String?
+  source          String
+  rawData         Json?
+  quality         Int      @default(50)
+  confirmations   Int      @default(1)
+  lastScrapedAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  claims          SharedLeadClaim[]
+
+  @@index([city, state, category])
+  @@index([source])
+  @@index([lastScrapedAt])
+}
+
+model SharedLeadClaim {
+  id              String   @id @default(cuid())
+  sharedLeadId    String
+  sharedLead      SharedLead @relation(fields: [sharedLeadId], references: [id], onDelete: Cascade)
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leadId          String?  @unique
+  lead            Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  claimedAt       DateTime @default(now())
+
+  @@unique([sharedLeadId, organizationId])
+  @@index([organizationId, claimedAt])
+}
+
+enum DraftFormat {
+  TWEET
+  THREAD
+  CHART
+  MICRO_CASE
+  INSIGHT
+}
+
+enum DraftStatus {
+  DRAFT
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+model DistributionDraft {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  signalId        String?
+  signal          Signal?  @relation(fields: [signalId], references: [id], onDelete: SetNull)
+  format          DraftFormat
+  content         String
+  editedContent   String?
+  status          DraftStatus @default(DRAFT)
+  publishedAt     DateTime?
+  platform        String?
+  impressions     Int?
+  engagement      Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId, status])
+  @@index([organizationId, format])
+  @@index([signalId])
+  @@index([publishedAt])
 }
 
 // ==================== TEMPLATES ====================

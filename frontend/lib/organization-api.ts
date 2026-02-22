@@ -14,6 +14,7 @@ export interface Organization {
     slug: string;
     plan: string;
     onboardingCompleted?: boolean;
+    networkOptIn?: boolean;
     apiKeys?: Record<string, string>;
     webhooks?: Record<string, string>;
     notificationSettings?: Record<string, unknown>;
@@ -40,6 +41,7 @@ export interface UpdateOrganizationInput {
     webhooks?: Record<string, string>;
     onboardingCompleted?: boolean;
     notificationSettings?: Record<string, unknown>;
+    networkOptIn?: boolean;
 }
 
 export interface InviteUserInput {
