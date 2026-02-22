@@ -75,6 +75,55 @@ npm run dev
 docker-compose up -d
 ```
 
+## Deploy tudo de uma vez (DigitalOcean Droplet)
+
+Este repositorio inclui uma stack de producao unica com:
+- `backend`
+- `services/scraping`
+- `services/enrichment`
+- `services/ai`
+- `postgres`
+- `redis`
+- `evolution`
+
+Arquivos usados:
+- `docker-compose.prod.yml`
+- `backend/Dockerfile.prod`
+- `scripts/deploy_droplet.sh`
+
+Passo a passo no Droplet (Ubuntu):
+
+```bash
+# 1) instalar docker + compose plugin + git (uma vez)
+sudo apt-get update
+sudo apt-get install -y docker.io docker-compose-plugin git
+
+# 2) rodar deploy (clona/atualiza e sobe tudo)
+curl -fsSL https://raw.githubusercontent.com/leonardo-lacerda/LeadFlow/main/scripts/deploy_droplet.sh -o deploy_droplet.sh
+chmod +x deploy_droplet.sh
+APP_DIR=/opt/lastreia BRANCH=main ./deploy_droplet.sh
+```
+
+No primeiro deploy, o script cria `/opt/lastreia/.env` automaticamente e encerra.
+Depois disso:
+1. edite o arquivo `.env` com segredos reais
+2. rode o mesmo comando novamente para subir a stack
+
+Variaveis criticas para producao:
+- `FRONTEND_URL` (sua URL da Vercel)
+- `API_BASE_URL` (URL publica da API, ex: `https://api.seudominio.com`)
+- `POSTGRES_PASSWORD`
+- `JWT_SECRET`
+- `JWT_REFRESH_SECRET`
+- `SECRETS_ENCRYPTION_KEY`
+- `EVOLUTION_API_KEY`
+- `SCRAPING_WEBHOOK_SECRET`
+- `ENRICHMENT_WEBHOOK_SECRET`
+- `AI_WEBHOOK_SECRET`
+- `WHATSAPP_WEBHOOK_SECRET`
+- `EMAIL_WEBHOOK_SECRET`
+- `EMAIL_TRACKING_SIGNING_SECRET`
+
 ## Validacao
 
 Checks de frontend usados neste repositorio:

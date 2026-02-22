@@ -1,0 +1,187 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lastreia-postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lastreia}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: lastreia-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  evolution:
+    image: atendai/evolution-api:latest
+    container_name: lastreia-evolution
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    volumes:
+      - evolution_data:/evolution/instances
+    environment:
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:?EVOLUTION_API_KEY is required}
+      DEL_INSTANCE: "false"
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-lastreia}?schema=evolution
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis:6379/1
+      CORS_ORIGIN: "*"
+      CORS_METHODS: GET,POST,PUT,DELETE
+      CORS_CREDENTIALS: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: lastreia-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 4000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-lastreia}?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
+      FRONTEND_URL: ${FRONTEND_URL:?FRONTEND_URL is required}
+      API_BASE_URL: ${API_BASE_URL:-http://backend:4000}
+      EVOLUTION_API_URL: http://evolution:8080
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY:?EVOLUTION_API_KEY is required}
+      IMAP_POLL_INTERVAL: ${IMAP_POLL_INTERVAL:-300000}
+      SCRAPING_SERVICE_URL: http://scraping:5001
+      SCRAPING_WEBHOOK_URL: http://backend:4000/api/scraping/webhook
+      SCRAPING_WEBHOOK_SECRET: ${SCRAPING_WEBHOOK_SECRET:?SCRAPING_WEBHOOK_SECRET is required}
+      SCRAPING_NO_API: ${SCRAPING_NO_API:-true}
+      ENRICHMENT_SERVICE_URL: http://enrichment:5002
+      ENRICHMENT_WEBHOOK_URL: http://backend:4000/api/enrichment/webhook
+      ENRICHMENT_WEBHOOK_SECRET: ${ENRICHMENT_WEBHOOK_SECRET:?ENRICHMENT_WEBHOOK_SECRET is required}
+      AI_SERVICE_URL: http://ai:5003
+      AI_WEBHOOK_URL: http://backend:4000/api/ai/webhook
+      AI_WEBHOOK_SECRET: ${AI_WEBHOOK_SECRET:?AI_WEBHOOK_SECRET is required}
+      WHATSAPP_WEBHOOK_SECRET: ${WHATSAPP_WEBHOOK_SECRET:?WHATSAPP_WEBHOOK_SECRET is required}
+      AUTO_ENRICH_LEADS: ${AUTO_ENRICH_LEADS:-false}
+      RUN_WORKERS: ${RUN_WORKERS:-true}
+      RUN_IMAP_POLLING: ${RUN_IMAP_POLLING:-true}
+      INTERNAL_REQUEST_TIMEOUT_MS: ${INTERNAL_REQUEST_TIMEOUT_MS:-30000}
+      EMAIL_WEBHOOK_SECRET: ${EMAIL_WEBHOOK_SECRET:?EMAIL_WEBHOOK_SECRET is required}
+      EMAIL_TRACKING_SIGNING_SECRET: ${EMAIL_TRACKING_SIGNING_SECRET:?EMAIL_TRACKING_SIGNING_SECRET is required}
+      EMAIL_TRACKING_ALLOWED_DOMAINS: ${EMAIL_TRACKING_ALLOWED_DOMAINS:-}
+      SECRETS_ENCRYPTION_KEY: ${SECRETS_ENCRYPTION_KEY:?SECRETS_ENCRYPTION_KEY is required}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OAUTH_STATE_TTL_SECONDS: ${OAUTH_STATE_TTL_SECONDS:-900}
+      OAUTH_STATE_PREFIX: ${OAUTH_STATE_PREFIX:-oauth:state}
+      TWITTER_CLIENT_ID: ${TWITTER_CLIENT_ID:-}
+      TWITTER_CLIENT_SECRET: ${TWITTER_CLIENT_SECRET:-}
+      TWITTER_REDIRECT_URI: ${TWITTER_REDIRECT_URI:-}
+      TWITTER_OAUTH_SCOPES: ${TWITTER_OAUTH_SCOPES:-tweet.read tweet.write users.read offline.access}
+      LINKEDIN_CLIENT_ID: ${LINKEDIN_CLIENT_ID:-}
+      LINKEDIN_CLIENT_SECRET: ${LINKEDIN_CLIENT_SECRET:-}
+      LINKEDIN_REDIRECT_URI: ${LINKEDIN_REDIRECT_URI:-}
+      LINKEDIN_OAUTH_SCOPES: ${LINKEDIN_OAUTH_SCOPES:-openid profile email w_member_social}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  scraping:
+    build: ./services/scraping
+    container_name: lastreia-scraping
+    restart: unless-stopped
+    env_file:
+      - .env
+    expose:
+      - "5001"
+    environment:
+      SCRAPING_MOCK: ${SCRAPING_MOCK:-false}
+      SCRAPING_NO_API: ${SCRAPING_NO_API:-true}
+      BACKEND_WEBHOOK_URL: http://backend:4000/api/scraping/webhook
+      SCRAPING_WEBHOOK_SECRET: ${SCRAPING_WEBHOOK_SECRET:?SCRAPING_WEBHOOK_SECRET is required}
+      PROXY_LIST: ${PROXY_LIST:-}
+      SERPAPI_KEY: ${SERPAPI_KEY:-}
+      CNPJ_WS_BASE_URL: ${CNPJ_WS_BASE_URL:-}
+      WAPPALYZER_API_KEY: ${WAPPALYZER_API_KEY:-}
+    depends_on:
+      - backend
+
+  enrichment:
+    build: ./services/enrichment
+    container_name: lastreia-enrichment
+    restart: unless-stopped
+    env_file:
+      - .env
+    expose:
+      - "5002"
+    environment:
+      ENRICHMENT_MOCK: ${ENRICHMENT_MOCK:-true}
+      BACKEND_WEBHOOK_URL: http://backend:4000/api/enrichment/webhook
+      ENRICHMENT_WEBHOOK_SECRET: ${ENRICHMENT_WEBHOOK_SECRET:?ENRICHMENT_WEBHOOK_SECRET is required}
+      CNPJ_WS_BASE_URL: ${CNPJ_WS_BASE_URL:-}
+      SERPAPI_KEY: ${SERPAPI_KEY:-}
+      HUNTER_API_KEY: ${HUNTER_API_KEY:-}
+      SNOV_CLIENT_ID: ${SNOV_CLIENT_ID:-}
+      SNOV_CLIENT_SECRET: ${SNOV_CLIENT_SECRET:-}
+      ZEROBOUNCE_API_KEY: ${ZEROBOUNCE_API_KEY:-}
+      PROXY_LIST: ${PROXY_LIST:-}
+    depends_on:
+      - backend
+
+  ai:
+    build: ./services/ai
+    container_name: lastreia-ai
+    restart: unless-stopped
+    env_file:
+      - .env
+    expose:
+      - "5003"
+    environment:
+      AI_MOCK: ${AI_MOCK:-true}
+      BACKEND_WEBHOOK_URL: http://backend:4000/api/ai/webhook
+      AI_WEBHOOK_SECRET: ${AI_WEBHOOK_SECRET:?AI_WEBHOOK_SECRET is required}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+  evolution_data:
+
+networks:
+  default:
+    name: lastreia-network
