@@ -457,15 +457,13 @@ export default function LandingV6() {
                             <SectionKicker>Visao Geral</SectionKicker>
                             <h1 className={`${heading.className} max-w-4xl text-4xl font-extrabold tracking-tight leading-[1.08] md:text-6xl md:leading-[1.04]`} style={{ color: PALETTE.text }}>
                                 Outbound completo com memoria.
-                                <span className="block">Voce vende hoje, aprende com dados reais e transforma isso em autoridade amanha.</span>
                             </h1>
                             <p className="mt-6 max-w-2xl text-base leading-relaxed md:text-lg" style={{ color: PALETTE.muted }}>
+                                Voce vende hoje, aprende com dados reais e transforma isso em autoridade amanha.
+                                <br className="hidden md:block" />
                                 Leadflow faz o trabalho de outbound de ponta a ponta.
                                 <br className="hidden md:block" />
                                 Reaproveita os dados da operacao para gerar sinais publicos com numeros reais, que fortalecem sua autoridade.
-                            </p>
-                            <p className="mt-4 max-w-2xl text-base leading-relaxed md:text-lg" style={{ color: PALETTE.text }}>
-                                Se voce faz outbound e constroi em publico, o Leadflow transforma sua operacao comercial em sinais que voce pode publicar com confianca.
                             </p>
 
                             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -484,6 +482,9 @@ export default function LandingV6() {
                                     Ver como o outbound vira sinal
                                 </a>
                             </div>
+                            <p className="mt-4 max-w-2xl text-sm leading-relaxed md:text-base" style={{ color: PALETTE.text }}>
+                                Se voce faz outbound e constroi em publico, o Leadflow transforma sua operacao comercial em sinais que voce pode publicar com confianca.
+                            </p>
                         </motion.div>
 
                         <motion.div {...reveal(0.1)}>
