@@ -2,6 +2,7 @@ import { Worker } from 'bullmq';
 import { redis } from '../../lib/redis.js';
 import { signalDetectorQueue } from '../../lib/queue.js';
 import { signalService } from './signal.service.js';
+import { registerQueueWorker } from '../../lib/queue-observability.js';
 
 interface SignalDetectorJobData {
     organizationId?: string;
@@ -22,7 +23,7 @@ export function startSignalDetectorWorker() {
         password: redis.options.password,
     };
 
-    new Worker(
+    const worker = new Worker(
         'signal_detector',
         async (job) => {
             const data = (job.data || {}) as SignalDetectorJobData;
@@ -37,6 +38,11 @@ export function startSignalDetectorWorker() {
         },
         { connection }
     );
+
+    registerQueueWorker(worker, {
+        workerName: 'signal-detector-worker',
+        queueName: 'signal_detector',
+    });
 
     // Periodic refresh so insights stay up-to-date without manual action.
     void signalDetectorQueue

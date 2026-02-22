@@ -65,18 +65,21 @@ function buildOrganizationSlugCandidate(baseSlug: string, attempt: number) {
         return baseSlug;
     }
 
-    return `${baseSlug}-${crypto.randomBytes(2).toString('hex')}`;
+    return `${baseSlug}-${crypto.randomBytes(3).toString('hex')}`;
 }
 
 function isUniqueConstraintOnField(error: unknown, field: string) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         const target = error.meta?.target;
         if (Array.isArray(target)) {
-            return target.includes(field);
+            const normalizedField = field.toLowerCase();
+            return target.some((entry) =>
+                String(entry).toLowerCase().includes(normalizedField)
+            );
         }
 
         if (typeof target === 'string') {
-            return target.includes(field);
+            return target.toLowerCase().includes(field.toLowerCase());
         }
 
         return true;
@@ -108,7 +111,7 @@ export class AuthService {
 
         const baseSlug = buildOrganizationSlugBase(data.organizationName);
 
-        for (let attempt = 0; attempt < 12; attempt += 1) {
+        for (let attempt = 0; attempt < 20; attempt += 1) {
             const slug = buildOrganizationSlugCandidate(baseSlug, attempt);
 
             try {

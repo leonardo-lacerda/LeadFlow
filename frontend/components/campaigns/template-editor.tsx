@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import "react-quill/dist/quill.snow.css";
+import "react-quill-new/dist/quill.snow.css";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
 interface TemplateEditorProps {
     value: string;

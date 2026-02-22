@@ -3,6 +3,7 @@ import { env } from '../config/env.js';
 import { fetchWithTimeout } from '../lib/fetch.js';
 import { prisma } from '../lib/prisma.js';
 import { redis } from '../lib/redis.js';
+import { registerQueueWorker } from '../lib/queue-observability.js';
 
 interface AiJobData {
     jobId: string;
@@ -30,7 +31,7 @@ export function startAiWorker() {
         password: redis.options.password,
     };
 
-    new Worker(
+    const worker = new Worker(
         'ai',
         async (job) => {
             const data = job.data as AiJobData;
@@ -139,4 +140,9 @@ export function startAiWorker() {
         },
         { connection }
     );
+
+    registerQueueWorker(worker, {
+        workerName: 'ai-worker',
+        queueName: 'ai',
+    });
 }

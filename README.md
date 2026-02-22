@@ -65,7 +65,7 @@ npm run dev
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -83,6 +83,32 @@ Checks de frontend usados neste repositorio:
 cd frontend
 npm run lint
 npm run build
+npm run test:e2e
 ```
+
+## OAuth social (Growth Loop)
+
+Para publicar com OAuth real em `/growth`, configure no backend:
+
+```bash
+TWITTER_CLIENT_ID=
+TWITTER_CLIENT_SECRET=
+TWITTER_REDIRECT_URI=http://localhost:4000/api/integrations/twitter/oauth/callback
+TWITTER_OAUTH_SCOPES=tweet.read tweet.write users.read offline.access
+
+LINKEDIN_CLIENT_ID=
+LINKEDIN_CLIENT_SECRET=
+LINKEDIN_REDIRECT_URI=http://localhost:4000/api/integrations/linkedin/oauth/callback
+LINKEDIN_OAUTH_SCOPES=openid profile email w_member_social
+```
+
+Tambem sao usados:
+- `OAUTH_STATE_TTL_SECONDS`
+- `OAUTH_STATE_PREFIX`
+
+## Observabilidade operacional
+
+- API: `GET /api/ops/summary`, `GET /api/ops/workers`, `GET /api/ops/errors`, `GET /api/ops/alerts`
+- UI: `frontend/app/settings/observability/page.tsx`
 
 

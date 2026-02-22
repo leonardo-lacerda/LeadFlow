@@ -10,6 +10,7 @@ import {
     IconCreditCard,
     IconPlug,
     IconWorld,
+    IconActivityHeartbeat,
 } from "@tabler/icons-react";
 
 interface SettingsLayoutProps {
@@ -46,6 +47,11 @@ const sidebarNavItems = [
         title: "Network",
         href: "/settings/network",
         icon: IconWorld,
+    },
+    {
+        title: "Observabilidade",
+        href: "/settings/observability",
+        icon: IconActivityHeartbeat,
     },
 ];
 

@@ -62,7 +62,7 @@ function buildErrorDetail(payload: unknown): string {
 }
 
 export class LinkedinService {
-    private async resolveAuthorUrn(accessToken: string, preferredUrn?: string) {
+    async resolveAuthorUrn(accessToken: string, preferredUrn?: string) {
         const normalized = normalizeAuthorUrn(preferredUrn);
         if (normalized) {
             return normalized;

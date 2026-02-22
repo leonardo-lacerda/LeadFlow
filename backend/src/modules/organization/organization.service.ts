@@ -93,14 +93,68 @@ export class OrganizationService {
     }
 
     async updateOrganization(id: string, data: UpdateOrganizationInput) {
-        const encryptedApiKeys = data.apiKeys ? encryptStringMap(data.apiKeys) : undefined;
+        const current = await prisma.organization.findUnique({
+            where: { id },
+            select: {
+                apiKeys: true,
+                webhooks: true,
+            },
+        });
+
+        if (!current) {
+            throw new Error('Organization not found');
+        }
+
+        const currentApiKeys =
+            decryptStringMap(
+                ((current.apiKeys as Record<string, string> | null | undefined) || undefined) as
+                | Record<string, string>
+                | undefined
+            ) || {};
+
+        const mergedApiKeys =
+            data.apiKeys !== undefined
+                ? Object.fromEntries(
+                    Object.entries({ ...currentApiKeys, ...data.apiKeys }).filter(
+                        ([, value]) => Boolean(value && value.trim().length > 0)
+                    )
+                )
+                : undefined;
+
+        const encryptedApiKeys =
+            mergedApiKeys !== undefined ? encryptStringMap(mergedApiKeys) || {} : undefined;
+
+        const currentWebhooks =
+            current.webhooks && typeof current.webhooks === 'object' && !Array.isArray(current.webhooks)
+                ? (current.webhooks as Record<string, string>)
+                : {};
+
+        const mergedWebhooks =
+            data.webhooks !== undefined
+                ? Object.fromEntries(
+                    Object.entries({ ...currentWebhooks, ...data.webhooks }).filter(
+                        ([, value]) => Boolean(value && value.trim().length > 0)
+                    )
+                )
+                : undefined;
+
         return prisma.organization.update({
             where: { id },
             data: {
                 name: data.name,
                 icpDefinition: data.icpDefinition as Prisma.InputJsonValue | undefined,
-                apiKeys: encryptedApiKeys as Prisma.InputJsonValue | undefined,
-                webhooks: data.webhooks as Prisma.InputJsonValue | undefined,
+                apiKeys:
+                    encryptedApiKeys !== undefined
+                        ? (Object.keys(encryptedApiKeys).length > 0
+                            ? (encryptedApiKeys as Prisma.InputJsonValue)
+                            : Prisma.JsonNull)
+                        : undefined,
+                webhooks:
+                    mergedWebhooks !== undefined
+                        ? (Object.keys(mergedWebhooks).length > 0
+                            ? (mergedWebhooks as Prisma.InputJsonValue)
+                            : Prisma.JsonNull)
+                        : undefined,
                 onboardingCompleted: data.onboardingCompleted,
                 notificationSettings: data.notificationSettings as Prisma.InputJsonValue | undefined,
                 networkOptIn: data.networkOptIn,

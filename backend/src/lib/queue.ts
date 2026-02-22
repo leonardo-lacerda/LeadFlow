@@ -37,4 +37,21 @@ export const inboxFollowupQueue = new Queue('inbox_followup', { connection });
 // Signal detector queue
 export const signalDetectorQueue = new Queue('signal_detector', { connection });
 
+// Social publish queue
+export const socialPublishQueue = new Queue('social_publish', { connection });
+
+export const allQueues = {
+    email: emailQueue,
+    whatsapp: whatsappQueue,
+    scraping: scrapingQueue,
+    enrichment: enrichmentQueue,
+    campaign: campaignQueue,
+    ai: aiQueue,
+    scoring: scoringQueue,
+    analytics: analyticsQueue,
+    inbox_followup: inboxFollowupQueue,
+    signal_detector: signalDetectorQueue,
+    social_publish: socialPublishQueue,
+} as const;
+
 console.log('Queues initialized');

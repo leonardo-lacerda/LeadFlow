@@ -3,6 +3,7 @@ import { env } from '../config/env.js';
 import { fetchWithTimeout } from '../lib/fetch.js';
 import { prisma } from '../lib/prisma.js';
 import { redis } from '../lib/redis.js';
+import { registerQueueWorker } from '../lib/queue-observability.js';
 
 interface EnrichmentJobData {
     jobId: string;
@@ -25,7 +26,7 @@ export function startEnrichmentWorker() {
         password: redis.options.password,
     };
 
-    new Worker(
+    const worker = new Worker(
         'enrichment',
         async (job) => {
             const data = job.data as EnrichmentJobData;
@@ -137,4 +138,9 @@ export function startEnrichmentWorker() {
         },
         { connection }
     );
+
+    registerQueueWorker(worker, {
+        workerName: 'enrichment-worker',
+        queueName: 'enrichment',
+    });
 }

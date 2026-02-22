@@ -2,6 +2,7 @@ import { Worker } from 'bullmq';
 import { analyticsQueue } from '../../lib/queue.js';
 import { redis } from '../../lib/redis.js';
 import { analyticsService } from './analytics.service.js';
+import { registerQueueWorker } from '../../lib/queue-observability.js';
 
 interface AnalyticsRecalculateJobData {
     organizationId?: string;
@@ -22,7 +23,7 @@ export function startAnalyticsWorker() {
         password: redis.options.password,
     };
 
-    new Worker(
+    const worker = new Worker(
         'analytics',
         async (job) => {
             const data = (job.data || {}) as AnalyticsRecalculateJobData;
@@ -30,6 +31,11 @@ export function startAnalyticsWorker() {
         },
         { connection }
     );
+
+    registerQueueWorker(worker, {
+        workerName: 'analytics-worker',
+        queueName: 'analytics',
+    });
 
     // Batch metrics update every 2 hours for campaign dashboards.
     void analyticsQueue

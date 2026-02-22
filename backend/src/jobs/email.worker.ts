@@ -3,6 +3,7 @@ import { redis } from '../lib/redis.js';
 import { prisma } from '../lib/prisma.js';
 import { emailService } from '../modules/email/email.service.js';
 import { signalLayerService } from '../modules/signals/signal-layer.service.js';
+import { registerQueueWorker } from '../lib/queue-observability.js';
 
 interface EmailJobData {
     messageId: string;
@@ -22,7 +23,7 @@ export function startEmailWorker() {
         password: redis.options.password,
     };
 
-    new Worker(
+    const worker = new Worker(
         'email',
         async (job) => {
             const data = job.data as EmailJobData;
@@ -43,4 +44,9 @@ export function startEmailWorker() {
         },
         { connection }
     );
+
+    registerQueueWorker(worker, {
+        workerName: 'email-worker',
+        queueName: 'email',
+    });
 }

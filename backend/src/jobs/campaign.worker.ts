@@ -4,6 +4,7 @@ import { redis } from '../lib/redis.js';
 import { campaignQueue } from '../lib/queue.js';
 import { emailService } from '../modules/email/email.service.js';
 import { whatsappService } from '../modules/whatsapp/whatsapp.service.js';
+import { registerQueueWorker } from '../lib/queue-observability.js';
 
 interface CampaignJobData {
     campaignLeadId: string;
@@ -103,7 +104,7 @@ export function startCampaignWorker() {
         password: redis.options.password,
     };
 
-    new Worker(
+    const worker = new Worker(
         'campaign',
         async (job) => {
             const data = job.data as CampaignJobData;
@@ -303,4 +304,9 @@ export function startCampaignWorker() {
         },
         { connection }
     );
+
+    registerQueueWorker(worker, {
+        workerName: 'campaign-worker',
+        queueName: 'campaign',
+    });
 }

@@ -2,6 +2,7 @@ import { Worker } from 'bullmq';
 import { inboxFollowupQueue } from '../../lib/queue.js';
 import { redis } from '../../lib/redis.js';
 import { inboxIntelligenceService } from './inbox-intelligence.service.js';
+import { registerQueueWorker } from '../../lib/queue-observability.js';
 
 let started = false;
 
@@ -17,7 +18,7 @@ export function startFollowUpWorker() {
         password: redis.options.password,
     };
 
-    new Worker(
+    const worker = new Worker(
         'inbox_followup',
         async (job) => {
             if (job.name !== 'scan_followups') {
@@ -27,6 +28,11 @@ export function startFollowUpWorker() {
         },
         { connection }
     );
+
+    registerQueueWorker(worker, {
+        workerName: 'inbox-followup-worker',
+        queueName: 'inbox_followup',
+    });
 
     // Hourly scan for leads without reply based on temperature rules.
     void inboxFollowupQueue

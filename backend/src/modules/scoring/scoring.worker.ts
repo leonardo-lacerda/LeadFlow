@@ -1,6 +1,7 @@
 import { Worker } from 'bullmq';
 import { redis } from '../../lib/redis.js';
 import { scoringService, ScoringRecalculateJobData } from './scoring.service.js';
+import { registerQueueWorker } from '../../lib/queue-observability.js';
 
 let started = false;
 
@@ -16,7 +17,7 @@ export function startScoringWorker() {
         password: redis.options.password,
     };
 
-    new Worker(
+    const worker = new Worker(
         'scoring',
         async (job) => {
             const data = job.data as ScoringRecalculateJobData;
@@ -24,4 +25,9 @@ export function startScoringWorker() {
         },
         { connection }
     );
+
+    registerQueueWorker(worker, {
+        workerName: 'scoring-worker',
+        queueName: 'scoring',
+    });
 }

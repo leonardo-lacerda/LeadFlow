@@ -17,6 +17,7 @@ import {
     IconTrendingUp,
     IconDatabase,
     IconSparkles,
+    IconActivityHeartbeat,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -177,6 +178,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     href: "/settings/team",
                     icon: (
                         <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
+                    label: "Observabilidade",
+                    href: "/settings/observability",
+                    icon: (
+                        <IconActivityHeartbeat className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
                     ),
                 },
             ],

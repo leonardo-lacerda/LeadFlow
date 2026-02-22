@@ -68,6 +68,20 @@ export const env = {
     EMAIL_TRACKING_SIGNING_SECRET: process.env.EMAIL_TRACKING_SIGNING_SECRET || '',
     EMAIL_TRACKING_ALLOWED_DOMAINS: process.env.EMAIL_TRACKING_ALLOWED_DOMAINS || '',
     SECRETS_ENCRYPTION_KEY: process.env.SECRETS_ENCRYPTION_KEY || '',
+
+    // Social OAuth
+    OAUTH_STATE_TTL_SECONDS: parseInt(process.env.OAUTH_STATE_TTL_SECONDS || '900'),
+    OAUTH_STATE_PREFIX: process.env.OAUTH_STATE_PREFIX || 'oauth:state',
+    TWITTER_CLIENT_ID: process.env.TWITTER_CLIENT_ID || '',
+    TWITTER_CLIENT_SECRET: process.env.TWITTER_CLIENT_SECRET || '',
+    TWITTER_REDIRECT_URI: process.env.TWITTER_REDIRECT_URI || '',
+    TWITTER_OAUTH_SCOPES:
+        process.env.TWITTER_OAUTH_SCOPES || 'tweet.read tweet.write users.read offline.access',
+    LINKEDIN_CLIENT_ID: process.env.LINKEDIN_CLIENT_ID || '',
+    LINKEDIN_CLIENT_SECRET: process.env.LINKEDIN_CLIENT_SECRET || '',
+    LINKEDIN_REDIRECT_URI: process.env.LINKEDIN_REDIRECT_URI || '',
+    LINKEDIN_OAUTH_SCOPES:
+        process.env.LINKEDIN_OAUTH_SCOPES || 'openid profile email w_member_social',
 };
 
 // Validate required env variables

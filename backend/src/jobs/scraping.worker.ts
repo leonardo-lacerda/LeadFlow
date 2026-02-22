@@ -4,6 +4,7 @@ import { fetchWithTimeout } from '../lib/fetch.js';
 import { prisma } from '../lib/prisma.js';
 import { redis } from '../lib/redis.js';
 import { leadPoolService } from '../modules/lead-pool/lead-pool.service.js';
+import { registerQueueWorker } from '../lib/queue-observability.js';
 
 interface ScrapingJobData {
     jobId: string;
@@ -40,7 +41,7 @@ export function startScrapingWorker() {
         password: redis.options.password,
     };
 
-    new Worker(
+    const worker = new Worker(
         'scraping',
         async (job) => {
             const data = job.data as ScrapingJobData;
@@ -158,4 +159,9 @@ export function startScrapingWorker() {
         },
         { connection }
     );
+
+    registerQueueWorker(worker, {
+        workerName: 'scraping-worker',
+        queueName: 'scraping',
+    });
 }

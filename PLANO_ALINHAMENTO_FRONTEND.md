@@ -65,7 +65,7 @@ SDR/
 
 ## 3.3 Workers e processamento assincrono
 - Filas BullMQ:
-  `scraping`, `enrichment`, `email`, `whatsapp`, `ai`, `campaign`, `scoring`, `analytics`, `inbox_followup`, `signal_detector`.
+  `scraping`, `enrichment`, `email`, `whatsapp`, `ai`, `campaign`, `scoring`, `analytics`, `inbox_followup`, `signal_detector`, `social_publish`.
 - Workers iniciam quando `RUN_WORKERS=true`.
 - IMAP polling inicia quando `RUN_IMAP_POLLING=true`.
 
@@ -100,6 +100,7 @@ Registrados em `backend/src/index.ts`:
 - `/api/distribution`
 - `/api/network`
 - `/api/integrations`
+- `/api/ops`
 
 ## 4.2 Entidades relevantes no schema Prisma
 
@@ -114,10 +115,12 @@ Camadas novas:
 - `SignalEvent`, `Signal`
 - `SharedLead`, `SharedLeadClaim`
 - `DistributionDraft`
+- `SocialPublishJob`
 
 Enums novos/relevantes:
 - `SignalType`, `SignalStatus`
 - `DraftFormat`, `DraftStatus`
+- `SocialPlatform`, `SocialPublishStatus`
 
 ## 4.3 Cobertura frontend atual (resumo)
 
@@ -505,6 +508,13 @@ Uma fase so e considerada concluida quando:
 - P2 (contrato FE x BE) concluido para escopo P0/P1:
   - criado `backend/src/contracts/p0-p1-contract.test.ts`
   - testes estaticos garantindo contratos criticos de campaigns/enrichment entre frontend e backend
+- Extensao operacional pos-plano concluida:
+  - OAuth real de Twitter/LinkedIn com callback, refresh token e persistencia criptografada das credenciais
+  - publicacao social assicrona com BullMQ (`social_publish`), retries exponenciais e historico por job
+  - observabilidade operacional (`/api/ops/*`) com metricas de filas/workers, erros recentes e alertas
+  - tela de observabilidade em `settings/observability` consumindo summary/alerts/errors
+  - suite e2e com Playwright e pipeline CI em `.github/workflows/ci.yml`
+  - ajuste de compatibilidade React 19 no editor de templates (`react-quill-new`) para `npm ci` verde sem flags
 
 ### 14.2 Comandos de validacao executados
 ```bash

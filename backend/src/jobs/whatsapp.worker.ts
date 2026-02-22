@@ -3,6 +3,7 @@ import { redis } from '../lib/redis.js';
 import { prisma } from '../lib/prisma.js';
 import { whatsappService } from '../modules/whatsapp/whatsapp.service.js';
 import { signalLayerService } from '../modules/signals/signal-layer.service.js';
+import { registerQueueWorker } from '../lib/queue-observability.js';
 
 interface WhatsAppJobData {
     messageId: string;
@@ -22,7 +23,7 @@ export function startWhatsappWorker() {
         password: redis.options.password,
     };
 
-    new Worker(
+    const worker = new Worker(
         'whatsapp',
         async (job) => {
             const data = job.data as WhatsAppJobData;
@@ -43,4 +44,9 @@ export function startWhatsappWorker() {
         },
         { connection }
     );
+
+    registerQueueWorker(worker, {
+        workerName: 'whatsapp-worker',
+        queueName: 'whatsapp',
+    });
 }

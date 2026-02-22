@@ -62,6 +62,7 @@ model Organization {
   signals     Signal[]
   sharedLeadClaims SharedLeadClaim[]
   distributionDrafts DistributionDraft[]
+  socialPublishJobs SocialPublishJob[]
 }
 
 model Notification {
@@ -554,6 +555,18 @@ enum DraftStatus {
   ARCHIVED
 }
 
+enum SocialPlatform {
+  TWITTER
+  LINKEDIN
+}
+
+enum SocialPublishStatus {
+  QUEUED
+  PROCESSING
+  SUCCESS
+  FAILED
+}
+
 model DistributionDraft {
   id              String   @id @default(cuid())
   organizationId  String
@@ -570,11 +583,36 @@ model DistributionDraft {
   engagement      Int?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  socialPublishJobs SocialPublishJob[]
 
   @@index([organizationId, status])
   @@index([organizationId, format])
   @@index([signalId])
   @@index([publishedAt])
+}
+
+model SocialPublishJob {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  draftId         String?
+  draft           DistributionDraft? @relation(fields: [draftId], references: [id], onDelete: SetNull)
+  platform        SocialPlatform
+  content         String
+  status          SocialPublishStatus @default(QUEUED)
+  attempts        Int @default(0)
+  maxAttempts     Int @default(5)
+  externalPostId  String?
+  errorMessage    String?
+  metadata        Json?
+  queuedAt        DateTime @default(now())
+  processedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId, status, createdAt])
+  @@index([organizationId, platform, createdAt])
+  @@index([draftId])
 }
 
 // ==================== TEMPLATES ====================
