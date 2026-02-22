@@ -90,6 +90,7 @@ Arquivos usados:
 - `docker-compose.prod.yml`
 - `backend/Dockerfile.prod`
 - `scripts/deploy_droplet.sh`
+- `RUNBOOK_DEPLOY_DIGITALOCEAN.md` (processo completo, update por ZIP e cuidados com DB)
 
 Passo a passo no Droplet (Ubuntu):
 
