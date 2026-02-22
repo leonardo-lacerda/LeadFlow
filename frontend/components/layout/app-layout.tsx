@@ -25,6 +25,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
+import { api } from "@/lib/api";
 import ProtectedRoute from "./protected-route";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { ThemeToggle } from "./theme-toggle";
@@ -34,6 +35,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const [open, setOpen] = useState(false);
+
+    const handleLogout = () => {
+        void (async () => {
+            try {
+                await api.post("/auth/logout");
+            } catch {
+                // Always clear local session state even if server logout fails.
+            } finally {
+                logout();
+                router.replace("/login");
+            }
+        })();
+    };
 
     useEffect(() => {
         if (!user?.organization) {
@@ -194,11 +208,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     const accountLinks = [
         {
             label: "Sair",
-            href: "#",
+            href: "/login",
             icon: (
                 <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
-            onClick: logout,
+            onClick: handleLogout,
         },
     ];
 
@@ -306,5 +320,4 @@ export const Logo = ({ open = true }: { open?: boolean }) => {
         </Link>
     );
 };
-
 

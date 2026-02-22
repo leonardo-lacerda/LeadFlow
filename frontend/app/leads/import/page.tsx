@@ -24,7 +24,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { leadsApi, LeadInput } from "@/lib/leads-api";
 import Papa from "papaparse";
-import * as XLSX from "xlsx";
+import readXlsxFile from "read-excel-file";
 
 const LEAD_FIELDS = [
     { value: "ignore", label: "Ignorar" },
@@ -55,6 +55,19 @@ export default function ImportLeadsPage() {
     const [errors, setErrors] = useState<string[]>([]);
     const { toast } = useToast();
 
+    const buildInitialMapping = (columns: string[]) => {
+        const initialMapping: Record<string, string> = {};
+        columns.forEach((column) => {
+            const normalized = column.toLowerCase();
+            if (normalized.includes("email")) initialMapping[column] = "email";
+            else if (normalized.includes("nome")) initialMapping[column] = "fullName";
+            else if (normalized.includes("empresa")) initialMapping[column] = "companyName";
+            else if (normalized.includes("cargo")) initialMapping[column] = "jobTitle";
+            else initialMapping[column] = "ignore";
+        });
+        return initialMapping;
+    };
+
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || !e.target.files[0]) return;
         const file = e.target.files[0];
@@ -66,7 +79,7 @@ export default function ImportLeadsPage() {
         if (ext === "csv") {
             parseCsv(file);
         } else if (ext === "xlsx" || ext === "xls") {
-            parseExcel(file);
+            void parseExcel(file);
         } else {
             toast({ title: "Formato nï¿½o suportado", variant: "destructive" });
         }
@@ -82,44 +95,53 @@ export default function ImportLeadsPage() {
                 setRows(data);
                 const cols = Object.keys(data[0]);
                 setHeaders(cols);
-                const initialMapping: Record<string, string> = {};
-                cols.forEach((col) => {
-                    const normalized = col.toLowerCase();
-                    if (normalized.includes("email")) initialMapping[col] = "email";
-                    else if (normalized.includes("nome")) initialMapping[col] = "fullName";
-                    else if (normalized.includes("empresa")) initialMapping[col] = "companyName";
-                    else if (normalized.includes("cargo")) initialMapping[col] = "jobTitle";
-                    else initialMapping[col] = "ignore";
-                });
-                setMapping(initialMapping);
+                setMapping(buildInitialMapping(cols));
             },
         });
     };
 
-    const parseExcel = (file: File) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const data = new Uint8Array(event.target?.result as ArrayBuffer);
-            const workbook = XLSX.read(data, { type: "array" });
-            const sheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[sheetName];
-            const json = XLSX.utils.sheet_to_json<RowData>(sheet, { defval: "" });
-            if (json.length === 0) return;
-            setRows(json);
-            const cols = Object.keys(json[0]);
-            setHeaders(cols);
-            const initialMapping: Record<string, string> = {};
-            cols.forEach((col) => {
-                const normalized = col.toLowerCase();
-                if (normalized.includes("email")) initialMapping[col] = "email";
-                else if (normalized.includes("nome")) initialMapping[col] = "fullName";
-                else if (normalized.includes("empresa")) initialMapping[col] = "companyName";
-                else if (normalized.includes("cargo")) initialMapping[col] = "jobTitle";
-                else initialMapping[col] = "ignore";
-            });
-            setMapping(initialMapping);
-        };
-        reader.readAsArrayBuffer(file);
+    const parseExcel = async (file: File) => {
+        try {
+            const excelRows = await readXlsxFile(file);
+            if (excelRows.length === 0) {
+                toast({ title: "Planilha vazia", variant: "destructive" });
+                return;
+            }
+
+            const columns = (excelRows[0] || [])
+                .map((entry) => String(entry ?? "").trim())
+                .filter((entry) => entry.length > 0);
+
+            if (columns.length === 0) {
+                toast({ title: "Cabecalho invalido na planilha", variant: "destructive" });
+                return;
+            }
+
+            const parsedRows: RowData[] = [];
+            for (const row of excelRows.slice(1)) {
+                const parsed: RowData = {};
+                columns.forEach((column, index) => {
+                    parsed[column] = String(row[index] ?? "").trim();
+                });
+
+                const hasContent = Object.values(parsed).some((entry) => entry.length > 0);
+                if (hasContent) {
+                    parsedRows.push(parsed);
+                }
+            }
+
+            if (parsedRows.length === 0) {
+                toast({ title: "Nenhuma linha valida encontrada", variant: "destructive" });
+                return;
+            }
+
+            setRows(parsedRows);
+            setHeaders(columns);
+            setMapping(buildInitialMapping(columns));
+        } catch (error) {
+            console.error(error);
+            toast({ title: "Erro ao ler planilha Excel", variant: "destructive" });
+        }
     };
 
     const buildLeads = () => {

@@ -72,7 +72,7 @@ export function LeadSelector({ selectedLeads, onSelectionChange }: LeadSelectorP
                 </Button>
             </div>
 
-            <div className="border rounded-md max-h-[400px] overflow-y-auto">
+            <div className="border rounded-md max-h-[400px] overflow-y-auto overflow-x-auto">
                 <Table>
                     <TableHeader className="bg-neutral-50 dark:bg-neutral-900 sticky top-0 z-10">
                         <TableRow>

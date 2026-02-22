@@ -3,24 +3,16 @@
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth-store';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { token, user, hydrated, setUser, logout } = useAuthStore();
+    const { user, setUser, logout } = useAuthStore();
     const router = useRouter();
     const isBootstrapping = useRef(false);
+    const [sessionChecked, setSessionChecked] = useState(false);
 
     useEffect(() => {
-        if (!hydrated) {
-            return;
-        }
-        if (!token) {
-            router.replace('/login');
-        }
-    }, [hydrated, token, router]);
-
-    useEffect(() => {
-        if (!hydrated || !token || user || isBootstrapping.current) {
+        if (isBootstrapping.current || sessionChecked) {
             return;
         }
 
@@ -32,18 +24,23 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
                     return;
                 }
                 logout();
-                router.replace('/login');
             })
             .catch(() => {
                 logout();
-                router.replace('/login');
             })
             .finally(() => {
+                setSessionChecked(true);
                 isBootstrapping.current = false;
             });
-    }, [hydrated, token, user, setUser, logout, router]);
+    }, [sessionChecked, setUser, logout]);
 
-    if (!hydrated || !token || !user) {
+    useEffect(() => {
+        if (sessionChecked && !user) {
+            router.replace('/login');
+        }
+    }, [sessionChecked, user, router]);
+
+    if (!sessionChecked || !user) {
         return null;
     }
 

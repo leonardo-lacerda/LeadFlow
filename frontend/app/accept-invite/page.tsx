@@ -66,7 +66,7 @@ export default function AcceptInvitePage() {
                 password: values.password,
             });
             if (response.data?.success) {
-                setAuth(response.data.data.token, response.data.data.user);
+                setAuth(response.data.data.user);
                 router.push("/dashboard");
                 return;
             }

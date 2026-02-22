@@ -326,7 +326,7 @@ export function MailboxList({ mailboxes, onRefresh }: MailboxListProps) {
                 </Dialog>
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>

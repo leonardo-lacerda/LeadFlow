@@ -164,7 +164,7 @@ export function WhatsappList({ instances, onRefresh }: WhatsappListProps) {
                             Nova Instancia
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md w-11/12">
                         <DialogHeader>
                             <DialogTitle>Nova Instancia WhatsApp</DialogTitle>
                             <DialogDescription>
@@ -218,7 +218,7 @@ export function WhatsappList({ instances, onRefresh }: WhatsappListProps) {
             </div>
 
             <Dialog open={qrOpen} onOpenChange={setQrOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md w-11/12">
                     <DialogHeader>
                         <DialogTitle>Escanear QR code</DialogTitle>
                         <DialogDescription>
@@ -249,7 +249,7 @@ export function WhatsappList({ instances, onRefresh }: WhatsappListProps) {
                 </DialogContent>
             </Dialog>
 
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>

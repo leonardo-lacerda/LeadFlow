@@ -452,7 +452,7 @@ export default function LeadsPage() {
                 )}
 
                 {/* Table */}
-                <div className="rounded-md border bg-white dark:bg-neutral-900">
+                <div className="rounded-md border bg-white dark:bg-neutral-900 overflow-x-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -632,7 +632,7 @@ export default function LeadsPage() {
 
                 {/* Create Dialog */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent>
+                    <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md w-11/12">
                         <DialogHeader>
                             <DialogTitle>Novo Lead</DialogTitle>
                         </DialogHeader>
@@ -663,7 +663,7 @@ export default function LeadsPage() {
 
                 {/* Edit Dialog */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent>
+                    <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md w-11/12">
                         <DialogHeader>
                             <DialogTitle>Editar Lead</DialogTitle>
                         </DialogHeader>
@@ -694,7 +694,7 @@ export default function LeadsPage() {
 
                 {/* Add to Sequence Dialog */}
                 <Dialog open={addToSequenceOpen} onOpenChange={setAddToSequenceOpen}>
-                    <DialogContent>
+                    <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md w-11/12">
                         <DialogHeader>
                             <DialogTitle>Adicionar a Sequencia</DialogTitle>
                             <DialogDescription>

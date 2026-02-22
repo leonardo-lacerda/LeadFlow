@@ -144,7 +144,7 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
             </div>
 
             {/* Table */}
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -187,23 +187,23 @@ export function CampaignLeadsTable({ campaignId }: CampaignLeadsTableProps) {
                                     ? `${WEEKDAY_LABEL[recommendation.bestWindow.dayOfWeek] || recommendation.bestWindow.dayOfWeek} ${String(recommendation.bestWindow.hour).padStart(2, "0")}h`
                                     : "-";
                                 return (
-                                <TableRow key={item.id}>
-                                    <TableCell>
-                                        <div className="font-medium">{item.lead.fullName}</div>
-                                        <div className="text-sm text-muted-foreground">{item.lead.email}</div>
-                                    </TableCell>
-                                    <TableCell>{item.lead.companyName || "-"}</TableCell>
-                                    <TableCell>{recommendation ? recommendation.sharedScore : "-"}</TableCell>
-                                    <TableCell>{channel}</TableCell>
-                                    <TableCell>{windowLabel}</TableCell>
-                                    <TableCell>{getStatusBadge(item.status)}</TableCell>
-                                    <TableCell>Passo {item.currentStep + 1}</TableCell>
-                                    <TableCell className="text-muted-foreground text-sm">
-                                        {item.lastActivityAt
-                                            ? formatDistanceToNow(new Date(item.lastActivityAt), { addSuffix: true, locale: ptBR })
-                                            : "-"}
-                                    </TableCell>
-                                </TableRow>
+                                    <TableRow key={item.id}>
+                                        <TableCell>
+                                            <div className="font-medium">{item.lead.fullName}</div>
+                                            <div className="text-sm text-muted-foreground">{item.lead.email}</div>
+                                        </TableCell>
+                                        <TableCell>{item.lead.companyName || "-"}</TableCell>
+                                        <TableCell>{recommendation ? recommendation.sharedScore : "-"}</TableCell>
+                                        <TableCell>{channel}</TableCell>
+                                        <TableCell>{windowLabel}</TableCell>
+                                        <TableCell>{getStatusBadge(item.status)}</TableCell>
+                                        <TableCell>Passo {item.currentStep + 1}</TableCell>
+                                        <TableCell className="text-muted-foreground text-sm">
+                                            {item.lastActivityAt
+                                                ? formatDistanceToNow(new Date(item.lastActivityAt), { addSuffix: true, locale: ptBR })
+                                                : "-"}
+                                        </TableCell>
+                                    </TableRow>
                                 );
                             })
                         )}

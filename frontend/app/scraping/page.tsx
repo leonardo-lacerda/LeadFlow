@@ -566,7 +566,7 @@ export default function ScrapingPage() {
                         <CardTitle>Tarefas de descoberta</CardTitle>
                         <CardDescription>Historico e status das suas tarefas</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -662,7 +662,7 @@ export default function ScrapingPage() {
 
             {/* Assistente de criacao de tarefa */}
             <Dialog open={showWizard} onOpenChange={setShowWizard}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Nova tarefa de descoberta</DialogTitle>
                         <DialogDescription>

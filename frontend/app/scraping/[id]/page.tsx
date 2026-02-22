@@ -204,8 +204,8 @@ export default function ScrapingJobDetails() {
     const leadPoolMeta =
         job.query && typeof job.query === "object" && !Array.isArray(job.query)
             ? ((job.query as Record<string, unknown>).leadPool as
-                  | { matched?: number; claimed?: number; preFetchedAt?: string }
-                  | undefined)
+                | { matched?: number; claimed?: number; preFetchedAt?: string }
+                | undefined)
             : undefined;
 
     return (
@@ -258,7 +258,7 @@ export default function ScrapingJobDetails() {
                 </div>
 
                 <Dialog open={showRerunDialog} onOpenChange={setShowRerunDialog}>
-                    <DialogContent className="max-w-md">
+                    <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md w-11/12">
                         <DialogHeader>
                             <DialogTitle>Reexecutar tarefa?</DialogTitle>
                             <DialogDescription>
@@ -531,7 +531,7 @@ export default function ScrapingJobDetails() {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow>

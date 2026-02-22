@@ -13,12 +13,12 @@ export default function Providers({ children }: { children: ReactNode }) {
             },
         },
     }));
-    const token = useAuthStore((state) => state.token);
+    const userId = useAuthStore((state) => state.user?.id ?? null);
     const organizationId = useAuthStore((state) => state.user?.organization?.id ?? null);
     const previousSessionRef = useRef<string | null>(null);
 
     useEffect(() => {
-        const currentSession = token ? `${token}:${organizationId ?? "no-org"}` : null;
+        const currentSession = userId ? `${userId}:${organizationId ?? "no-org"}` : null;
 
         if (previousSessionRef.current === null) {
             previousSessionRef.current = currentSession;
@@ -29,7 +29,7 @@ export default function Providers({ children }: { children: ReactNode }) {
             queryClient.clear();
             previousSessionRef.current = currentSession;
         }
-    }, [token, organizationId, queryClient]);
+    }, [userId, organizationId, queryClient]);
 
     return (
         <QueryClientProvider client={queryClient}>

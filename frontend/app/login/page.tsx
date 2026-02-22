@@ -47,7 +47,7 @@ export default function LoginPage() {
             const response = await api.post("/auth/login", values);
 
             if (response.data.success) {
-                setAuth(response.data.data.token, response.data.data.user);
+                setAuth(response.data.data.user);
                 router.push("/dashboard");
             }
         } catch (err: unknown) {

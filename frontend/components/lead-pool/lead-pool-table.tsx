@@ -20,7 +20,7 @@ export function LeadPoolTable({
     onClaimAndCreateCampaign,
 }: LeadPoolTableProps) {
     return (
-        <div className="rounded-md border">
+        <div className="rounded-md border overflow-x-auto">
             <Table>
                 <TableHeader>
                     <TableRow>

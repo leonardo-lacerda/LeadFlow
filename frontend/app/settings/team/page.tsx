@@ -143,7 +143,7 @@ export default function TeamPage() {
                             Convidar integrante
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md w-11/12">
                         <DialogHeader>
                             <DialogTitle>Convidar integrante</DialogTitle>
                             <DialogDescription>
@@ -193,7 +193,7 @@ export default function TeamPage() {
                     <CardTitle>Membros ({org.users.length})</CardTitle>
                     <CardDescription>Lista de usuarios com acesso a organizacao.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>

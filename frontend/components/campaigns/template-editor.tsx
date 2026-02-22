@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
+import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -126,7 +127,25 @@ export function TemplateEditor({ value, onChange, showPreview = true }: Template
             const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
             html = html.replace(regex, `<strong class="text-primary">${val}</strong>`);
         });
-        return html;
+        return DOMPurify.sanitize(html, {
+            ALLOWED_TAGS: [
+                "p",
+                "br",
+                "strong",
+                "em",
+                "u",
+                "strike",
+                "ul",
+                "ol",
+                "li",
+                "a",
+                "blockquote",
+                "h1",
+                "h2",
+                "h3",
+            ],
+            ALLOWED_ATTR: ["href", "target", "rel", "class"],
+        });
     }, [value]);
 
     const handleTabChange = (tab: string) => {
@@ -178,7 +197,7 @@ export function TemplateEditor({ value, onChange, showPreview = true }: Template
                                 Modelos
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl w-11/12">
                             <DialogHeader>
                                 <DialogTitle>Biblioteca de modelos</DialogTitle>
                                 <DialogDescription>
@@ -204,12 +223,9 @@ export function TemplateEditor({ value, onChange, showPreview = true }: Template
                                                     Usar
                                                 </Button>
                                             </div>
-                                            <div
-                                                className="line-clamp-2 text-sm text-muted-foreground"
-                                                dangerouslySetInnerHTML={{
-                                                    __html: template.content.replace(/<[^>]*>/g, " "),
-                                                }}
-                                            />
+                                            <p className="line-clamp-2 text-sm text-muted-foreground">
+                                                {template.content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}
+                                            </p>
                                         </div>
                                     ))}
                                 </div>

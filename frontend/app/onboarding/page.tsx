@@ -147,11 +147,11 @@ export default function OnboardingPage() {
     };
 
     const currentStep = STEPS[step];
-    const progress = ((step + 1) / STEPS.length) * 100;
+    const progressValue = (step / (STEPS.length - 1)) * 100;
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
-            <div className="w-full max-w-3xl space-y-6">
+            <div className="w-full max-w-3xl space-y-8">
                 <div className="space-y-2 text-center">
                     <h1 className="text-3xl font-bold tracking-tight">Onboarding Lastreia</h1>
                     <p className="text-muted-foreground">
@@ -159,20 +159,40 @@ export default function OnboardingPage() {
                     </p>
                 </div>
 
-                <div className="relative">
-                    <Progress value={progress} className="h-2" />
-                    <div className="absolute top-4 w-full flex justify-between px-2">
-                        {STEPS.map((item, index) => (
-                            <div
-                                key={item.id}
-                                className={`flex flex-col items-center gap-2 ${index === step ? "text-primary" : "text-muted-foreground"}`}
-                            >
-                                <item.icon
-                                    className={`h-6 w-6 ${index <= step ? "stroke-current" : "stroke-muted-foreground/50"}`}
-                                />
-                                <span className="text-xs font-medium hidden sm:block">{item.title}</span>
-                            </div>
-                        ))}
+                <div className="px-2 sm:px-6">
+                    <div className="relative mb-6">
+                        <div className="absolute left-6 right-6 top-5 -z-0">
+                            <Progress value={progressValue} className="h-1" />
+                        </div>
+                        <div className="relative z-10 flex justify-between">
+                            {STEPS.map((item, index) => (
+                                <div
+                                    key={item.id}
+                                    className={`flex flex-col items-center gap-3 w-[72px] sm:w-[140px] transition-colors duration-300 ${index <= step ? "text-primary" : "text-muted-foreground"
+                                        }`}
+                                >
+                                    <div
+                                        className={`flex items-center justify-center w-10 h-10 rounded-full bg-background border-2 transition-all duration-300 ${index === step
+                                                ? "border-primary shadow-[0_0_15px_rgba(255,255,255,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.5)] scale-110"
+                                                : index < step
+                                                    ? "border-primary"
+                                                    : "border-muted-foreground/30"
+                                            }`}
+                                    >
+                                        <item.icon
+                                            className={`h-5 w-5 transition-colors ${index <= step ? "stroke-primary" : "opacity-50"
+                                                }`}
+                                        />
+                                    </div>
+                                    <span
+                                        className={`hidden sm:block text-xs font-semibold text-center leading-tight px-1 transition-opacity ${index === step ? "opacity-100" : "opacity-60"
+                                            }`}
+                                    >
+                                        {item.title}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 

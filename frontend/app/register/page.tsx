@@ -51,7 +51,7 @@ export default function RegisterPage() {
             const response = await api.post("/auth/register", values);
 
             if (response.data.success) {
-                setAuth(response.data.data.token, response.data.data.user);
+                setAuth(response.data.data.user);
                 router.push("/dashboard");
             }
         } catch (err: unknown) {

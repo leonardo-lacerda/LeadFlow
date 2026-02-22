@@ -684,7 +684,7 @@ export default function LeadDetailsPage() {
 
             {/* Modal de edicao */}
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                <DialogContent>
+                <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md w-11/12">
                     <DialogHeader>
                         <DialogTitle>Editar Lead</DialogTitle>
                         <DialogDescription>Atualize os dados do lead.</DialogDescription>
@@ -730,7 +730,7 @@ export default function LeadDetailsPage() {
 
             {/* Modal de envio de mensagem */}
             <Dialog open={messageModal.open} onOpenChange={(open) => setMessageModal((prev) => ({ ...prev, open }))}>
-                <DialogContent>
+                <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md w-11/12">
                     <DialogHeader>
                         <DialogTitle>
                             Enviar {messageModal.channel === "EMAIL" ? "Email" : "WhatsApp"}
