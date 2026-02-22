@@ -50,112 +50,140 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         }
     }, [user, pathname, router]);
 
-    const links = [
+    const navSections = [
         {
-            label: "Painel",
-            href: "/dashboard",
-            icon: (
-                <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
+            title: "Inicio",
+            links: [
+                {
+                    label: "Painel",
+                    href: "/dashboard",
+                    icon: (
+                        <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+            ],
         },
         {
-            label: "Leads + Sinais",
-            href: "/leads",
-            icon: (
-                <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
+            title: "Leads e Prospeccao",
+            links: [
+                {
+                    label: "Leads",
+                    href: "/leads",
+                    icon: (
+                        <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
+                    label: "Importar Leads",
+                    href: "/leads/import",
+                    icon: (
+                        <IconUpload className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
+                    label: "Descoberta de Leads",
+                    href: "/scraping",
+                    icon: (
+                        <IconSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
+                    label: "Lead Pool",
+                    href: "/lead-pool",
+                    icon: (
+                        <IconDatabase className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+            ],
         },
         {
-            label: "Importar Leads",
-            href: "/leads/import",
-            icon: (
-                <IconUpload className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
+            title: "Execucao",
+            links: [
+                {
+                    label: "Sequencias",
+                    href: "/campaigns",
+                    icon: (
+                        <IconMail className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
+                    label: "Caixa de entrada",
+                    href: "/inbox",
+                    icon: (
+                        <IconBrandWhatsapp className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+            ],
         },
         {
-            label: "Descoberta de Leads",
-            href: "/scraping",
-            icon: (
-                <IconSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
+            title: "Inteligencia e Conteudo",
+            links: [
+                {
+                    label: "Inteligencia",
+                    href: "/analytics",
+                    icon: (
+                        <IconChartBar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
+                    label: "Signal Engine",
+                    href: "/signals",
+                    icon: (
+                        <IconBulb className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
+                    label: "AI Workspace",
+                    href: "/ai",
+                    icon: (
+                        <IconSparkles className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
+                    label: "Distribution",
+                    href: "/distribution",
+                    icon: (
+                        <IconShare3 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
+                    label: "Growth Loop",
+                    href: "/growth",
+                    icon: (
+                        <IconTrendingUp className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+            ],
         },
         {
-            label: "Lead Pool",
-            href: "/lead-pool",
-            icon: (
-                <IconDatabase className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
+            title: "Administracao",
+            links: [
+                {
+                    label: "Configuracoes",
+                    href: "/settings",
+                    icon: (
+                        <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
+                    label: "Integracoes",
+                    href: "/settings/integrations",
+                    icon: (
+                        <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
+                    label: "Time",
+                    href: "/settings/team",
+                    icon: (
+                        <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+            ],
         },
-        {
-            label: "Sequencias",
-            href: "/campaigns",
-            icon: (
-                <IconMail className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "Caixa de entrada",
-            href: "/inbox",
-            icon: (
-                <IconBrandWhatsapp className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "Inteligencia",
-            href: "/analytics",
-            icon: (
-                <IconChartBar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "Signal Engine",
-            href: "/signals",
-            icon: (
-                <IconBulb className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "AI Workspace",
-            href: "/ai",
-            icon: (
-                <IconSparkles className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "Distribution",
-            href: "/distribution",
-            icon: (
-                <IconShare3 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "Growth Loop",
-            href: "/growth",
-            icon: (
-                <IconTrendingUp className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "Configuracoes",
-            href: "/settings",
-            icon: (
-                <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "Integracoes",
-            href: "/settings/integrations",
-            icon: (
-                <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "Time",
-            href: "/settings/team",
-            icon: (
-                <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
+    ];
+
+    const accountLinks = [
         {
             label: "Sair",
             href: "#",
@@ -177,9 +205,31 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     <SidebarBody className="justify-between gap-10">
                         <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
                             {open ? <Logo /> : <LogoIcon />}
-                            <div className="mt-8 flex flex-col gap-2">
-                                {links.map((link, idx) => (
-                                    <SidebarLink key={idx} link={link} />
+                            <div className="mt-8 flex flex-col gap-1">
+                                {navSections.map((section) => (
+                                    <div key={section.title} className="mb-2">
+                                        {open && (
+                                            <p className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500 dark:text-neutral-400">
+                                                {section.title}
+                                            </p>
+                                        )}
+                                        <div className="flex flex-col gap-1">
+                                            {section.links.map((link) => (
+                                                <SidebarLink key={link.href} link={link} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <div className="my-2 h-px bg-neutral-200 dark:bg-neutral-700" />
+
+                                {open && (
+                                    <p className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500 dark:text-neutral-400">
+                                        Conta
+                                    </p>
+                                )}
+                                {accountLinks.map((link) => (
+                                    <SidebarLink key={link.label} link={link} />
                                 ))}
                             </div>
                         </div>

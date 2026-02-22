@@ -13,6 +13,8 @@ import {
     IconChartBar,
     IconPlus,
     IconUpload,
+    IconBulb,
+    IconSettings,
 } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
@@ -107,6 +109,51 @@ export default function DashboardPage() {
     ];
     const maxFunnelValue = Math.max(...funnelSteps.map((s) => s.value), 1);
 
+    const objectiveGroups = [
+        {
+            title: "Quer encontrar e organizar leads?",
+            hint: "Monte e mantenha a base comercial ativa.",
+            icon: <IconUsers className="h-4 w-4 text-muted-foreground" />,
+            links: [
+                { label: "Leads", href: "/leads" },
+                { label: "Importar Leads", href: "/leads/import" },
+                { label: "Descoberta de Leads", href: "/scraping" },
+                { label: "Lead Pool", href: "/lead-pool" },
+            ],
+        },
+        {
+            title: "Quer executar outreach e responder rapido?",
+            hint: "Dispare sequencias e centralize as respostas.",
+            icon: <IconMail className="h-4 w-4 text-muted-foreground" />,
+            links: [
+                { label: "Sequencias", href: "/campaigns" },
+                { label: "Caixa de entrada", href: "/inbox" },
+            ],
+        },
+        {
+            title: "Quer transformar dados em sinais e conteudo?",
+            hint: "Analise, gere ativos e publique com contexto.",
+            icon: <IconBulb className="h-4 w-4 text-muted-foreground" />,
+            links: [
+                { label: "Inteligencia", href: "/analytics" },
+                { label: "Signal Engine", href: "/signals" },
+                { label: "AI Workspace", href: "/ai" },
+                { label: "Distribution", href: "/distribution" },
+                { label: "Growth Loop", href: "/growth" },
+            ],
+        },
+        {
+            title: "Quer configurar o sistema?",
+            hint: "Ajuste equipe, credenciais e integracoes.",
+            icon: <IconSettings className="h-4 w-4 text-muted-foreground" />,
+            links: [
+                { label: "Configuracoes", href: "/settings" },
+                { label: "Integracoes", href: "/settings/integrations" },
+                { label: "Time", href: "/settings/team" },
+            ],
+        },
+    ];
+
     return (
         <AppLayout>
             <div className="flex-1 space-y-4 p-8 pt-6">
@@ -131,6 +178,33 @@ export default function DashboardPage() {
                         </Button>
                     </div>
                 </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Por onde voce quer comecar?</CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                            Navegue por objetivo para chegar nas telas certas mais rapido.
+                        </p>
+                    </CardHeader>
+                    <CardContent className="grid gap-3 md:grid-cols-2">
+                        {objectiveGroups.map((group) => (
+                            <div key={group.title} className="rounded-md border p-4">
+                                <div className="flex items-center gap-2">
+                                    {group.icon}
+                                    <p className="text-sm font-semibold">{group.title}</p>
+                                </div>
+                                <p className="mt-1 text-xs text-muted-foreground">{group.hint}</p>
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {group.links.map((link) => (
+                                        <Button key={link.href} variant="outline" size="sm" asChild>
+                                            <Link href={link.href}>{link.label}</Link>
+                                        </Button>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     {statsCards.map((stat, index) => (
