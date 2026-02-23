@@ -49,6 +49,11 @@ export interface ScrapingJobLead {
     createdAt: string;
 }
 
+export interface LeadStatusSummary {
+    total: number;
+    byStatus: Record<string, number>;
+}
+
 export interface CreateJobInput {
     name?: string;
     source: ScrapingSource;
@@ -79,12 +84,18 @@ export const scrapingApi = {
     async listJobLeads(
         id: string,
         params?: { page?: number; limit?: number; search?: string }
-    ): Promise<{ leads: ScrapingJobLead[]; total: number; totalPages: number }> {
+    ): Promise<{
+        leads: ScrapingJobLead[];
+        total: number;
+        totalPages: number;
+        statusSummary?: LeadStatusSummary;
+    }> {
         const response = await api.get(`/scraping/jobs/${id}/leads`, { params });
         return {
             leads: response.data.data,
             total: response.data.meta.total,
             totalPages: response.data.meta.totalPages,
+            statusSummary: response.data.meta.statusSummary,
         };
     },
 

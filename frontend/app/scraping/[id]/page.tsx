@@ -42,7 +42,7 @@ import {
     IconSearch,
     IconSparkles,
 } from "@tabler/icons-react";
-import { scrapingApi, ScrapingJob, ScrapingJobLead } from "@/lib/scraping-api";
+import { LeadStatusSummary, scrapingApi, ScrapingJob, ScrapingJobLead } from "@/lib/scraping-api";
 import { enrichmentApi } from "@/lib/enrichment-api";
 import { getErrorMessage } from "@/lib/error-utils";
 import { formatDistanceToNow } from "date-fns";
@@ -61,6 +61,13 @@ const STATUS_CONFIG: Record<
     CANCELLED: { label: "Cancelado", variant: "outline", icon: IconX },
 };
 
+type EnrichmentKickoff = {
+    phase: "starting" | "queued";
+    leadCount: number;
+    enrichmentJobId?: string;
+    startedAt: number;
+};
+
 export default function ScrapingJobDetails() {
     const params = useParams<{ id: string | string[] }>();
     const jobId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -72,6 +79,7 @@ export default function ScrapingJobDetails() {
     const [leadsLoading, setLeadsLoading] = useState(true);
     const [leadsPage, setLeadsPage] = useState(1);
     const [leadsTotalPages, setLeadsTotalPages] = useState(1);
+    const [leadStatusSummary, setLeadStatusSummary] = useState<LeadStatusSummary | null>(null);
     const [leadsSearch, setLeadsSearch] = useState("");
     const [lastRefreshAt, setLastRefreshAt] = useState<Date | null>(null);
     const leadsPageSize = 20;
@@ -81,6 +89,8 @@ export default function ScrapingJobDetails() {
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
     const [jobError, setJobError] = useState<string | null>(null);
     const [leadsError, setLeadsError] = useState<string | null>(null);
+    const [enrichmentStarting, setEnrichmentStarting] = useState(false);
+    const [enrichmentKickoff, setEnrichmentKickoff] = useState<EnrichmentKickoff | null>(null);
     const cooldownSeconds = 60;
 
     const loadJob = useCallback(async () => {
@@ -112,6 +122,7 @@ export default function ScrapingJobDetails() {
             });
             setLeads(data.leads);
             setLeadsTotalPages(data.totalPages || 1);
+            setLeadStatusSummary(data.statusSummary || null);
             setLastRefreshAt(new Date());
             setLeadsError(null);
         } catch (error) {
@@ -142,6 +153,76 @@ export default function ScrapingJobDetails() {
             });
         } finally {
             setRerunning(false);
+        }
+    };
+
+    const handleStartEnrichment = async () => {
+        if (!job || enrichmentStarting) {
+            return;
+        }
+
+        const initialLeadCount = Math.max(job.leadsCreated || 0, leads.length || 0);
+        setEnrichmentStarting(true);
+        setEnrichmentKickoff({
+            phase: "starting",
+            leadCount: initialLeadCount,
+            startedAt: Date.now(),
+        });
+
+        try {
+            const { job: enrichmentJob, leadCount } = await enrichmentApi.createJobForScrapingJob(job.id, {
+                name: `Enrichment ${job.name}`,
+            });
+
+            setEnrichmentKickoff({
+                phase: "queued",
+                leadCount,
+                enrichmentJobId: enrichmentJob.id,
+                startedAt: Date.now(),
+            });
+
+            setLeads((current) =>
+                current.map((lead) =>
+                    lead.status === "NEW" ? { ...lead, status: "ENRICHING" } : lead
+                )
+            );
+            setLeadStatusSummary((current) => {
+                if (!current) {
+                    return {
+                        total: Math.max(leadCount, initialLeadCount),
+                        byStatus: {
+                            ENRICHING: leadCount,
+                        },
+                    };
+                }
+
+                const byStatus = { ...current.byStatus };
+                const newCount = byStatus.NEW || 0;
+                const moving = Math.min(newCount, leadCount);
+
+                byStatus.NEW = Math.max(newCount - moving, 0);
+                byStatus.ENRICHING = (byStatus.ENRICHING || 0) + moving;
+
+                return {
+                    total: current.total,
+                    byStatus,
+                };
+            });
+
+            toast({
+                title: "Enriquecimento iniciado",
+                description: `${leadCount} leads enviados para processamento.`,
+            });
+            await loadLeads();
+        } catch (error) {
+            setEnrichmentKickoff(null);
+            toast({
+                title: "Erro ao iniciar enriquecimento",
+                description: getErrorMessage(error),
+                variant: "destructive",
+            });
+        } finally {
+            setEnrichmentStarting(false);
         }
     };
 
@@ -207,6 +288,19 @@ export default function ScrapingJobDetails() {
                 | { matched?: number; claimed?: number; preFetchedAt?: string }
                 | undefined)
             : undefined;
+    const summaryByStatus = leadStatusSummary?.byStatus || {};
+    const fallbackEnrichingCount = leads.filter((lead) => lead.status === "ENRICHING").length;
+    const fallbackEnrichedCount = leads.filter((lead) => lead.status === "ENRICHED").length;
+    const enrichingCount = summaryByStatus.ENRICHING ?? fallbackEnrichingCount;
+    const enrichedCount = summaryByStatus.ENRICHED ?? fallbackEnrichedCount;
+    const summaryTotal = leadStatusSummary?.total ?? Math.max(job.leadsCreated || 0, leads.length || 0);
+    const enrichmentTarget = enrichmentKickoff
+        ? Math.max(enrichmentKickoff.leadCount, summaryTotal)
+        : summaryTotal;
+    const enrichmentProgress = enrichmentTarget > 0
+        ? Math.min(100, Math.round((enrichedCount / enrichmentTarget) * 100))
+        : 0;
+    const shouldShowEnrichmentProgress = Boolean(enrichmentKickoff) || enrichingCount > 0 || enrichedCount > 0;
 
     return (
         <AppLayout>
@@ -419,23 +513,13 @@ export default function ScrapingJobDetails() {
                                     size="sm"
                                     variant="outline"
                                     className="border-emerald-300 text-emerald-800 hover:bg-emerald-100 dark:text-emerald-200 dark:border-emerald-700"
-                                    onClick={async () => {
-                                        try {
-                                            await enrichmentApi.createJobForScrapingJob(job.id, {
-                                                name: `Enrichment ${job.name}`,
-                                            });
-                                            toast({ title: "Enriquecimento iniciado para todos os leads!" });
-                                        } catch (error) {
-                                            toast({
-                                                title: "Erro ao iniciar enriquecimento",
-                                                description: getErrorMessage(error),
-                                                variant: "destructive",
-                                            });
-                                        }
-                                    }}
+                                    onClick={handleStartEnrichment}
+                                    disabled={enrichmentStarting}
                                 >
-                                    <IconSparkles className="mr-2 h-4 w-4" />
-                                    Enriquecer dados
+                                    <IconSparkles
+                                        className={`mr-2 h-4 w-4 ${enrichmentStarting ? "animate-pulse" : ""}`}
+                                    />
+                                    {enrichmentStarting ? "Iniciando..." : "Enriquecer dados"}
                                 </Button>
                                 <Button
                                     size="sm"
@@ -456,6 +540,61 @@ export default function ScrapingJobDetails() {
                             </div>
                         </div>
                     </div>
+                )}
+
+                {shouldShowEnrichmentProgress && (
+                    <Card className="border-primary/30 bg-primary/5">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <IconSparkles
+                                    className={`h-4 w-4 ${(enrichmentStarting || enrichingCount > 0) ? "animate-pulse" : ""}`}
+                                />
+                                Enriquecimento em andamento
+                            </CardTitle>
+                            <CardDescription>
+                                Progresso real baseado nos status globais dos leads desta tarefa.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3 text-sm">
+                            <div className="space-y-1">
+                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                    <span>Progresso do enrichment</span>
+                                    <span>
+                                        {enrichedCount}/{Math.max(enrichmentTarget, 1)} concluidos ({enrichmentProgress}%)
+                                    </span>
+                                </div>
+                                <Progress value={enrichmentProgress} className="h-2" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <IconCheck className="h-4 w-4 text-emerald-600" />
+                                <span>
+                                    {(enrichmentKickoff?.leadCount ?? enrichmentTarget)} leads selecionados para enrichment.
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <IconCheck className="h-4 w-4 text-emerald-600" />
+                                <span>
+                                    Job de enrichment criado
+                                    {enrichmentKickoff?.enrichmentJobId ? ` (${enrichmentKickoff.enrichmentJobId}).` : "."}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {enrichmentStarting || enrichingCount > 0 ? (
+                                    <IconClock className="h-4 w-4 animate-pulse text-amber-600" />
+                                ) : (
+                                    <IconCheck className="h-4 w-4 text-emerald-600" />
+                                )}
+                                <span>
+                                    {enrichmentStarting || enrichingCount > 0
+                                        ? "Processando dados (CNPJ, dominio, email e ICP). Isso pode levar alguns minutos."
+                                        : "Processamento concluido para os leads atualmente em fila."}
+                                </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Status globais: {enrichingCount} ENRICHING, {enrichedCount} ENRICHED e {summaryByStatus.NEW || 0} NEW.
+                            </p>
+                        </CardContent>
+                    </Card>
                 )}
 
                 {/* Stats Grid */}

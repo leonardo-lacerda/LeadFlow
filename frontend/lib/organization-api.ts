@@ -13,6 +13,7 @@ export interface Organization {
     name: string;
     slug: string;
     plan: string;
+    planVersion?: number;
     onboardingCompleted?: boolean;
     networkOptIn?: boolean;
     apiKeys?: Record<string, string>;

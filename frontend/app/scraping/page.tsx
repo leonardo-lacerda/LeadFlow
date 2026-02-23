@@ -427,7 +427,7 @@ export default function ScrapingPage() {
             if (!terms || terms.length === 0) throw new Error("Sem sugestões retornadas");
             setSuggestedTerms(terms);
             toast({ title: "Termos sugeridos com sucesso!" });
-        } catch (error) {
+        } catch {
             toast({ title: "Erro ao gerar sugestões", variant: "destructive" });
         } finally {
             setSuggesting(false);

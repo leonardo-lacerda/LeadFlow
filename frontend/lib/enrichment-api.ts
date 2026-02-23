@@ -74,16 +74,18 @@ export const enrichmentApi = {
     async createJobForScrapingJob(
         scrapingJobId: string,
         options?: { name?: string; webhookUrl?: string }
-    ): Promise<EnrichmentJob> {
+    ): Promise<{ job: EnrichmentJob; leadCount: number }> {
         const leadIds = await listAllScrapingLeadIds(scrapingJobId);
         if (leadIds.length === 0) {
             throw new Error("Nenhum lead encontrado para esta tarefa de scraping");
         }
 
-        return this.createJob({
+        const job = await this.createJob({
             leadIds,
             name: options?.name || `Enrichment ${scrapingJobId}`,
             webhookUrl: options?.webhookUrl,
         });
+
+        return { job, leadCount: leadIds.length };
     },
 };
