@@ -147,7 +147,7 @@ async def scrape(
     try:
         leads: List[Dict[str, Any]]
         if SCRAPING_MOCK:
-            leads = make_mock_leads("linkedin_dork", query or "LinkedIn", min(limit, 10))
+            leads = make_mock_leads("linkedin_dork", query or "LinkedIn", limit)
         elif SCRAPING_NO_API:
             proxy = await proxy_manager.next_proxy()
             leads = []
@@ -258,7 +258,13 @@ async def scrape(
                     break
 
         await publish_progress(flush_leads=True)
-        await reporter.finish(leads, send_leads=not streamed_leads)
+        mode = "mock" if SCRAPING_MOCK else ("no_api" if SCRAPING_NO_API else "serpapi")
+        debug = {
+            "mode": mode,
+            "requestedLimit": limit,
+            "finalLeadCount": len(leads),
+        }
+        await reporter.finish(leads, debug=debug, send_leads=not streamed_leads)
     except Exception as exc:
         logger.exception("LinkedIn dork scrape failed")
         await reporter.fail(str(exc))

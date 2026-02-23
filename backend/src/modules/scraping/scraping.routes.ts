@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { scrapingService, ScrapingSource } from './scraping.service.js';
+import { sanitizeScrapingQuery } from './scraping.validation.js';
 import { env } from '../../config/env.js';
 import { assertTrustedWebhookUrl } from '../../lib/webhook-url.js';
 import { sendLimitAwareError } from '../billing/http.js';
@@ -60,11 +61,13 @@ export async function scrapingRoutes(fastify: FastifyInstance) {
                 if (body.webhookUrl) {
                     assertTrustedWebhookUrl(body.webhookUrl);
                 }
+                const source = body.source as ScrapingSource;
+                const query = sanitizeScrapingQuery(source, body.query);
 
                 const job = await scrapingService.createJob(decoded.organizationId, {
                     name: body.name,
-                    source: body.source as ScrapingSource,
-                    query: body.query,
+                    source,
+                    query,
                     webhookUrl: body.webhookUrl,
                     schedule: body.schedule,
                 });

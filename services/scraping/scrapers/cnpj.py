@@ -166,7 +166,7 @@ async def scrape(
     streamed_leads = False
     try:
         if SCRAPING_MOCK:
-            leads = make_mock_leads("cnpj", "CNPJ", min(limit, 5), {"companyCnpj": "00000000000100"})
+            leads = make_mock_leads("cnpj", "CNPJ", limit, {"companyCnpj": "00000000000100"})
         else:
             cnpjs = cnpj if isinstance(cnpj, list) else [cnpj]
             leads: List[Dict[str, Any]] = []
@@ -237,7 +237,12 @@ async def scrape(
                 await reporter.update(index, leads=[leads[-1]])
                 streamed_leads = True
 
-        await reporter.finish(leads, send_leads=not streamed_leads)
+        debug = {
+            "mode": "mock" if SCRAPING_MOCK else ("no_api" if SCRAPING_NO_API else "provider"),
+            "requestedLimit": limit,
+            "finalLeadCount": len(leads),
+        }
+        await reporter.finish(leads, debug=debug, send_leads=not streamed_leads)
     except Exception as exc:
         logger.exception("CNPJ scrape failed")
         await reporter.fail(str(exc))

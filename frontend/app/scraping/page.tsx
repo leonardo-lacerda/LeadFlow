@@ -472,6 +472,14 @@ export default function ScrapingPage() {
                 });
                 return;
             }
+            if (parsed > 1000) {
+                toast({
+                    title: "Limite invalido",
+                    description: "Use no maximo 1000 resultados por tarefa.",
+                    variant: "destructive",
+                });
+                return;
+            }
         }
 
         setCreating(true);
@@ -816,6 +824,7 @@ export default function ScrapingPage() {
                                                         }
                                                         placeholder={field.placeholder}
                                                         min={field.type === "number" ? 1 : undefined}
+                                                        max={field.type === "number" ? 1000 : undefined}
                                                     />
                                                 )}
                                                 {field.helper && (

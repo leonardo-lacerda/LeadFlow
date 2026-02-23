@@ -446,6 +446,46 @@ function buildLeadFingerprint(lead: Record<string, unknown>, source: string) {
     return crypto.createHash('sha256').update(fingerprintBase).digest('hex');
 }
 
+function buildLeadConsumeOperationKey(
+    jobId: string,
+    leads: Array<{ sourceFingerprint?: string | null }>
+) {
+    const fingerprints = Array.from(
+        new Set(
+            leads
+                .map((lead) => lead.sourceFingerprint)
+                .filter((value): value is string => typeof value === 'string' && value.length > 0)
+        )
+    ).sort();
+    const digestBase = fingerprints.length > 0 ? fingerprints.join('|') : 'no-fingerprint';
+    const digest = crypto
+        .createHash('sha256')
+        .update(`${jobId}|${digestBase}`)
+        .digest('hex')
+        .slice(0, 24);
+    return `scraping:${jobId}:leads:${digest}`;
+}
+
+function extractRequestedLimitFromQuery(value: Prisma.JsonValue): number | null {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return null;
+    }
+
+    const rawLimit = (value as Record<string, unknown>).limit;
+    if (typeof rawLimit === 'number' && Number.isFinite(rawLimit) && rawLimit > 0) {
+        return Math.floor(rawLimit);
+    }
+
+    if (typeof rawLimit === 'string') {
+        const parsed = Number(rawLimit);
+        if (Number.isFinite(parsed) && parsed > 0) {
+            return Math.floor(parsed);
+        }
+    }
+
+    return null;
+}
+
 function normalizeStatus(status?: string): JobStatus {
     const value = (status || '').toUpperCase();
     if (['PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED'].includes(value)) {
@@ -813,11 +853,12 @@ export class ScrapingService {
                         : [];
 
                 if (createResult.count > 0) {
+                    const consumeOperationKey = buildLeadConsumeOperationKey(job.id, cappedLeads);
                     await billingService.consumeLeadsTx(
                         tx,
                         job.organizationId,
                         createResult.count,
-                        `scraping:${job.id}:leads:${job.processedItems || 0}`
+                        consumeOperationKey
                     );
                     await tx.organization.update({
                         where: { id: job.organizationId },
@@ -879,6 +920,7 @@ export class ScrapingService {
                 : typeof nestedScraperDebug?.['finalLeadCount'] === 'number'
                     ? (nestedScraperDebug['finalLeadCount'] as number)
                     : undefined;
+        const requestedLimit = extractRequestedLimitFromQuery(job.query as Prisma.JsonValue);
         const persistedLeadCount =
             status === 'COMPLETED' && leadsCreated === 0
                 ? await prisma.lead.count({ where: { scrapingJobId: job.id } })
@@ -888,6 +930,12 @@ export class ScrapingService {
             leadsCreated === 0 &&
             (persistedLeadCount ?? 0) === 0 &&
             (finalLeadCountHint === undefined || finalLeadCountHint === 0);
+        const shouldWarnUnderRequestedLimit =
+            status === 'COMPLETED' &&
+            requestedLimit !== null &&
+            finalLeadCountHint !== undefined &&
+            finalLeadCountHint >= 0 &&
+            finalLeadCountHint < requestedLimit;
         const shouldWarnDroppedMockLeads =
             status === 'COMPLETED' && droppedMockTagged > 0;
         const isCompletionTransition = status === 'COMPLETED' && job.status !== 'COMPLETED';
@@ -910,6 +958,8 @@ export class ScrapingService {
             totalItems,
             processedItems,
             persistedLeadCount: persistedLeadCount ?? null,
+            requestedLimit,
+            finalLeadCountHint: finalLeadCountHint ?? null,
             postCapture,
             scraperDebug: payload.debug ?? null,
             at: new Date().toISOString(),
@@ -933,6 +983,11 @@ export class ScrapingService {
         } else if (shouldWarnNoLeads) {
             errorsUpdate = {
                 warning: 'Scraping completed with no leads',
+                diagnostics,
+            } as Prisma.InputJsonValue;
+        } else if (shouldWarnUnderRequestedLimit) {
+            errorsUpdate = {
+                warning: 'Scraping completed below requested limit',
                 diagnostics,
             } as Prisma.InputJsonValue;
         } else if (status === 'COMPLETED') {

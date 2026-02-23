@@ -95,7 +95,7 @@ async def scrape(
     try:
         leads: List[Dict[str, Any]]
         if SCRAPING_MOCK:
-            leads = make_mock_leads("mercado_livre", query or "Mercado Livre", min(limit, 10))
+            leads = make_mock_leads("mercado_livre", query or "Mercado Livre", limit)
         else:
             url = f"https://lista.mercadolivre.com.br/{quote_plus(query)}"
             leads = []
@@ -254,7 +254,12 @@ async def scrape(
                         break
 
         await publish_progress(flush_leads=True)
-        await reporter.finish(leads, send_leads=not streamed_leads)
+        debug = {
+            "mode": "mock" if SCRAPING_MOCK else "live",
+            "requestedLimit": limit,
+            "finalLeadCount": len(leads),
+        }
+        await reporter.finish(leads, debug=debug, send_leads=not streamed_leads)
     except Exception as exc:
         logger.exception("Mercado Livre scrape failed")
         await reporter.fail(str(exc))

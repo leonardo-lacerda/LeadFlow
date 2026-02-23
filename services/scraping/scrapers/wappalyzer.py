@@ -95,7 +95,7 @@ async def scrape(
     streamed_leads = False
     try:
         if SCRAPING_MOCK:
-            leads = make_mock_leads("wappalyzer", "Tech Stack", min(limit, 5), {"tags": ["mock_tech"]})
+            leads = make_mock_leads("wappalyzer", "Tech Stack", limit, {"tags": ["mock_tech"]})
         else:
             url_list = urls if isinstance(urls, list) else [urls]
             leads: List[Dict[str, Any]] = []
@@ -217,7 +217,12 @@ async def scrape(
                 await reporter.update(index, leads=[leads[-1]])
                 streamed_leads = True
 
-        await reporter.finish(leads, send_leads=not streamed_leads)
+        debug = {
+            "mode": "mock" if SCRAPING_MOCK else ("no_api" if SCRAPING_NO_API else "wappalyzer_api"),
+            "requestedLimit": limit,
+            "finalLeadCount": len(leads),
+        }
+        await reporter.finish(leads, debug=debug, send_leads=not streamed_leads)
     except Exception as exc:
         logger.exception("Wappalyzer scrape failed")
         await reporter.fail(str(exc))

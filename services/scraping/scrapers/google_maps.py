@@ -468,7 +468,7 @@ async def scrape(
         if SCRAPING_MOCK:
             debug["mode"] = "mock"
             base = f"{query} {location}".strip() or "Google Maps"
-            leads = make_mock_leads("google_maps", base, min(limit, 10), {"sourceUrl": "https://maps.google.com"})
+            leads = make_mock_leads("google_maps", base, limit, {"sourceUrl": "https://maps.google.com"})
         elif SCRAPING_NO_API:
             debug["mode"] = "no_api"
             normalized_query = _normalize_query_text(query)

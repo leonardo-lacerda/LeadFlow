@@ -153,7 +153,7 @@ async def scrape(
         leads: List[Dict[str, Any]]
         if SCRAPING_MOCK:
             base = f"{query} {location}".strip() or "Indeed"
-            leads = make_mock_leads("indeed", base, min(limit, 10))
+            leads = make_mock_leads("indeed", base, limit)
         else:
             leads = []
             seen = set()
@@ -327,7 +327,12 @@ async def scrape(
                             break
 
         await publish_progress(flush_leads=True)
-        await reporter.finish(leads, send_leads=not streamed_leads)
+        debug = {
+            "mode": "mock" if SCRAPING_MOCK else "live",
+            "requestedLimit": limit,
+            "finalLeadCount": len(leads),
+        }
+        await reporter.finish(leads, debug=debug, send_leads=not streamed_leads)
     except Exception as exc:
         logger.exception("Indeed scrape failed")
         await reporter.fail(str(exc))
