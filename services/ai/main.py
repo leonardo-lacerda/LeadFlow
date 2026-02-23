@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -102,8 +103,31 @@ def _resolve_webhook_url(value: Optional[str]) -> Optional[str]:
     return value or BACKEND_WEBHOOK_URL or None
 
 
-def _resolve_webhook_secret(value: Optional[str]) -> Optional[str]:
-    return value or AI_WEBHOOK_SECRET or None
+def _normalize_webhook_target(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    try:
+        parsed = urlparse(value.strip())
+    except ValueError:
+        return None
+
+    if not parsed.scheme or not parsed.netloc:
+        return None
+
+    path = parsed.path.rstrip("/") or "/"
+    return f"{parsed.scheme.lower()}://{parsed.netloc.lower()}{path}"
+
+
+def _resolve_webhook_secret(value: Optional[str], webhook_url: Optional[str]) -> Optional[str]:
+    if value:
+        return value
+
+    resolved_target = _normalize_webhook_target(_resolve_webhook_url(webhook_url))
+    default_target = _normalize_webhook_target(BACKEND_WEBHOOK_URL)
+    if resolved_target and default_target and resolved_target == default_target:
+        return AI_WEBHOOK_SECRET or None
+
+    return None
 
 
 def _lead_summary(lead: Dict[str, Any]) -> str:
@@ -387,7 +411,7 @@ async def score(payload: ScoreRequest) -> Dict[str, Any]:
 async def score_bulk(payload: ScoreBulkRequest) -> Dict[str, Any]:
     job = await job_store.create({"leads": payload.leads}, job_id=payload.job_id)
     webhook_url = _resolve_webhook_url(payload.webhook_url)
-    webhook_secret = _resolve_webhook_secret(payload.webhook_secret)
+    webhook_secret = _resolve_webhook_secret(payload.webhook_secret, payload.webhook_url)
     reporter = ProgressReporter(job.id, webhook_url, webhook_secret)
 
     async def _task() -> None:

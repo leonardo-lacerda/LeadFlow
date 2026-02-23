@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import crypto from 'node:crypto';
 import { env } from '../../config/env.js';
 import { decryptStringMap, encryptStringMap } from '../../lib/secrets.js';
+import { billingService } from '../billing/billing.service.js';
 
 interface UpdateOrganizationInput {
     name?: string;
@@ -31,6 +32,7 @@ const ORG_BASE_SELECT = {
     name: true,
     slug: true,
     plan: true,
+    planVersion: true,
     onboardingCompleted: true,
     networkOptIn: true,
     leadsLimit: true,
@@ -168,6 +170,8 @@ export class OrganizationService {
         createdByUserId: string,
         data: InviteUserInput
     ): Promise<InviteUserResult> {
+        await billingService.assertSeatsLimit(organizationId, 1);
+
         // Check if user already exists
         const existingUser = await prisma.user.findUnique({
             where: { email: data.email },

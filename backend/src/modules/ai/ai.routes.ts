@@ -4,6 +4,8 @@ import { aiService } from './ai.service.js';
 import { env } from '../../config/env.js';
 import { fetchWithTimeout } from '../../lib/fetch.js';
 import { prisma } from '../../lib/prisma.js';
+import { assertTrustedWebhookUrl } from '../../lib/webhook-url.js';
+import { sendLimitAwareError } from '../billing/http.js';
 
 const createScoringJobSchema = z.object({
     name: z.string().min(1).optional(),
@@ -116,13 +118,13 @@ export async function aiRoutes(fastify: FastifyInstance) {
             try {
                 const decoded = await request.jwtVerify<{ organizationId: string }>();
                 const body = createScoringJobSchema.parse(request.body);
+                if (body.webhookUrl) {
+                    assertTrustedWebhookUrl(body.webhookUrl);
+                }
                 const job = await aiService.createScoringJob(decoded.organizationId, body);
                 return reply.code(201).send({ success: true, data: job });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to create scoring job',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to create scoring job');
             }
         }
     );
@@ -689,8 +691,13 @@ export async function aiRoutes(fastify: FastifyInstance) {
                     const errorText = await response.text();
                     throw new Error(`OpenAI error: ${errorText}`);
                 }
-                const data = (await response.json()) as any;
-                const termsText = data.choices[0].message.content.trim();
+                const data = (await response.json()) as {
+                    choices?: Array<{ message?: { content?: string } }>;
+                };
+                const termsText = data.choices?.[0]?.message?.content?.trim();
+                if (!termsText) {
+                    throw new Error('OpenAI response missing suggested terms');
+                }
                 let terms: string[] = [];
                 try {
                     // Sometimes it replies with markdown ```json

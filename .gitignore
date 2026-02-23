@@ -28,3 +28,6 @@
 
 # Backup of nested git metadata
 frontend/.git.frontend-backup/
+.vercel
+.env*.local
+deploy_bundle*.tar.gz

@@ -7,6 +7,7 @@ import { decryptSecret, encryptSecret } from '../../lib/secrets.js';
 import { inboxIntelligenceService } from '../inbox/inbox-intelligence.service.js';
 import { getApiBaseUrl, normalizePhone, renderTemplate } from './whatsapp.utils.js';
 import { signalLayerService } from '../signals/signal-layer.service.js';
+import { billingService } from '../billing/billing.service.js';
 
 interface CreateInstanceInput {
     name: string;
@@ -303,19 +304,7 @@ export class WhatsAppService {
             throw new Error('No leads found');
         }
 
-        const organization = await prisma.organization.findUnique({
-            where: { id: organizationId },
-            select: { whatsappLimit: true, whatsappUsed: true },
-        });
-
-        if (!organization) {
-            throw new Error('Organization not found');
-        }
-
-        const remaining = organization.whatsappLimit - organization.whatsappUsed;
-        if (remaining < leads.length) {
-            throw new Error('WhatsApp limit exceeded');
-        }
+        await billingService.assertSignalCapacity(organizationId, leads.length);
 
         const template = input.templateId
             ? await prisma.template.findFirst({
@@ -561,6 +550,14 @@ export class WhatsAppService {
             where: { id: message.lead.organizationId },
             data: { whatsappUsed: { increment: 1 } },
         });
+        try {
+            await billingService.consumeSignals(message.lead.organizationId, 1, `whatsapp:${message.id}`, {
+                source: 'whatsapp.send',
+                messageId: message.id,
+            } as Prisma.InputJsonValue);
+        } catch (error) {
+            console.error('Failed to record signal consumption for WhatsApp message', error);
+        }
 
         await signalLayerService.trackMessageEvent({
             messageId: message.id,

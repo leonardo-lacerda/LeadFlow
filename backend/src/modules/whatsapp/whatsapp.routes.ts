@@ -2,6 +2,8 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { whatsappService } from './whatsapp.service.js';
 import { env } from '../../config/env.js';
+import { assertTrustedWebhookUrl } from '../../lib/webhook-url.js';
+import { sendLimitAwareError } from '../billing/http.js';
 
 const createInstanceSchema = z.object({
     name: z.string().min(1),
@@ -43,6 +45,9 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
             try {
                 const decoded = await request.jwtVerify<{ organizationId: string }>();
                 const body = createInstanceSchema.parse(request.body);
+                if (body.webhookUrl) {
+                    assertTrustedWebhookUrl(body.webhookUrl);
+                }
                 const instance = await whatsappService.createInstance(decoded.organizationId, body);
                 return reply.code(201).send({ success: true, data: instance });
             } catch (error) {
@@ -196,10 +201,7 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
                 const result = await whatsappService.queueSend(decoded.organizationId, body);
                 return reply.send({ success: true, data: result });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to send WhatsApp',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to send WhatsApp');
             }
         }
     );

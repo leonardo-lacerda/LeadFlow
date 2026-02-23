@@ -98,10 +98,10 @@ const IMPACT_LOOKBACK_DAYS = 45;
 const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
 
 const PLAN_SIGNAL_FLOOR: Record<Plan, number> = {
-    STARTER: 5_000,
-    GROWTH: 25_000,
-    SCALE: 100_000,
-    ENTERPRISE: 250_000,
+    STARTER: 2_000,
+    GROWTH: 10_000,
+    SCALE: 40_000,
+    ENTERPRISE: 120_000,
 };
 
 const RECOMMENDATION_EVENT_TYPES: SignalEventType[] = [
@@ -266,20 +266,20 @@ function mapMessageTypeToSignalChannel(type: MessageType): SignalChannel {
 }
 
 function tierFromUsage(signalsUsed: number): BillingTier {
-    if (signalsUsed > 25_000) {
+    if (signalsUsed > 40_000) {
         return 'Scale';
     }
-    if (signalsUsed > 5_000) {
+    if (signalsUsed > 2_000) {
         return 'Growth';
     }
     return 'Starter';
 }
 
 function cohortFromUsage(signalsUsed: number): CohortTier {
-    if (signalsUsed > 25_000) {
+    if (signalsUsed > 40_000) {
         return 'scale';
     }
-    if (signalsUsed > 5_000) {
+    if (signalsUsed > 2_000) {
         return 'early';
     }
     return 'beta';

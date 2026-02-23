@@ -2,6 +2,8 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { enrichmentService } from './enrichment.service.js';
 import { env } from '../../config/env.js';
+import { assertTrustedWebhookUrl } from '../../lib/webhook-url.js';
+import { sendLimitAwareError } from '../billing/http.js';
 
 const createJobSchema = z.object({
     name: z.string().min(1).optional(),
@@ -35,6 +37,9 @@ export async function enrichmentRoutes(fastify: FastifyInstance) {
             try {
                 const decoded = await request.jwtVerify<{ organizationId: string }>();
                 const body = createJobSchema.parse(request.body);
+                if (body.webhookUrl) {
+                    assertTrustedWebhookUrl(body.webhookUrl);
+                }
 
                 const job = await enrichmentService.createJob(decoded.organizationId, {
                     name: body.name,
@@ -44,10 +49,7 @@ export async function enrichmentRoutes(fastify: FastifyInstance) {
 
                 return reply.code(201).send({ success: true, data: job });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to create enrichment job',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to create enrichment job');
             }
         }
     );

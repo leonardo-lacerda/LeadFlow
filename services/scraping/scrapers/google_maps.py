@@ -61,6 +61,19 @@ LOW_VALUE_GOOGLE_MAPS_TITLE_TOKENS = (
 )
 
 
+def _scaled_result_limit(
+    requested: int,
+    *,
+    base: int,
+    multiplier: int,
+    ceiling: int,
+) -> int:
+    if requested <= 0:
+        return base
+    scaled = requested * multiplier
+    return max(base, min(ceiling, scaled))
+
+
 def _clean_title(value: str) -> str:
     cleaned = re.sub(r"\s*[-|·—–]\s*Google Maps.*$", "", value, flags=re.IGNORECASE).strip()
     cleaned = re.sub(r"\s+Google Maps.*$", "", cleaned, flags=re.IGNORECASE).strip()
@@ -469,7 +482,13 @@ async def scrape(
                 )
             search_query = f'site:google.com/maps "{normalized_query}" "{location}"'.strip()
             proxy = await proxy_manager.next_proxy()
-            results = await web_search(search_query, limit=min(limit, 50), proxy=proxy)
+            search_result_limit = _scaled_result_limit(
+                limit,
+                base=80,
+                multiplier=4,
+                ceiling=300,
+            )
+            results = await web_search(search_query, limit=search_result_limit, proxy=proxy)
             progress_total = max(1, len(results))
             await publish_progress(force=True)
             leads = []
@@ -669,6 +688,7 @@ async def scrape(
 
             debug["duckduckgo"] = {
                 "query": search_query,
+                "searchResultLimit": search_result_limit,
                 "rawResults": len(results),
                 "accepted": len(leads),
                 "filteredGeneric": filtered_generic,
@@ -681,9 +701,11 @@ async def scrape(
                 - website_enrichment_budget,
             }
 
-            if not leads:
+            if len(leads) < limit:
                 logger.warning(
-                    "Google Maps no-api produced zero leads from web_search job_id=%s; starting OSM fallback",
+                    "Google Maps no-api produced %s/%s leads from web_search job_id=%s; starting OSM fallback",
+                    len(leads),
+                    limit,
                     job_id,
                 )
                 raw_osm_queries = [
@@ -699,6 +721,12 @@ async def scrape(
 
                 osm_debug: List[Dict[str, Any]] = []
                 location_tokens = _extract_location_tokens(location)
+                osm_result_limit = _scaled_result_limit(
+                    limit,
+                    base=50,
+                    multiplier=2,
+                    ceiling=200,
+                )
                 for osm_query in osm_queries:
                     try:
                         logger.info(
@@ -713,7 +741,7 @@ async def scrape(
                                 "format": "jsonv2",
                                 "addressdetails": 1,
                                 "extratags": 1,
-                                "limit": min(limit, 50),
+                                "limit": osm_result_limit,
                             },
                             headers={"accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8"},
                             proxy=proxy,
@@ -738,6 +766,7 @@ async def scrape(
                     await publish_progress(force=True)
                     osm_entry: Dict[str, Any] = {
                         "query": osm_query,
+                        "resultLimit": osm_result_limit,
                         "rawResults": result_count,
                         "accepted": 0,
                     }
@@ -898,7 +927,7 @@ async def scrape(
                         osm_entry["contactEnriched"] = contact_from_fallback
 
                     osm_debug.append(osm_entry)
-                    if leads:
+                    if len(leads) >= limit:
                         break
 
                 await publish_progress(flush_leads=True)

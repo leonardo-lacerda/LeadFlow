@@ -5,6 +5,8 @@ import { prisma } from '../lib/prisma.js';
 import { redis } from '../lib/redis.js';
 import { leadPoolService } from '../modules/lead-pool/lead-pool.service.js';
 import { registerQueueWorker } from '../lib/queue-observability.js';
+import { isSameWebhookTarget, isTrustedWebhookUrl } from '../lib/webhook-url.js';
+import { billingService } from '../modules/billing/billing.service.js';
 
 interface ScrapingJobData {
     jobId: string;
@@ -46,6 +48,7 @@ export function startScrapingWorker() {
         async (job) => {
             const data = job.data as ScrapingJobData;
             const endpoint = SOURCE_ENDPOINTS[data.source];
+            const isScheduledRun = Boolean(job.repeatJobKey || job.opts?.repeat);
 
             if (!endpoint) {
                 await prisma.scrapingJob.update({
@@ -56,6 +59,26 @@ export function startScrapingWorker() {
                     },
                 });
                 throw new Error(`Unsupported source: ${data.source}`);
+            }
+
+            if (isScheduledRun) {
+                try {
+                    await billingService.consumeAutomationRuns(
+                        data.organizationId,
+                        1,
+                        `automation:scraping:${String(job.id)}`
+                    );
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : 'Automation limit exceeded';
+                    await prisma.scrapingJob.update({
+                        where: { id: data.jobId },
+                        data: {
+                            status: 'FAILED',
+                            errors: { error: message },
+                        },
+                    });
+                    throw error;
+                }
             }
 
             await prisma.scrapingJob.update({
@@ -94,11 +117,21 @@ export function startScrapingWorker() {
                 console.error('Lead pool pre-fetch failed:', error);
             }
 
+            const customWebhookUrl =
+                data.webhookUrl && isTrustedWebhookUrl(data.webhookUrl) ? data.webhookUrl : undefined;
+            const webhookUrl = customWebhookUrl || env.SCRAPING_WEBHOOK_URL;
+            const shouldAttachInternalSecret = isSameWebhookTarget(
+                webhookUrl,
+                env.SCRAPING_WEBHOOK_URL
+            );
+
             const payload = {
                 ...data.query,
                 job_id: data.jobId,
-                webhook_url: data.webhookUrl || env.SCRAPING_WEBHOOK_URL,
-                webhook_secret: env.SCRAPING_WEBHOOK_SECRET || undefined,
+                webhook_url: webhookUrl,
+                webhook_secret: shouldAttachInternalSecret
+                    ? env.SCRAPING_WEBHOOK_SECRET || undefined
+                    : undefined,
             };
 
             try {

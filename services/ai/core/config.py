@@ -8,7 +8,25 @@ def _to_bool(value: str | None, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
-AI_MOCK: bool = _to_bool(os.getenv("AI_MOCK"), True)
+def _resolve_node_env() -> str:
+    for key in ("NODE_ENV", "APP_ENV", "ENVIRONMENT"):
+        raw = os.getenv(key)
+        if raw and raw.strip():
+            return raw.strip().lower()
+    # Fail-safe default: production mode if env is missing.
+    return "production"
+
+
+NODE_ENV: str = _resolve_node_env()
+IS_PRODUCTION: bool = NODE_ENV in {"production", "prod"}
+AI_MOCK: bool = _to_bool(os.getenv("AI_MOCK"), not IS_PRODUCTION)
+ALLOW_AI_MOCK_IN_PRODUCTION: bool = _to_bool(
+    os.getenv("ALLOW_AI_MOCK_IN_PRODUCTION"),
+    False,
+)
+if IS_PRODUCTION and AI_MOCK and not ALLOW_AI_MOCK_IN_PRODUCTION:
+    AI_MOCK = False
+
 AI_CONCURRENCY: int = int(os.getenv("AI_CONCURRENCY", "3"))
 AI_TIMEOUT: float = float(os.getenv("AI_TIMEOUT", "30"))
 AI_CACHE_TTL: int = int(os.getenv("AI_CACHE_TTL", "3600"))

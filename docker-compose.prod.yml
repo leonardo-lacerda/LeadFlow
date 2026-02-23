@@ -37,7 +37,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8080:8080"
+      - "${EVOLUTION_BIND_IP:-127.0.0.1}:8080:8080"
     volumes:
       - evolution_data:/evolution/instances
     environment:
@@ -66,7 +66,7 @@ services:
     env_file:
       - .env
     ports:
-      - "4000:4000"
+      - "${BACKEND_BIND_IP:-127.0.0.1}:4000:4000"
     environment:
       NODE_ENV: production
       HOST: 0.0.0.0
@@ -100,6 +100,7 @@ services:
       EMAIL_TRACKING_SIGNING_SECRET: ${EMAIL_TRACKING_SIGNING_SECRET:?EMAIL_TRACKING_SIGNING_SECRET is required}
       EMAIL_TRACKING_ALLOWED_DOMAINS: ${EMAIL_TRACKING_ALLOWED_DOMAINS:-}
       SECRETS_ENCRYPTION_KEY: ${SECRETS_ENCRYPTION_KEY:?SECRETS_ENCRYPTION_KEY is required}
+      WEBHOOK_URL_ALLOWLIST: ${WEBHOOK_URL_ALLOWLIST:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       OAUTH_STATE_TTL_SECONDS: ${OAUTH_STATE_TTL_SECONDS:-900}
@@ -118,6 +119,22 @@ services:
       redis:
         condition: service_healthy
 
+  api-proxy:
+    image: caddy:2.10-alpine
+    container_name: lastreia-api-proxy
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+
   scraping:
     build: ./services/scraping
     container_name: lastreia-scraping
@@ -127,7 +144,9 @@ services:
     expose:
       - "5001"
     environment:
+      NODE_ENV: production
       SCRAPING_MOCK: ${SCRAPING_MOCK:-false}
+      ALLOW_SCRAPING_MOCK_IN_PRODUCTION: ${ALLOW_SCRAPING_MOCK_IN_PRODUCTION:-false}
       SCRAPING_NO_API: ${SCRAPING_NO_API:-true}
       BACKEND_WEBHOOK_URL: http://backend:4000/api/scraping/webhook
       SCRAPING_WEBHOOK_SECRET: ${SCRAPING_WEBHOOK_SECRET:?SCRAPING_WEBHOOK_SECRET is required}
@@ -147,7 +166,9 @@ services:
     expose:
       - "5002"
     environment:
+      NODE_ENV: production
       ENRICHMENT_MOCK: ${ENRICHMENT_MOCK:-true}
+      ALLOW_ENRICHMENT_MOCK_IN_PRODUCTION: ${ALLOW_ENRICHMENT_MOCK_IN_PRODUCTION:-false}
       BACKEND_WEBHOOK_URL: http://backend:4000/api/enrichment/webhook
       ENRICHMENT_WEBHOOK_SECRET: ${ENRICHMENT_WEBHOOK_SECRET:?ENRICHMENT_WEBHOOK_SECRET is required}
       CNPJ_WS_BASE_URL: ${CNPJ_WS_BASE_URL:-}
@@ -169,7 +190,9 @@ services:
     expose:
       - "5003"
     environment:
+      NODE_ENV: production
       AI_MOCK: ${AI_MOCK:-true}
+      ALLOW_AI_MOCK_IN_PRODUCTION: ${ALLOW_AI_MOCK_IN_PRODUCTION:-false}
       BACKEND_WEBHOOK_URL: http://backend:4000/api/ai/webhook
       AI_WEBHOOK_SECRET: ${AI_WEBHOOK_SECRET:?AI_WEBHOOK_SECRET is required}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
@@ -181,6 +204,8 @@ volumes:
   postgres_data:
   redis_data:
   evolution_data:
+  caddy_data:
+  caddy_config:
 
 networks:
   default:

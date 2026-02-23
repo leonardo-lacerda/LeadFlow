@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { inboxService } from './inbox.service.js';
 import { inboxIntelligenceService } from './inbox-intelligence.service.js';
 import { z } from 'zod';
+import { assertAdminOrOwner } from '../../lib/rbac.js';
 
 const listConversationsSchema = z.object({
     page: z.coerce.number().int().positive().default(1),
@@ -152,15 +153,19 @@ export async function inboxRoutes(fastify: FastifyInstance) {
         {
             onRequest: [fastify.authenticate],
         },
-        async (_request: FastifyRequest, reply: FastifyReply) => {
+        async (request: FastifyRequest, reply: FastifyReply) => {
             try {
+                const decoded = await request.jwtVerify<{ userId: string; organizationId: string }>();
+                await assertAdminOrOwner(decoded.userId, decoded.organizationId);
                 const result = await inboxIntelligenceService.enqueueFollowUpScan();
                 return reply.code(202).send({
                     success: true,
                     data: result,
                 });
             } catch (error) {
-                return reply.code(400).send({
+                const statusCode =
+                    error instanceof Error && error.message === 'Forbidden' ? 403 : 400;
+                return reply.code(statusCode).send({
                     success: false,
                     error:
                         error instanceof Error ? error.message : 'Failed to enqueue follow-up scan',

@@ -1,8 +1,10 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { env } from '../../config/env.js';
+import { billingService } from '../billing/billing.service.js';
+import { toLegacyLimits } from '../billing/plan-catalog.js';
 
 interface RegisterBody {
     email: string;
@@ -21,6 +23,7 @@ const AUTH_ORG_SELECT = {
     name: true,
     slug: true,
     plan: true,
+    planVersion: true,
     leadsLimit: true,
     emailsLimit: true,
     whatsappLimit: true,
@@ -110,6 +113,7 @@ export class AuthService {
         const passwordHash = await bcrypt.hash(data.password, 10);
 
         const baseSlug = buildOrganizationSlugBase(data.organizationName);
+        const starterLegacyLimits = toLegacyLimits('STARTER');
 
         for (let attempt = 0; attempt < 20; attempt += 1) {
             const slug = buildOrganizationSlugCandidate(baseSlug, attempt);
@@ -120,6 +124,9 @@ export class AuthService {
                         data: {
                             name: data.organizationName,
                             slug,
+                            plan: 'STARTER',
+                            planVersion: 1,
+                            ...starterLegacyLimits,
                         },
                         select: AUTH_ORG_SELECT,
                     });
@@ -138,6 +145,7 @@ export class AuthService {
                     return { user, organization };
                 });
 
+                await billingService.ensurePlanConfig(result.organization.id);
                 return result;
             } catch (error) {
                 if (isUniqueConstraintOnField(error, 'slug')) {
@@ -299,6 +307,8 @@ export class AuthService {
 
         const passwordHash = await bcrypt.hash(data.password, 10);
         const user = await prisma.$transaction(async (tx) => {
+            await billingService.assertSeatsLimitTx(tx, invite.organizationId, 1);
+
             const createdUser = await tx.user.create({
                 data: {
                     email: invite.email,

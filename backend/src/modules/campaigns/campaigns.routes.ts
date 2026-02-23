@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { campaignsService } from './campaigns.service.js';
 import { z } from 'zod';
+import { sendLimitAwareError } from '../billing/http.js';
 
 const createCampaignStepSchema = z.object({
     type: z.enum(['EMAIL', 'WHATSAPP', 'WAIT', 'CONDITION']),
@@ -189,10 +190,7 @@ export async function campaignsRoutes(fastify: FastifyInstance) {
                     data: campaign,
                 });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to update campaign status',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to update campaign status');
             }
         }
     );
@@ -206,10 +204,7 @@ export async function campaignsRoutes(fastify: FastifyInstance) {
                 await campaignsService.launch(decoded.organizationId, (request.params as { id: string }).id);
                 return reply.send({ success: true });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to launch campaign',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to launch campaign');
             }
         }
     );
@@ -240,10 +235,7 @@ export async function campaignsRoutes(fastify: FastifyInstance) {
                 await campaignsService.resume(decoded.organizationId, (request.params as { id: string }).id);
                 return reply.send({ success: true });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to resume campaign',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to resume campaign');
             }
         }
     );

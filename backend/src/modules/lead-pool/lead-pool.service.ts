@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { prisma } from '../../lib/prisma.js';
 import { normalizeCategory, normalizeLocationToken } from './category-normalizer.js';
 import { dedupService, SharedLeadCandidate } from './dedup.service.js';
+import { billingService } from '../billing/billing.service.js';
 
 interface SearchInput {
     city?: string;
@@ -210,6 +211,8 @@ export class LeadPoolService {
                 leadId = existingLead.id;
             } else {
                 const created = await prisma.$transaction(async (tx) => {
+                    await billingService.consumeLeadsTx(tx, organizationId, 1);
+
                     const lead = await tx.lead.create({
                         data: {
                             organizationId,

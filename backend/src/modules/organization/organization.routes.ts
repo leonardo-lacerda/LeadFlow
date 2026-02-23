@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { UserRole } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { organizationService } from './organization.service.js';
+import { assertTrustedWebhookUrl } from '../../lib/webhook-url.js';
+import { sendLimitAwareError } from '../billing/http.js';
 
 const updateOrgSchema = z.object({
     name: z.string().min(2).optional(),
@@ -76,6 +78,11 @@ export async function organizationRoutes(fastify: FastifyInstance) {
                 const decoded = await request.jwtVerify<{ userId: string; organizationId: string }>();
                 await requireAdminOrOwner(decoded.userId, decoded.organizationId);
                 const body = updateOrgSchema.parse(request.body);
+                if (body.webhooks) {
+                    for (const [key, value] of Object.entries(body.webhooks)) {
+                        assertTrustedWebhookUrl(value, `webhooks.${key}`);
+                    }
+                }
 
                 await organizationService.updateOrganization(decoded.organizationId, body);
                 const org = await organizationService.getOrganization(decoded.organizationId, decoded.userId);
@@ -114,10 +121,7 @@ export async function organizationRoutes(fastify: FastifyInstance) {
 
                 return reply.code(201).send({ success: true, data: invite });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to invite user',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to invite user');
             }
         }
     );

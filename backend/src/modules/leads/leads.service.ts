@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma.js';
 import { LeadStatus, Prisma } from '@prisma/client';
 import { env } from '../../config/env.js';
 import { enrichmentService } from '../enrichment/enrichment.service.js';
+import { billingService } from '../billing/billing.service.js';
 
 interface CreateLeadData {
     firstName?: string;
@@ -49,21 +50,7 @@ function isLeadStatus(value: string): value is LeadStatus {
 export class LeadsService {
     async create(organizationId: string, data: CreateLeadData) {
         const lead = await prisma.$transaction(async (tx) => {
-            const organization = await tx.organization.findUnique({
-                where: { id: organizationId },
-                select: {
-                    leadsLimit: true,
-                    leadsUsed: true,
-                },
-            });
-
-            if (!organization) {
-                throw new Error('Organization not found');
-            }
-
-            if (organization.leadsUsed + 1 > organization.leadsLimit) {
-                throw new Error('Leads limit exceeded');
-            }
+            await billingService.consumeLeadsTx(tx, organizationId, 1);
 
             const created = await tx.lead.create({
                 data: {
@@ -105,21 +92,7 @@ export class LeadsService {
         }));
 
         const created = await prisma.$transaction(async (tx) => {
-            const organization = await tx.organization.findUnique({
-                where: { id: organizationId },
-                select: {
-                    leadsLimit: true,
-                    leadsUsed: true,
-                },
-            });
-
-            if (!organization) {
-                throw new Error('Organization not found');
-            }
-
-            if (organization.leadsUsed + payload.length > organization.leadsLimit) {
-                throw new Error('Leads limit exceeded');
-            }
+            await billingService.consumeLeadsTx(tx, organizationId, payload.length);
 
             const createdLeads = await Promise.all(
                 payload.map((data) =>

@@ -3,6 +3,7 @@ import { leadsService } from './leads.service.js';
 import { z } from 'zod';
 import { LeadStatus } from '@prisma/client';
 import { leadNotesService } from './lead-notes.service.js';
+import { sendLimitAwareError } from '../billing/http.js';
 
 const createLeadSchema = z.object({
     firstName: z.string().optional(),
@@ -70,10 +71,7 @@ export async function leadsRoutes(fastify: FastifyInstance) {
                     data: lead,
                 });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to create lead',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to create lead');
             }
         }
     );
@@ -126,10 +124,7 @@ export async function leadsRoutes(fastify: FastifyInstance) {
                     data: result,
                 });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to bulk create leads',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to bulk create leads');
             }
         }
     );

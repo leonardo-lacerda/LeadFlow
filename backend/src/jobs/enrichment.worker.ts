@@ -4,6 +4,7 @@ import { fetchWithTimeout } from '../lib/fetch.js';
 import { prisma } from '../lib/prisma.js';
 import { redis } from '../lib/redis.js';
 import { registerQueueWorker } from '../lib/queue-observability.js';
+import { isSameWebhookTarget, isTrustedWebhookUrl } from '../lib/webhook-url.js';
 
 interface EnrichmentJobData {
     jobId: string;
@@ -84,14 +85,24 @@ export function startEnrichmentWorker() {
                 throw new Error('No leads found for enrichment');
             }
 
+            const customWebhookUrl =
+                data.webhookUrl && isTrustedWebhookUrl(data.webhookUrl) ? data.webhookUrl : undefined;
+            const webhookUrl = customWebhookUrl || env.ENRICHMENT_WEBHOOK_URL;
+            const shouldAttachInternalSecret = isSameWebhookTarget(
+                webhookUrl,
+                env.ENRICHMENT_WEBHOOK_URL
+            );
+
             const payload = {
                 leads: leads.map((lead) => ({
                     leadId: lead.id,
                     ...lead,
                 })),
                 job_id: data.jobId,
-                webhook_url: data.webhookUrl || env.ENRICHMENT_WEBHOOK_URL,
-                webhook_secret: env.ENRICHMENT_WEBHOOK_SECRET || undefined,
+                webhook_url: webhookUrl,
+                webhook_secret: shouldAttachInternalSecret
+                    ? env.ENRICHMENT_WEBHOOK_SECRET || undefined
+                    : undefined,
             };
 
             try {

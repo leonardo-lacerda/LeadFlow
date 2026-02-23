@@ -6,6 +6,7 @@ import { scrapingQueue } from '../../lib/queue.js';
 import { enrichmentService } from '../enrichment/enrichment.service.js';
 import { leadPoolService } from '../lead-pool/lead-pool.service.js';
 import { scoringService } from '../scoring/scoring.service.js';
+import { billingService } from '../billing/billing.service.js';
 
 export type ScrapingSource =
     | 'google_maps'
@@ -35,6 +36,11 @@ interface ListJobLeadsQuery {
     page: number;
     limit: number;
     search?: string;
+}
+
+interface LeadStatusSummary {
+    total: number;
+    byStatus: Record<string, number>;
 }
 
 interface ScrapingWebhookPayload {
@@ -325,6 +331,24 @@ function hasLeadIdentity(lead: Record<string, unknown>): boolean {
     );
 }
 
+function hasMockTag(lead: Record<string, unknown>): boolean {
+    const tags = lead['tags'];
+    if (!Array.isArray(tags)) {
+        return false;
+    }
+    return tags.some(
+        (item) => typeof item === 'string' && item.trim().toLowerCase() === 'mock'
+    );
+}
+
+function shouldDropMockLead(lead: Record<string, unknown>): boolean {
+    return (
+        env.NODE_ENV === 'production' &&
+        !env.ALLOW_MOCK_SCRAPING_LEADS_IN_PRODUCTION &&
+        hasMockTag(lead)
+    );
+}
+
 function normalizeLead(lead: Record<string, unknown>, fallbackSource: string) {
     const firstName = asCleanString(pickValue(lead, 'firstName', 'first_name'));
     const lastName = asCleanString(pickValue(lead, 'lastName', 'last_name'));
@@ -513,6 +537,11 @@ export class ScrapingService {
     }
 
     async createJob(organizationId: string, input: CreateScrapingJobInput) {
+        await billingService.assertConcurrentJobsLimit(organizationId, 1);
+        if (input.schedule) {
+            await billingService.assertAutomationRulesLimit(organizationId, 1);
+        }
+
         const job = await prisma.scrapingJob.create({
             data: {
                 name: input.name || `${input.source} scrape`,
@@ -584,7 +613,12 @@ export class ScrapingService {
             ];
         }
 
-        const [leads, total] = await Promise.all([
+        const baseWhere: Prisma.LeadWhereInput = {
+            organizationId,
+            scrapingJobId: jobId,
+        };
+
+        const [leads, total, statusGroups, totalInJob] = await Promise.all([
             prisma.lead.findMany({
                 where,
                 skip,
@@ -592,9 +626,25 @@ export class ScrapingService {
                 orderBy: { createdAt: 'desc' },
             }),
             prisma.lead.count({ where }),
+            prisma.lead.groupBy({
+                by: ['status'],
+                where: baseWhere,
+                _count: { _all: true },
+            }),
+            prisma.lead.count({ where: baseWhere }),
         ]);
 
-        return { leads, total };
+        const byStatus: Record<string, number> = {};
+        for (const entry of statusGroups) {
+            byStatus[entry.status] = entry._count._all;
+        }
+
+        const statusSummary: LeadStatusSummary = {
+            total: totalInJob,
+            byStatus,
+        };
+
+        return { leads, total, statusSummary };
     }
 
     async getJob(organizationId: string, jobId: string) {
@@ -607,6 +657,8 @@ export class ScrapingService {
     }
 
     async rerunJob(organizationId: string, jobId: string) {
+        await billingService.assertConcurrentJobsLimit(organizationId, 1);
+
         const job = await prisma.scrapingJob.findFirst({
             where: { id: jobId, organizationId },
         });
@@ -675,8 +727,10 @@ export class ScrapingService {
 
         const leadsPayload = payload.leads || [];
         const normalizedLeads = leadsPayload.map((lead) => normalizeLead(lead, job.source));
-        const acceptedLeads = normalizedLeads.filter(hasLeadIdentity);
-        const droppedInvalid = normalizedLeads.length - acceptedLeads.length;
+        const leadsWithIdentity = normalizedLeads.filter(hasLeadIdentity);
+        const droppedInvalid = normalizedLeads.length - leadsWithIdentity.length;
+        const acceptedLeads = leadsWithIdentity.filter((lead) => !shouldDropMockLead(lead));
+        const droppedMockTagged = leadsWithIdentity.length - acceptedLeads.length;
 
         const leadsToCreate = acceptedLeads.map((lead) => ({
             ...lead,
@@ -691,16 +745,7 @@ export class ScrapingService {
         let createdLeadIdByFingerprint: Record<string, string> = {};
         if (leadsToCreate.length > 0) {
             const result = await prisma.$transaction(async (tx) => {
-                const organization = await tx.organization.findUnique({
-                    where: { id: job.organizationId },
-                    select: { leadsLimit: true, leadsUsed: true },
-                });
-
-                if (!organization) {
-                    throw new Error('Organization not found');
-                }
-
-                const remaining = Math.max(organization.leadsLimit - organization.leadsUsed, 0);
+                const remaining = await billingService.getRemainingLeadsTx(tx, job.organizationId);
                 if (remaining <= 0) {
                     return {
                         count: 0,
@@ -768,6 +813,12 @@ export class ScrapingService {
                         : [];
 
                 if (createResult.count > 0) {
+                    await billingService.consumeLeadsTx(
+                        tx,
+                        job.organizationId,
+                        createResult.count,
+                        `scraping:${job.id}:leads:${job.processedItems || 0}`
+                    );
                     await tx.organization.update({
                         where: { id: job.organizationId },
                         data: { leadsUsed: { increment: createResult.count } },
@@ -837,6 +888,8 @@ export class ScrapingService {
             leadsCreated === 0 &&
             (persistedLeadCount ?? 0) === 0 &&
             (finalLeadCountHint === undefined || finalLeadCountHint === 0);
+        const shouldWarnDroppedMockLeads =
+            status === 'COMPLETED' && droppedMockTagged > 0;
         const isCompletionTransition = status === 'COMPLETED' && job.status !== 'COMPLETED';
         let postCapture: PostCapturePipelineReport | null = null;
         if (isCompletionTransition) {
@@ -847,8 +900,10 @@ export class ScrapingService {
             status,
             payloadLeadCount: leadsPayload.length,
             normalizedLeadCount: normalizedLeads.length,
+            identityLeadCount: leadsWithIdentity.length,
             acceptedLeadCount: acceptedLeads.length,
             droppedInvalid,
+            droppedMockTagged,
             createdCount,
             droppedByLimit,
             createdLeadIdsCount: createdLeadIds.length,
@@ -861,13 +916,18 @@ export class ScrapingService {
         };
 
         console.info(
-            `[scraping:webhook] job=${job.id} status=${status} payloadLeads=${leadsPayload.length} created=${createdCount} totalItems=${totalItems} processedItems=${processedItems}`
+            `[scraping:webhook] job=${job.id} status=${status} payloadLeads=${leadsPayload.length} accepted=${acceptedLeads.length} droppedMock=${droppedMockTagged} created=${createdCount} totalItems=${totalItems} processedItems=${processedItems}`
         );
 
         let errorsUpdate: Prisma.InputJsonValue | typeof Prisma.JsonNull | undefined;
         if (payload.error) {
             errorsUpdate = {
                 error: payload.error,
+                diagnostics,
+            } as Prisma.InputJsonValue;
+        } else if (shouldWarnDroppedMockLeads) {
+            errorsUpdate = {
+                warning: 'Mock-tagged leads were dropped by production safety filters',
                 diagnostics,
             } as Prisma.InputJsonValue;
         } else if (shouldWarnNoLeads) {

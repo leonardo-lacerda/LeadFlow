@@ -4,6 +4,7 @@ import { fetchWithTimeout } from '../lib/fetch.js';
 import { prisma } from '../lib/prisma.js';
 import { redis } from '../lib/redis.js';
 import { registerQueueWorker } from '../lib/queue-observability.js';
+import { isSameWebhookTarget, isTrustedWebhookUrl } from '../lib/webhook-url.js';
 
 interface AiJobData {
     jobId: string;
@@ -80,6 +81,14 @@ export function startAiWorker() {
                 throw new Error('No leads found for scoring');
             }
 
+            const customWebhookUrl =
+                data.webhookUrl && isTrustedWebhookUrl(data.webhookUrl) ? data.webhookUrl : undefined;
+            const webhookUrl = customWebhookUrl || env.AI_WEBHOOK_URL;
+            const shouldAttachInternalSecret = isSameWebhookTarget(
+                webhookUrl,
+                env.AI_WEBHOOK_URL
+            );
+
             const payload = {
                 leads: leads.map((lead) => ({
                     leadId: lead.id,
@@ -92,8 +101,8 @@ export function startAiWorker() {
                 max_tokens: data.maxTokens,
                 job_id: data.jobId,
                 org_id: data.organizationId,
-                webhook_url: data.webhookUrl || env.AI_WEBHOOK_URL,
-                webhook_secret: env.AI_WEBHOOK_SECRET || undefined,
+                webhook_url: webhookUrl,
+                webhook_secret: shouldAttachInternalSecret ? env.AI_WEBHOOK_SECRET || undefined : undefined,
             };
 
             try {

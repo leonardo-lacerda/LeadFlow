@@ -1,6 +1,7 @@
 import { JobStatus, Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { aiQueue } from '../../lib/queue.js';
+import { billingService } from '../billing/billing.service.js';
 
 interface CreateAiJobInput {
     name?: string;
@@ -41,6 +42,8 @@ function normalizeStatus(status?: string): JobStatus {
 
 export class AiService {
     async createScoringJob(organizationId: string, input: CreateAiJobInput) {
+        await billingService.assertConcurrentJobsLimit(organizationId, 1);
+
         const leads = await prisma.lead.findMany({
             where: { id: { in: input.leadIds }, organizationId },
             select: { id: true },

@@ -1,6 +1,7 @@
 import { JobStatus, Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { enrichmentQueue } from '../../lib/queue.js';
+import { billingService } from '../billing/billing.service.js';
 import { cnpjProvider } from './providers/cnpj.provider.js';
 import { domainProvider } from './providers/domain.provider.js';
 import { icpProvider, type MaturityLevel } from './providers/icp.provider.js';
@@ -198,6 +199,8 @@ function toJsonObject(value: unknown): Record<string, unknown> {
 
 export class EnrichmentService {
     async createJob(organizationId: string, input: CreateEnrichmentJobInput) {
+        await billingService.assertConcurrentJobsLimit(organizationId, 1);
+
         const leads = await prisma.lead.findMany({
             where: { id: { in: input.leadIds }, organizationId },
             select: { id: true },
@@ -207,22 +210,7 @@ export class EnrichmentService {
             throw new Error('No leads found for enrichment');
         }
 
-        const organization = await prisma.organization.findUnique({
-            where: { id: organizationId },
-            select: {
-                enrichmentsLimit: true,
-                enrichmentsUsed: true,
-            },
-        });
-
-        if (!organization) {
-            throw new Error('Organization not found');
-        }
-
-        const remaining = organization.enrichmentsLimit - organization.enrichmentsUsed;
-        if (remaining < leads.length) {
-            throw new Error('Enrichment limit exceeded');
-        }
+        await billingService.assertSignalCapacity(organizationId, leads.length);
 
         const job = await prisma.enrichmentJob.create({
             data: {
@@ -552,6 +540,19 @@ export class EnrichmentService {
                 where: { id: job.organizationId },
                 data: { enrichmentsUsed: { increment: updatedCount } },
             });
+            try {
+                await billingService.consumeSignals(
+                    job.organizationId,
+                    updatedCount,
+                    `enrichment:${job.id}:${processedItems}`,
+                    {
+                        source: 'enrichment.webhook',
+                        jobId: job.id,
+                    } as Prisma.InputJsonValue
+                );
+            } catch (error) {
+                console.error('Failed to record signal consumption for enrichment', error);
+            }
         }
 
         return { updatedCount };

@@ -37,6 +37,8 @@ export const env = {
     AI_SERVICE_URL: process.env.AI_SERVICE_URL || 'http://localhost:5003',
     SCRAPING_WEBHOOK_URL: process.env.SCRAPING_WEBHOOK_URL || '',
     SCRAPING_WEBHOOK_SECRET: process.env.SCRAPING_WEBHOOK_SECRET || '',
+    ALLOW_MOCK_SCRAPING_LEADS_IN_PRODUCTION:
+        process.env.ALLOW_MOCK_SCRAPING_LEADS_IN_PRODUCTION === 'true',
     SCRAPING_NO_API: process.env.SCRAPING_NO_API === 'true',
     ENRICHMENT_WEBHOOK_URL: process.env.ENRICHMENT_WEBHOOK_URL || '',
     ENRICHMENT_WEBHOOK_SECRET: process.env.ENRICHMENT_WEBHOOK_SECRET || '',
@@ -68,6 +70,7 @@ export const env = {
     EMAIL_TRACKING_SIGNING_SECRET: process.env.EMAIL_TRACKING_SIGNING_SECRET || '',
     EMAIL_TRACKING_ALLOWED_DOMAINS: process.env.EMAIL_TRACKING_ALLOWED_DOMAINS || '',
     SECRETS_ENCRYPTION_KEY: process.env.SECRETS_ENCRYPTION_KEY || '',
+    WEBHOOK_URL_ALLOWLIST: process.env.WEBHOOK_URL_ALLOWLIST || '',
 
     // Social OAuth
     OAUTH_STATE_TTL_SECONDS: parseInt(process.env.OAUTH_STATE_TTL_SECONDS || '900'),
@@ -91,4 +94,8 @@ for (const envVar of requiredEnvVars) {
     if (!process.env[envVar]) {
         throw new Error(`Missing required environment variable: ${envVar}`);
     }
+}
+
+if (process.env.NODE_ENV === 'production' && !process.env.SECRETS_ENCRYPTION_KEY) {
+    throw new Error('Missing required environment variable in production: SECRETS_ENCRYPTION_KEY');
 }

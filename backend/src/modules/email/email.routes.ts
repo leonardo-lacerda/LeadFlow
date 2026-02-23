@@ -3,7 +3,12 @@ import { z } from 'zod';
 import dns from 'node:dns/promises';
 import { env } from '../../config/env.js';
 import { emailService } from './email.service.js';
-import { isAllowedTrackingUrl, verifyClickSignature } from './email.utils.js';
+import {
+    isAllowedTrackingUrl,
+    verifyClickSignature,
+    verifyMessageActionSignature,
+} from './email.utils.js';
+import { sendLimitAwareError } from '../billing/http.js';
 
 const createMailboxSchema = z.object({
     name: z.string().min(1),
@@ -208,10 +213,7 @@ export async function emailRoutes(fastify: FastifyInstance) {
                 const result = await emailService.queueSend(decoded.organizationId, body);
                 return reply.send({ success: true, data: result });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to send email',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to send email');
             }
         }
     );
@@ -220,9 +222,12 @@ export async function emailRoutes(fastify: FastifyInstance) {
     fastify.get(
         '/track/open',
         async (request: FastifyRequest, reply) => {
-            const query = request.query as { messageId?: string };
+            const query = request.query as { messageId?: string; sig?: string };
             const messageId = query.messageId;
             if (messageId) {
+                if (!verifyMessageActionSignature('open', messageId, query.sig)) {
+                    return reply.code(400).send({ success: false, error: 'Invalid tracking signature' });
+                }
                 await emailService.handleOpen(messageId);
             }
             const pixel = Buffer.from(
@@ -269,10 +274,13 @@ export async function emailRoutes(fastify: FastifyInstance) {
     fastify.get(
         '/unsubscribe',
         async (request: FastifyRequest, reply) => {
-            const query = request.query as { messageId?: string };
+            const query = request.query as { messageId?: string; sig?: string };
             const messageId = query.messageId;
             if (!messageId) {
                 return reply.code(400).send({ success: false, error: 'messageId is required' });
+            }
+            if (!verifyMessageActionSignature('unsubscribe', messageId, query.sig)) {
+                return reply.code(400).send({ success: false, error: 'Invalid unsubscribe signature' });
             }
             await emailService.handleUnsubscribe(messageId);
             return reply.send({

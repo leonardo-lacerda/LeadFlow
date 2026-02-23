@@ -6,6 +6,7 @@ import {
     CampaignType,
     Prisma,
 } from '@prisma/client';
+import { billingService } from '../billing/billing.service.js';
 
 interface CreateCampaignStep {
     type: 'EMAIL' | 'WHATSAPP' | 'WAIT' | 'CONDITION';
@@ -223,6 +224,11 @@ class CampaignsService {
             throw new Error('Campaign not found');
         }
 
+        if (status === 'ACTIVE' && campaign.status !== 'ACTIVE') {
+            await billingService.assertActiveCampaignsLimit(organizationId, 1);
+            await billingService.assertAutomationRulesLimit(organizationId, 1);
+        }
+
         // Update status
         const updated = await prisma.campaign.update({
             where: { id: campaignId },
@@ -400,6 +406,11 @@ class CampaignsService {
             throw new Error('Campaign has no steps');
         }
 
+        if (campaign.status !== 'ACTIVE') {
+            await billingService.assertActiveCampaignsLimit(organizationId, 1);
+            await billingService.assertAutomationRulesLimit(organizationId, 1);
+        }
+
         await prisma.campaign.update({
             where: { id: campaignId },
             data: { status: 'ACTIVE' },
@@ -450,6 +461,11 @@ class CampaignsService {
 
         if (!campaign) {
             throw new Error('Campaign not found');
+        }
+
+        if (campaign.status !== 'ACTIVE') {
+            await billingService.assertActiveCampaignsLimit(organizationId, 1);
+            await billingService.assertAutomationRulesLimit(organizationId, 1);
         }
 
         await prisma.campaign.update({

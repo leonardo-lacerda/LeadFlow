@@ -8,7 +8,25 @@ def _to_bool(value: str | None, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
-ENRICHMENT_MOCK: bool = _to_bool(os.getenv("ENRICHMENT_MOCK"), True)
+def _resolve_node_env() -> str:
+    for key in ("NODE_ENV", "APP_ENV", "ENVIRONMENT"):
+        raw = os.getenv(key)
+        if raw and raw.strip():
+            return raw.strip().lower()
+    # Fail-safe default: production mode if env is missing.
+    return "production"
+
+
+NODE_ENV: str = _resolve_node_env()
+IS_PRODUCTION: bool = NODE_ENV in {"production", "prod"}
+ENRICHMENT_MOCK: bool = _to_bool(os.getenv("ENRICHMENT_MOCK"), not IS_PRODUCTION)
+ALLOW_ENRICHMENT_MOCK_IN_PRODUCTION: bool = _to_bool(
+    os.getenv("ALLOW_ENRICHMENT_MOCK_IN_PRODUCTION"),
+    False,
+)
+if IS_PRODUCTION and ENRICHMENT_MOCK and not ALLOW_ENRICHMENT_MOCK_IN_PRODUCTION:
+    ENRICHMENT_MOCK = False
+
 ENRICHMENT_CONCURRENCY: int = int(os.getenv("ENRICHMENT_CONCURRENCY", "3"))
 ENRICHMENT_TIMEOUT: float = float(os.getenv("ENRICHMENT_TIMEOUT", "30"))
 ENRICHMENT_CACHE_TTL: int = int(os.getenv("ENRICHMENT_CACHE_TTL", "3600"))

@@ -93,6 +93,33 @@ def _build_tags(email: Optional[str], phone: Optional[str], linkedin_url: Option
     return dedupe_tags(tags, source_tag="indeed")
 
 
+def _scaled_result_limit(
+    requested: int,
+    *,
+    base: int,
+    multiplier: int,
+    ceiling: int,
+) -> int:
+    if requested <= 0:
+        return base
+    scaled = requested * multiplier
+    return max(base, min(ceiling, scaled))
+
+
+def _build_fallback_queries(query: str, location: str) -> List[str]:
+    candidates = [
+        f"site:indeed.com.br {query} {location}".strip(),
+        f"site:indeed.com {query} {location}".strip(),
+        f"site:indeed.com.br/vagas {query} {location}".strip(),
+        f'"{query}" "{location}" "indeed"'.strip(),
+    ]
+    deduped: List[str] = []
+    for candidate in candidates:
+        if candidate and candidate not in deduped:
+            deduped.append(candidate)
+    return deduped
+
+
 async def scrape(
     query: str,
     location: str,
@@ -215,76 +242,89 @@ async def scrape(
 
             # Fallback strategy
             if len(leads) < limit:
-                search_query = f"site:indeed.com {query} {location}".strip()
-                results = await web_search(search_query, limit=max(limit * 2, 10), proxy=proxy)
-                progress_total += max(len(results), 1)
-                await publish_progress(force=True)
-                for result in results:
-                    processed_items = min(progress_total, processed_items + 1)
-                    await publish_progress()
-
-                    source_url = normalize_url(result.get("url"))
-                    title = (result.get("title") or "").strip()
-                    if not source_url:
-                        continue
-                    dedupe_key = source_url or title.lower()
-                    if not dedupe_key or dedupe_key in seen:
-                        continue
-                    seen.add(dedupe_key)
-
-                    company_name = _fallback_company_name(title, source_url)
-                    if _is_low_value_title(company_name):
-                        continue
-
-                    profile = {
-                        "email": None,
-                        "phone": None,
-                        "socials": {},
-                        "domain": None,
-                        "emails": [],
-                        "phones": [],
-                    }
-                    if source_url and profile_budget > 0:
-                        profile_budget -= 1
-                        profile = await fetch_contact_profile(source_url, proxy=proxy)
-                    profile = sanitize_contact_profile(
-                        profile,
-                        blocked_domains=["indeed.com", "indeed.com.br"],
-                    )
-
-                    socials = profile.get("socials") or {}
-                    linkedin_url = socials.get("linkedin") if isinstance(socials, dict) else None
-                    leads.append(
-                        {
-                            "companyName": company_name,
-                            "jobTitle": query,
-                            "email": profile.get("email"),
-                            "phone": profile.get("phone"),
-                            "linkedinUrl": linkedin_url,
-                            "city": location,
-                            "country": "BR",
-                            "companyDomain": profile.get("domain"),
-                            "source": "indeed",
-                            "sourceUrl": source_url,
-                            "tags": _build_tags(
-                                profile.get("email"),
-                                profile.get("phone"),
-                                linkedin_url,
-                            ),
-                            "enrichmentData": {
-                                "socials": socials,
-                                "contacts": {
-                                    "emails": profile.get("emails") or [],
-                                    "phones": profile.get("phones") or [],
-                                },
-                            },
-                        }
-                    )
-                    pending_leads.append(leads[-1])
-                    if len(pending_leads) >= 3:
-                        await publish_progress(force=True, flush_leads=True)
+                fallback_queries = _build_fallback_queries(query, location)
+                search_result_limit = _scaled_result_limit(
+                    limit,
+                    base=80,
+                    multiplier=4,
+                    ceiling=300,
+                )
+                for search_query in fallback_queries:
                     if len(leads) >= limit:
                         break
+                    results = await web_search(
+                        search_query,
+                        limit=search_result_limit,
+                        proxy=proxy,
+                    )
+                    progress_total += max(len(results), 1)
+                    await publish_progress(force=True)
+                    for result in results:
+                        processed_items = min(progress_total, processed_items + 1)
+                        await publish_progress()
+
+                        source_url = normalize_url(result.get("url"))
+                        title = (result.get("title") or "").strip()
+                        if not source_url:
+                            continue
+                        dedupe_key = source_url or title.lower()
+                        if not dedupe_key or dedupe_key in seen:
+                            continue
+                        seen.add(dedupe_key)
+
+                        company_name = _fallback_company_name(title, source_url)
+                        if _is_low_value_title(company_name):
+                            continue
+
+                        profile = {
+                            "email": None,
+                            "phone": None,
+                            "socials": {},
+                            "domain": None,
+                            "emails": [],
+                            "phones": [],
+                        }
+                        if source_url and profile_budget > 0:
+                            profile_budget -= 1
+                            profile = await fetch_contact_profile(source_url, proxy=proxy)
+                        profile = sanitize_contact_profile(
+                            profile,
+                            blocked_domains=["indeed.com", "indeed.com.br"],
+                        )
+
+                        socials = profile.get("socials") or {}
+                        linkedin_url = socials.get("linkedin") if isinstance(socials, dict) else None
+                        leads.append(
+                            {
+                                "companyName": company_name,
+                                "jobTitle": query,
+                                "email": profile.get("email"),
+                                "phone": profile.get("phone"),
+                                "linkedinUrl": linkedin_url,
+                                "city": location,
+                                "country": "BR",
+                                "companyDomain": profile.get("domain"),
+                                "source": "indeed",
+                                "sourceUrl": source_url,
+                                "tags": _build_tags(
+                                    profile.get("email"),
+                                    profile.get("phone"),
+                                    linkedin_url,
+                                ),
+                                "enrichmentData": {
+                                    "socials": socials,
+                                    "contacts": {
+                                        "emails": profile.get("emails") or [],
+                                        "phones": profile.get("phones") or [],
+                                    },
+                                },
+                            }
+                        )
+                        pending_leads.append(leads[-1])
+                        if len(pending_leads) >= 3:
+                            await publish_progress(force=True, flush_leads=True)
+                        if len(leads) >= limit:
+                            break
 
         await publish_progress(flush_leads=True)
         await reporter.finish(leads, send_leads=not streamed_leads)

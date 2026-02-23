@@ -13,18 +13,19 @@ datasource db {
 // ==================== MULTI-TENANT ====================
 
 model Organization {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  plan        Plan     @default(STARTER)
+  id           String  @id @default(cuid())
+  name         String
+  slug         String  @unique
+  plan         Plan    @default(STARTER)
+  planVersion  Int     @default(1)
   networkOptIn Boolean @default(false)
-  
+
   // Limits
-  leadsLimit      Int @default(1000)
-  emailsLimit     Int @default(5000)
-  whatsappLimit   Int @default(1000)
+  leadsLimit       Int @default(1000)
+  emailsLimit      Int @default(5000)
+  whatsappLimit    Int @default(1000)
   enrichmentsLimit Int @default(1000)
-  
+
   // Usage this month
   leadsUsed       Int @default(0)
   emailsUsed      Int @default(0)
@@ -32,52 +33,57 @@ model Organization {
   enrichmentsUsed Int @default(0)
 
   // AI Settings
-  icpDefinition   Json?
-  
+  icpDefinition Json?
+
   // Integrations
-  apiKeys         Json?    // { "apollo": "key", "hunter": "key" }
-  webhooks        Json?    // { "leadCreated": "url", "emailReply": "url" }
+  apiKeys              Json? // { "apollo": "key", "hunter": "key" }
+  webhooks             Json? // { "leadCreated": "url", "emailReply": "url" }
   notificationSettings Json?
-  
+
   // Billing
-  stripeCustomerId    String?
+  stripeCustomerId     String?
   stripeSubscriptionId String?
-  
-  createdAt   DateTime @default(now())
-  onboardingCompleted Boolean @default(false)
-  updatedAt   DateTime @updatedAt
-  
-  users       User[]
-  leads       Lead[]
-  campaigns   Campaign[]
-  templates   Template[]
-  scrapingJobs ScrapingJob[]
-  enrichmentJobs EnrichmentJob[]
-  aiJobs       AiJob[]
-  mailboxes   Mailbox[]
-  whatsappInstances WhatsappInstance[]
-  notifications Notification[]
-  invites     OrganizationInvite[]
-  signalEvents SignalEvent[]
-  signals     Signal[]
-  sharedLeadClaims SharedLeadClaim[]
+
+  createdAt           DateTime @default(now())
+  onboardingCompleted Boolean  @default(false)
+  updatedAt           DateTime @updatedAt
+
+  users              User[]
+  leads              Lead[]
+  campaigns          Campaign[]
+  templates          Template[]
+  scrapingJobs       ScrapingJob[]
+  enrichmentJobs     EnrichmentJob[]
+  aiJobs             AiJob[]
+  mailboxes          Mailbox[]
+  whatsappInstances  WhatsappInstance[]
+  notifications      Notification[]
+  invites            OrganizationInvite[]
+  signalEvents       SignalEvent[]
+  signals            Signal[]
+  sharedLeadClaims   SharedLeadClaim[]
   distributionDrafts DistributionDraft[]
-  socialPublishJobs SocialPublishJob[]
+  socialPublishJobs  SocialPublishJob[]
+  usageCounters      OrganizationUsageCounter[]
+  usageLedger        UsageLedger[]
+  overagePurchases   PlanOveragePurchase[]
+  planChanges        PlanChangeAudit[]
+  planConfig         OrganizationPlanConfig?
 }
 
 model Notification {
-  id        String   @id @default(cuid())
+  id             String       @id @default(cuid())
   organizationId String
-  organization Organization @relation(fields: [organizationId], references: [id])
-  userId    String?
-  user      User?     @relation(fields: [userId], references: [id])
-  title     String
-  message   String
-  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR
-  read      Boolean  @default(false)
-  link      String?
-  createdAt DateTime @default(now())
-  
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id])
+  title          String
+  message        String
+  type           String       @default("INFO") // INFO, SUCCESS, WARNING, ERROR
+  read           Boolean      @default(false)
+  link           String?
+  createdAt      DateTime     @default(now())
+
   @@index([organizationId])
   @@index([userId])
 }
@@ -89,25 +95,39 @@ enum Plan {
   ENTERPRISE
 }
 
+enum UsagePeriodType {
+  DAILY
+  MONTHLY
+}
+
+enum PlanChangeSource {
+  USER_ACTION
+  ADMIN_ACTION
+  SYSTEM
+  MIGRATION
+}
+
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  name          String
-  passwordHash  String
-  role          UserRole @default(MEMBER)
-  
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         UserRole @default(MEMBER)
+
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  activities    Activity[]
-  notifications Notification[]
-  assignedLeads Lead[]   @relation("LeadAssignee")
-  leadNotes     LeadNote[]
-  invitesCreated OrganizationInvite[] @relation("InviteCreator")
-  passwordResetTokens PasswordResetToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activities              Activity[]
+  notifications           Notification[]
+  assignedLeads           Lead[]                @relation("LeadAssignee")
+  leadNotes               LeadNote[]
+  invitesCreated          OrganizationInvite[]  @relation("InviteCreator")
+  passwordResetTokens     PasswordResetToken[]
+  overagePurchasesCreated PlanOveragePurchase[] @relation("OveragePurchaseActor")
+  planChangesCreated      PlanChangeAudit[]     @relation("PlanChangeActor")
 }
 
 enum UserRole {
@@ -119,81 +139,82 @@ enum UserRole {
 // ==================== LEADS ====================
 
 model Lead {
-  id              String   @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Basic Info
-  firstName       String?
-  lastName        String?
-  fullName        String?
-  email           String?
-  emailVerified   Boolean  @default(false)
-  phone           String?
-  whatsapp        String?
-  linkedinUrl     String?
-  
+  firstName     String?
+  lastName      String?
+  fullName      String?
+  email         String?
+  emailVerified Boolean @default(false)
+  phone         String?
+  whatsapp      String?
+  linkedinUrl   String?
+
   // Company Info
-  companyName     String?
-  companyDomain   String?
-  companyCnpj     String?
-  companySize     String?
-  companyRevenue  String?
+  companyName      String?
+  companyDomain    String?
+  companyCnpj      String?
+  companySize      String?
+  companyRevenue   String?
   companyEmployees String?
-  industry        String?
-  technologies    String[] @default([])
-  maturityLevel   MaturityLevel?
-  icpReasons      String[] @default([])
-  
+  industry         String?
+  technologies     String[]       @default([])
+  maturityLevel    MaturityLevel?
+  icpReasons       String[]       @default([])
+
   // Position
-  jobTitle        String?
-  seniority       String?
-  department      String?
-  
+  jobTitle   String?
+  seniority  String?
+  department String?
+
   // Location
-  city            String?
-  state           String?
-  country         String?  @default("BR")
-  
+  city    String?
+  state   String?
+  country String? @default("BR")
+
   // Enrichment
-  enrichedAt      DateTime?
-  enrichmentData  Json?
-  
+  enrichedAt     DateTime?
+  enrichmentData Json?
+
   // AI
-  score           Int?     // 0-100
-  icpMatch        Float?   // 0-1
+  score           Int? // 0-100
+  icpMatch        Float? // 0-1
   temperature     LeadTemperature @default(COLD)
   lastInteraction DateTime?
   lastScoreUpdate DateTime?
   scoreBreakdown  Json?
   tags            String[]
-  
+
   // Source
-  source          String?
-  sourceUrl       String?
+  source            String?
+  sourceUrl         String?
   sourceFingerprint String?
 
   // Scraping
-  scrapingJobId   String?
-  scrapingJob     ScrapingJob? @relation(fields: [scrapingJobId], references: [id], onDelete: SetNull)
-  
+  scrapingJobId String?
+  scrapingJob   ScrapingJob? @relation(fields: [scrapingJobId], references: [id], onDelete: SetNull)
+
   // Status
-  status          LeadStatus @default(NEW)
+  status           LeadStatus @default(NEW)
   assignedToUserId String?
-  assignedToUser   User?     @relation("LeadAssignee", fields: [assignedToUserId], references: [id])
-  inboxStarred     Boolean  @default(false)
-  
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  campaignLeads   CampaignLead[]
-  messages        Message[]
-  activities      Activity[]
-  notes           LeadNote[]
-  signalEvents    SignalEvent[]
+  assignedToUser   User?      @relation("LeadAssignee", fields: [assignedToUserId], references: [id])
+  inboxStarred     Boolean    @default(false)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campaignLeads    CampaignLead[]
+  messages         Message[]
+  activities       Activity[]
+  notes            LeadNote[]
+  signalEvents     SignalEvent[]
   sharedLeadClaims SharedLeadClaim[]
-  
+
+  @@unique([organizationId, sourceFingerprint])
   @@index([organizationId])
   @@index([email])
   @@index([companyCnpj])
@@ -202,18 +223,17 @@ model Lead {
   @@index([lastInteraction])
   @@index([maturityLevel])
   @@index([scrapingJobId])
-  @@unique([organizationId, sourceFingerprint])
 }
 
 model LeadNote {
-  id          String   @id @default(cuid())
-  content     String
-  leadId      String
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  content   String
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([leadId])
   @@index([userId])
@@ -249,27 +269,27 @@ enum MaturityLevel {
 // ==================== CAMPAIGNS ====================
 
 model Campaign {
-  id              String   @id @default(cuid())
-  name            String
-  type            CampaignType
-  status          CampaignStatus @default(DRAFT)
-  
+  id     String         @id @default(cuid())
+  name   String
+  type   CampaignType
+  status CampaignStatus @default(DRAFT)
+
   // Settings
-  settings        Json?
-  schedule        Json?    // Sending schedule
-  metrics         Json?
-  lastMetricsAt   DateTime?
-  
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  steps           CampaignStep[]
-  leads           CampaignLead[]
-  signalEvents    SignalEvent[]
-  
+  settings      Json?
+  schedule      Json? // Sending schedule
+  metrics       Json?
+  lastMetricsAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  steps        CampaignStep[]
+  leads        CampaignLead[]
+  signalEvents SignalEvent[]
+
   @@index([organizationId])
   @@index([lastMetricsAt])
 }
@@ -288,26 +308,26 @@ enum CampaignStatus {
 }
 
 model CampaignStep {
-  id          String   @id @default(cuid())
-  order       Int
-  type        StepType
-  
-  // Content
-  subject     String?  // For email
-  content     String
-  templateId  String?
-  
-  // Timing
-  delayDays   Int      @default(0)
-  delayHours  Int      @default(0)
-  
-  campaignId  String
-  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  
-  createdAt   DateTime @default(now())
+  id    String   @id @default(cuid())
+  order Int
+  type  StepType
 
-  messages    Message[]
-  
+  // Content
+  subject    String? // For email
+  content    String
+  templateId String?
+
+  // Timing
+  delayDays  Int @default(0)
+  delayHours Int @default(0)
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  messages Message[]
+
   @@index([campaignId])
 }
 
@@ -319,21 +339,21 @@ enum StepType {
 }
 
 model CampaignLead {
-  id              String   @id @default(cuid())
-  
-  currentStep     Int      @default(0)
-  status          CampaignLeadStatus @default(PENDING)
-  nextActionAt    DateTime?
-  
-  campaignId      String
-  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  
-  leadId          String
-  lead            Lead     @relation(fields: [leadId], references: [id])
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  id String @id @default(cuid())
+
+  currentStep  Int                @default(0)
+  status       CampaignLeadStatus @default(PENDING)
+  nextActionAt DateTime?
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([campaignId, leadId])
   @@index([status])
   @@index([nextActionAt])
@@ -352,38 +372,38 @@ enum CampaignLeadStatus {
 // ==================== MESSAGES ====================
 
 model Message {
-  id              String   @id @default(cuid())
-  type            MessageType
-  direction       MessageDirection
-  
+  id        String           @id @default(cuid())
+  type      MessageType
+  direction MessageDirection
+
   // Content
-  subject         String?
-  content         String
-  
+  subject String?
+  content String
+
   // Status
-  status          MessageStatus @default(PENDING)
-  sentAt          DateTime?
-  deliveredAt     DateTime?
-  openedAt        DateTime?
-  clickedAt       DateTime?
-  repliedAt       DateTime?
-  bouncedAt       DateTime?
-  responseTime    Int?
-  
+  status       MessageStatus @default(PENDING)
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  repliedAt    DateTime?
+  bouncedAt    DateTime?
+  responseTime Int?
+
   // Metadata
-  externalId      String?  // ID from email provider or WhatsApp
-  metadata        Json?
-  campaignStepId  String?
+  externalId     String? // ID from email provider or WhatsApp
+  metadata       Json?
+  campaignStepId String?
 
-  leadId          String
-  lead            Lead     @relation(fields: [leadId], references: [id])
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id])
 
-  mailboxId       String?
-  mailbox         Mailbox? @relation(fields: [mailboxId], references: [id])
-  campaignStep    CampaignStep? @relation(fields: [campaignStepId], references: [id], onDelete: SetNull)
-  
-  createdAt       DateTime @default(now())
-  
+  mailboxId    String?
+  mailbox      Mailbox?      @relation(fields: [mailboxId], references: [id])
+  campaignStep CampaignStep? @relation(fields: [campaignStepId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
   @@index([leadId])
   @@index([status])
   @@index([type])
@@ -477,19 +497,19 @@ model SignalEvent {
 }
 
 model Signal {
-  id              String       @id @default(cuid())
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  signature       String
-  type            SignalType
-  confidence      Int
-  insight         String
-  dataPoints      Int
-  suggestedFormats String[]     @default([])
-  rawData         Json
-  status          SignalStatus @default(NEW)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id                 String              @id @default(cuid())
+  organizationId     String
+  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  signature          String
+  type               SignalType
+  confidence         Int
+  insight            String
+  dataPoints         Int
+  suggestedFormats   String[]            @default([])
+  rawData            Json
+  status             SignalStatus        @default(NEW)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   distributionDrafts DistributionDraft[]
 
   @@unique([organizationId, signature])
@@ -500,26 +520,26 @@ model Signal {
 }
 
 model SharedLead {
-  id              String   @id @default(cuid())
-  googlePlaceId   String?  @unique
-  companyCnpj     String?  @unique
-  linkedinUrl     String?  @unique
-  email           String?
-  phone           String?
-  fullName        String?
-  companyName     String?
-  website         String?
-  city            String?
-  state           String?
-  category        String?
-  source          String
-  rawData         Json?
-  quality         Int      @default(50)
-  confirmations   Int      @default(1)
-  lastScrapedAt   DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  claims          SharedLeadClaim[]
+  id            String            @id @default(cuid())
+  googlePlaceId String?           @unique
+  companyCnpj   String?           @unique
+  linkedinUrl   String?           @unique
+  email         String?
+  phone         String?
+  fullName      String?
+  companyName   String?
+  website       String?
+  city          String?
+  state         String?
+  category      String?
+  source        String
+  rawData       Json?
+  quality       Int               @default(50)
+  confirmations Int               @default(1)
+  lastScrapedAt DateTime          @default(now())
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  claims        SharedLeadClaim[]
 
   @@index([city, state, category])
   @@index([source])
@@ -527,14 +547,14 @@ model SharedLead {
 }
 
 model SharedLeadClaim {
-  id              String   @id @default(cuid())
-  sharedLeadId    String
-  sharedLead      SharedLead @relation(fields: [sharedLeadId], references: [id], onDelete: Cascade)
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  leadId          String?  @unique
-  lead            Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
-  claimedAt       DateTime @default(now())
+  id             String       @id @default(cuid())
+  sharedLeadId   String
+  sharedLead     SharedLead   @relation(fields: [sharedLeadId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leadId         String?      @unique
+  lead           Lead?        @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  claimedAt      DateTime     @default(now())
 
   @@unique([sharedLeadId, organizationId])
   @@index([organizationId, claimedAt])
@@ -568,21 +588,21 @@ enum SocialPublishStatus {
 }
 
 model DistributionDraft {
-  id              String   @id @default(cuid())
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  signalId        String?
-  signal          Signal?  @relation(fields: [signalId], references: [id], onDelete: SetNull)
-  format          DraftFormat
-  content         String
-  editedContent   String?
-  status          DraftStatus @default(DRAFT)
-  publishedAt     DateTime?
-  platform        String?
-  impressions     Int?
-  engagement      Int?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                String             @id @default(cuid())
+  organizationId    String
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  signalId          String?
+  signal            Signal?            @relation(fields: [signalId], references: [id], onDelete: SetNull)
+  format            DraftFormat
+  content           String
+  editedContent     String?
+  status            DraftStatus        @default(DRAFT)
+  publishedAt       DateTime?
+  platform          String?
+  impressions       Int?
+  engagement        Int?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
   socialPublishJobs SocialPublishJob[]
 
   @@index([organizationId, status])
@@ -592,23 +612,23 @@ model DistributionDraft {
 }
 
 model SocialPublishJob {
-  id              String   @id @default(cuid())
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  draftId         String?
-  draft           DistributionDraft? @relation(fields: [draftId], references: [id], onDelete: SetNull)
-  platform        SocialPlatform
-  content         String
-  status          SocialPublishStatus @default(QUEUED)
-  attempts        Int @default(0)
-  maxAttempts     Int @default(5)
-  externalPostId  String?
-  errorMessage    String?
-  metadata        Json?
-  queuedAt        DateTime @default(now())
-  processedAt     DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String              @id @default(cuid())
+  organizationId String
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  draftId        String?
+  draft          DistributionDraft?  @relation(fields: [draftId], references: [id], onDelete: SetNull)
+  platform       SocialPlatform
+  content        String
+  status         SocialPublishStatus @default(QUEUED)
+  attempts       Int                 @default(0)
+  maxAttempts    Int                 @default(5)
+  externalPostId String?
+  errorMessage   String?
+  metadata       Json?
+  queuedAt       DateTime            @default(now())
+  processedAt    DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   @@index([organizationId, status, createdAt])
   @@index([organizationId, platform, createdAt])
@@ -618,151 +638,151 @@ model SocialPublishJob {
 // ==================== TEMPLATES ====================
 
 model Template {
-  id              String   @id @default(cuid())
-  name            String
-  type            MessageType
-  
-  subject         String?
-  content         String
-  
+  id   String      @id @default(cuid())
+  name String
+  type MessageType
+
+  subject String?
+  content String
+
   // Variables: {{firstName}}, {{companyName}}, etc.
-  variables       String[]
-  
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  variables String[]
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([organizationId])
 }
 
 // ==================== SCRAPING ====================
 
 model ScrapingJob {
-  id              String   @id @default(cuid())
-  name            String
-  source          String   // google_maps, cnpj, linkedin, etc.
-  
-  // Query
-  query           Json     // Source-specific parameters
-  
-  // Status
-  status          JobStatus @default(PENDING)
-  progress        Int      @default(0)
-  totalItems      Int      @default(0)
-  processedItems  Int      @default(0)
-  
-  // Results
-  leadsCreated    Int      @default(0)
-  errors          Json?
-  
-  // Scheduling
-  schedule        String?  // Cron expression
-  lastRunAt       DateTime?
-  nextRunAt       DateTime?
-  
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
+  id     String @id @default(cuid())
+  name   String
+  source String // google_maps, cnpj, linkedin, etc.
 
-  leads           Lead[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  // Query
+  query Json // Source-specific parameters
+
+  // Status
+  status         JobStatus @default(PENDING)
+  progress       Int       @default(0)
+  totalItems     Int       @default(0)
+  processedItems Int       @default(0)
+
+  // Results
+  leadsCreated Int   @default(0)
+  errors       Json?
+
+  // Scheduling
+  schedule  String? // Cron expression
+  lastRunAt DateTime?
+  nextRunAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  leads Lead[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([organizationId])
   @@index([status])
 }
 
 model EnrichmentJob {
-  id              String   @id @default(cuid())
-  name            String
+  id   String @id @default(cuid())
+  name String
 
   // Query
-  query           Json?
+  query            Json?
   processedLeadIds String[] @default([])
 
   // Status
-  status          JobStatus @default(PENDING)
-  progress        Int      @default(0)
-  totalItems      Int      @default(0)
-  processedItems  Int      @default(0)
+  status         JobStatus @default(PENDING)
+  progress       Int       @default(0)
+  totalItems     Int       @default(0)
+  processedItems Int       @default(0)
 
   // Results
-  leadsEnriched   Int      @default(0)
-  errors          Json?
+  leadsEnriched Int   @default(0)
+  errors        Json?
 
-  lastRunAt       DateTime?
+  lastRunAt DateTime?
 
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([organizationId])
   @@index([status])
 }
 
 model OrganizationInvite {
-  id              String   @id @default(cuid())
-  email           String
-  role            UserRole
-  tokenHash       String   @unique
-  expiresAt       DateTime
-  acceptedAt      DateTime?
+  id         String    @id @default(cuid())
+  email      String
+  role       UserRole
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
 
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   createdByUserId String
-  createdByUser   User @relation("InviteCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  createdByUser   User   @relation("InviteCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
 
-  createdAt       DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([organizationId, email])
   @@index([expiresAt])
 }
 
 model PasswordResetToken {
-  id         String   @id @default(cuid())
-  tokenHash  String   @unique
-  expiresAt  DateTime
-  usedAt     DateTime?
-  createdAt  DateTime @default(now())
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
 
-  userId     String
-  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
 }
 
 model AiJob {
-  id              String   @id @default(cuid())
-  name            String
-  type            AiJobType @default(SCORING)
+  id   String    @id @default(cuid())
+  name String
+  type AiJobType @default(SCORING)
 
   // Query
-  query           Json?
+  query Json?
 
   // Status
-  status          JobStatus @default(PENDING)
-  progress        Int      @default(0)
-  totalItems      Int      @default(0)
-  processedItems  Int      @default(0)
+  status         JobStatus @default(PENDING)
+  progress       Int       @default(0)
+  totalItems     Int       @default(0)
+  processedItems Int       @default(0)
 
   // Results
-  results         Json?
-  errors          Json?
+  results Json?
+  errors  Json?
 
-  lastRunAt       DateTime?
+  lastRunAt DateTime?
 
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([organizationId])
   @@index([status])
@@ -785,68 +805,68 @@ enum JobStatus {
 // ==================== EMAIL ====================
 
 model Mailbox {
-  id              String   @id @default(cuid())
-  email           String
-  name            String
-  
-  // SMTP Settings
-  smtpHost        String
-  smtpPort        Int
-  smtpUser        String
-  smtpPass        String   // Encrypted
-  
-  // IMAP Settings (for replies)
-  imapHost        String?
-  imapPort        Int?
-  imapUser        String?
-  imapPass        String?  // Encrypted
-  
-  // Warmup
-  isWarming       Boolean  @default(false)
-  warmupDay       Int      @default(0)
-  dailyLimit      Int      @default(50)
-  sentToday       Int      @default(0)
-  
-  // Status
-  isActive        Boolean  @default(true)
-  lastUsedAt      DateTime?
-  
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
-  
-  createdAt       DateTime @default(now())
+  id    String @id @default(cuid())
+  email String
+  name  String
 
-  messages        Message[]
-  
+  // SMTP Settings
+  smtpHost String
+  smtpPort Int
+  smtpUser String
+  smtpPass String // Encrypted
+
+  // IMAP Settings (for replies)
+  imapHost String?
+  imapPort Int?
+  imapUser String?
+  imapPass String? // Encrypted
+
+  // Warmup
+  isWarming  Boolean @default(false)
+  warmupDay  Int     @default(0)
+  dailyLimit Int     @default(50)
+  sentToday  Int     @default(0)
+
+  // Status
+  isActive   Boolean   @default(true)
+  lastUsedAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  messages Message[]
+
   @@index([organizationId])
 }
 
 // ==================== WHATSAPP ====================
 
 model WhatsappInstance {
-  id              String   @id @default(cuid())
-  name            String
-  phone           String?
-  
+  id    String  @id @default(cuid())
+  name  String
+  phone String?
+
   // Evolution API
-  instanceName    String   @unique
-  instanceToken   String
-  
+  instanceName  String @unique
+  instanceToken String
+
   // Status
   status          WhatsappStatus @default(DISCONNECTED)
   qrCode          String?
   lastConnectedAt DateTime?
-  isActive        Boolean  @default(true)
-  
+  isActive        Boolean        @default(true)
+
   // Limits
-  dailyLimit      Int      @default(100)
-  sentToday       Int      @default(0)
-  
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
-  
-  createdAt       DateTime @default(now())
-  
+  dailyLimit Int @default(100)
+  sentToday  Int @default(0)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+
   @@index([organizationId])
 }
 
@@ -860,19 +880,108 @@ enum WhatsappStatus {
 // ==================== ACTIVITY LOG ====================
 
 model Activity {
-  id          String   @id @default(cuid())
-  type        String   // lead.created, email.sent, etc.
+  id          String @id @default(cuid())
+  type        String // lead.created, email.sent, etc.
   description String
   metadata    Json?
-  
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  
-  leadId      String?
-  lead        Lead?    @relation(fields: [leadId], references: [id])
-  
-  createdAt   DateTime @default(now())
-  
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  leadId String?
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  createdAt DateTime @default(now())
+
   @@index([leadId])
   @@index([userId])
+}
+
+model OrganizationPlanConfig {
+  id                String       @id @default(cuid())
+  organizationId    String       @unique
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  currentPlan       Plan
+  planVersion       Int          @default(1)
+  monthlyPriceCents Int          @default(0)
+  currency          String       @default("BRL")
+  cycleStartedAt    DateTime?
+  cycleEndsAt       DateTime?
+  autoRenew         Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([currentPlan])
+}
+
+model OrganizationUsageCounter {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  metric         String
+  periodType     UsagePeriodType
+  periodStart    DateTime
+  used           Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@unique([organizationId, metric, periodType, periodStart])
+  @@index([organizationId, metric, periodType])
+  @@index([organizationId, periodStart])
+}
+
+model UsageLedger {
+  id             String           @id @default(cuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  dimension      String
+  metric         String
+  operation      String
+  units          Int
+  operationKey   String?          @unique
+  periodType     UsagePeriodType?
+  periodStart    DateTime?
+  metadata       Json?
+  createdAt      DateTime         @default(now())
+
+  @@index([organizationId, metric, createdAt])
+  @@index([organizationId, dimension, createdAt])
+}
+
+model PlanOveragePurchase {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  metric          String       @default("signals_monthly")
+  unitsPurchased  Int
+  unitsRemaining  Int
+  priceCents      Int
+  currency        String       @default("BRL")
+  effectiveFrom   DateTime
+  expiresAt       DateTime
+  notes           String?
+  createdByUserId String?
+  createdByUser   User?        @relation("OveragePurchaseActor", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([organizationId, metric, expiresAt])
+  @@index([organizationId, createdAt])
+}
+
+model PlanChangeAudit {
+  id              String           @id @default(cuid())
+  organizationId  String
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fromPlan        Plan?
+  toPlan          Plan
+  source          PlanChangeSource @default(USER_ACTION)
+  reason          String?
+  metadata        Json?
+  changedByUserId String?
+  changedByUser   User?            @relation("PlanChangeActor", fields: [changedByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime         @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([toPlan, createdAt])
 }

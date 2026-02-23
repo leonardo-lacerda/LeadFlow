@@ -5,6 +5,9 @@ const SECRET_PREFIX = 'enc:v1:';
 const IV_LENGTH = 12;
 
 function getEncryptionKey() {
+    if (env.NODE_ENV === 'production' && !env.SECRETS_ENCRYPTION_KEY) {
+        throw new Error('SECRETS_ENCRYPTION_KEY is required in production');
+    }
     const baseKey = env.SECRETS_ENCRYPTION_KEY || env.JWT_SECRET;
     return crypto.createHash('sha256').update(baseKey).digest();
 }
@@ -59,8 +62,13 @@ export function decryptSecret(value: string | null | undefined) {
 
         const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
         return decrypted.toString('utf8');
-    } catch {
-        // Legacy fallback: if decryption fails, preserve behavior without crashing the request.
+    } catch (error) {
+        if (env.NODE_ENV === 'production') {
+            throw new Error(
+                `Failed to decrypt secret: ${error instanceof Error ? error.message : 'Unknown error'}`
+            );
+        }
+        // Legacy fallback in non-production environments.
         return value;
     }
 }

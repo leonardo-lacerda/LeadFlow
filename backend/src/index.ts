@@ -2,6 +2,9 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
+import cookie from '@fastify/cookie';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import { env } from './config/env.js';
 import { prisma } from './lib/prisma.js';
 import { redis } from './lib/redis.js';
@@ -29,6 +32,7 @@ import { distributionRoutes } from './modules/distribution/distribution.routes.j
 import { networkRoutes } from './modules/network/network.routes.js';
 import { integrationsRoutes } from './modules/integrations/integrations.routes.js';
 import { opsRoutes } from './modules/ops/ops.routes.js';
+import { billingRoutes } from './modules/billing/billing.routes.js';
 import { startScrapingWorker } from './jobs/scraping.worker.js';
 import { startEnrichmentWorker } from './jobs/enrichment.worker.js';
 import { startEmailWorker } from './jobs/email.worker.js';
@@ -50,6 +54,21 @@ const fastify = Fastify({
 await fastify.register(cors, {
     origin: env.FRONTEND_URL,
     credentials: true,
+});
+
+await fastify.register(cookie);
+
+await fastify.register(helmet, {
+    global: true,
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+});
+
+await fastify.register(rateLimit, {
+    global: false,
+    max: 300,
+    timeWindow: '1 minute',
+    allowList: ['127.0.0.1', '::1'],
 });
 
 await fastify.register(jwt, {
@@ -107,6 +126,7 @@ fastify.register(distributionRoutes, { prefix: '/api/distribution' });
 fastify.register(networkRoutes, { prefix: '/api/network' });
 fastify.register(integrationsRoutes, { prefix: '/api/integrations' });
 fastify.register(opsRoutes, { prefix: '/api/ops' });
+fastify.register(billingRoutes, { prefix: '/api/billing' });
 
 if (env.RUN_WORKERS) {
     startScrapingWorker();

@@ -2,6 +2,8 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { scrapingService, ScrapingSource } from './scraping.service.js';
 import { env } from '../../config/env.js';
+import { assertTrustedWebhookUrl } from '../../lib/webhook-url.js';
+import { sendLimitAwareError } from '../billing/http.js';
 
 const createJobSchema = z.object({
     name: z.string().min(1).optional(),
@@ -55,6 +57,9 @@ export async function scrapingRoutes(fastify: FastifyInstance) {
             try {
                 const decoded = await request.jwtVerify<{ organizationId: string }>();
                 const body = createJobSchema.parse(request.body);
+                if (body.webhookUrl) {
+                    assertTrustedWebhookUrl(body.webhookUrl);
+                }
 
                 const job = await scrapingService.createJob(decoded.organizationId, {
                     name: body.name,
@@ -69,10 +74,7 @@ export async function scrapingRoutes(fastify: FastifyInstance) {
                     data: job,
                 });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to create scraping job',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to create scraping job');
             }
         }
     );
@@ -89,10 +91,7 @@ export async function scrapingRoutes(fastify: FastifyInstance) {
                 await scrapingService.rerunJob(decoded.organizationId, (request.params as { id: string }).id);
                 return reply.send({ success: true });
             } catch (error) {
-                return reply.code(400).send({
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Failed to re-run scraping job',
-                });
+                return sendLimitAwareError(reply, error, 'Failed to re-run scraping job');
             }
         }
     );
@@ -202,6 +201,7 @@ export async function scrapingRoutes(fastify: FastifyInstance) {
                         limit: query.limit,
                         total: result.total,
                         totalPages: Math.ceil(result.total / query.limit),
+                        statusSummary: result.statusSummary,
                     },
                 });
             } catch (error) {

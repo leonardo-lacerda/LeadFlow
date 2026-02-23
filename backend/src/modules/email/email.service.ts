@@ -7,6 +7,7 @@ import { emailQueue } from '../../lib/queue.js';
 import { decryptSecret, encryptSecret } from '../../lib/secrets.js';
 import { inboxIntelligenceService } from '../inbox/inbox-intelligence.service.js';
 import { signalLayerService } from '../signals/signal-layer.service.js';
+import { billingService } from '../billing/billing.service.js';
 import {
     injectLinkTracking,
     injectTrackingPixel,
@@ -248,22 +249,7 @@ export class EmailService {
             throw new Error('No leads found');
         }
 
-        const organization = await prisma.organization.findUnique({
-            where: { id: organizationId },
-            select: {
-                emailsLimit: true,
-                emailsUsed: true,
-            },
-        });
-
-        if (!organization) {
-            throw new Error('Organization not found');
-        }
-
-        const remaining = organization.emailsLimit - organization.emailsUsed;
-        if (remaining < leads.length) {
-            throw new Error('Email limit exceeded');
-        }
+        await billingService.assertSignalCapacity(organizationId, leads.length);
 
         const template = input.templateId
             ? await prisma.template.findFirst({
@@ -500,6 +486,14 @@ export class EmailService {
             where: { id: message.lead.organizationId },
             data: { emailsUsed: { increment: 1 } },
         });
+        try {
+            await billingService.consumeSignals(message.lead.organizationId, 1, `email:${message.id}`, {
+                source: 'email.send',
+                messageId: message.id,
+            } as Prisma.InputJsonValue);
+        } catch (error) {
+            console.error('Failed to record signal consumption for email message', error);
+        }
 
         await signalLayerService.trackMessageEvent({
             messageId: message.id,

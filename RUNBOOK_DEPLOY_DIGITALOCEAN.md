@@ -2,6 +2,57 @@
 
 Este documento registra o fluxo usado no deploy e como atualizar o projeto sem perder dados.
 
+## Acesso a VPS (producao atual)
+
+- Droplet Name: `lastreia-prod`
+- IP operacional atual: `161.35.99.112`
+- IP informado anteriormente: `64.227.8.88` (sem resposta em `22/tcp` na validacao de 2026-02-22)
+- Usuario: `root`
+- Senha atual de root: `7d6c011ffac69fd6a29c635a81`
+
+Observacao operacional (2026-02-22): os deploys e testes desta execucao foram realizados no host `161.35.99.112` (SSH acessivel neste momento).
+
+### Como acessar por SSH (recomendado: chave)
+
+No Windows PowerShell:
+
+```powershell
+ssh -i C:\Users\Administrator\.ssh\lastreia_do root@161.35.99.112
+```
+
+No Linux/macOS:
+
+```bash
+ssh -i ~/.ssh/lastreia_do root@161.35.99.112
+```
+
+### Acesso por senha (fallback)
+
+```bash
+ssh root@161.35.99.112
+```
+
+Quando pedir autenticacao, inserir a senha de root acima.
+
+## API HTTPS (estado atual)
+
+- Proxy TLS ativo no container `lastreia-api-proxy` (Caddy).
+- Endpoint HTTPS oficial da API: `https://api.lastreia.app`.
+- Endpoint tecnico de contingencia: `https://api.161.35.99.112.nip.io`.
+- Frontend Vercel (`lastreia.app`) reescreve `/api/*` para `https://api.lastreia.app/api/:path*`.
+- Porta `4000` fechada externamente:
+  - bind local: `BACKEND_BIND_IP=127.0.0.1`
+  - firewall DigitalOcean sem regra inbound para `4000/tcp`
+
+### DNS oficial aplicado (2026-02-22)
+
+A zona DNS de `lastreia.app` esta em `name.com` (NS autoritativo). Registro aplicado:
+
+- Registro desejado no DNS autoritativo: `A api.lastreia.app 161.35.99.112`
+- Alias `api.lastreia.app` foi removido da Vercel para evitar loop de rewrite.
+- `API_PROXY_DOMAIN=api.lastreia.app` no `.env` da VPS
+- rewrite do frontend publicado para `https://api.lastreia.app/api/:path*`
+
 ## ALERTA CRITICO: protecao da DB (leia antes de qualquer deploy)
 
 Se rodar comandos destrutivos, voce pode perder o banco de dados definitivamente.
@@ -35,6 +86,7 @@ Motivo: o servidor nao tinha credenciais para clonar o repositorio privado no Gi
 
 - Arquivo de stack: `docker-compose.prod.yml`
 - Containers:
+  - `lastreia-api-proxy`
   - `lastreia-backend`
   - `lastreia-scraping`
   - `lastreia-enrichment`
@@ -43,6 +95,8 @@ Motivo: o servidor nao tinha credenciais para clonar o repositorio privado no Gi
   - `lastreia-redis`
   - `lastreia-evolution`
 - Volumes persistentes:
+  - `lastreia_caddy_data`
+  - `lastreia_caddy_config`
   - `lastreia_postgres_data`
   - `lastreia_redis_data`
   - `lastreia_evolution_data`

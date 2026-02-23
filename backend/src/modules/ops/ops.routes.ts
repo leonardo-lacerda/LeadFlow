@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { allQueues } from '../../lib/queue.js';
 import { redis } from '../../lib/redis.js';
 import { getWorkerAlerts, getWorkerErrors, getWorkerMetrics } from '../../lib/queue-observability.js';
+import { assertAdminOrOwner } from '../../lib/rbac.js';
 
 async function getQueueSnapshot() {
     const entries = await Promise.all(
@@ -70,11 +71,27 @@ function buildQueueAlerts(queueSnapshot: Record<string, Record<string, number>>)
 }
 
 export async function opsRoutes(fastify: FastifyInstance) {
+    async function requireOpsAccess(request: FastifyRequest) {
+        const decoded = await request.jwtVerify<{ userId: string; organizationId: string }>();
+        await assertAdminOrOwner(decoded.userId, decoded.organizationId);
+    }
+
+    function getErrorStatus(error: unknown) {
+        if (
+            error instanceof Error &&
+            (error.message === 'Forbidden' || error.message.includes('Only ADMIN'))
+        ) {
+            return 403;
+        }
+        return 400;
+    }
+
     fastify.get(
         '/summary',
         { onRequest: [fastify.authenticate] },
-        async (_request: FastifyRequest, reply: FastifyReply) => {
+        async (request: FastifyRequest, reply: FastifyReply) => {
             try {
+                await requireOpsAccess(request);
                 const [queueSnapshot, redisInfoRaw] = await Promise.all([
                     getQueueSnapshot(),
                     redis.info('memory'),
@@ -102,7 +119,7 @@ export async function opsRoutes(fastify: FastifyInstance) {
                     },
                 });
             } catch (error) {
-                return reply.code(400).send({
+                return reply.code(getErrorStatus(error)).send({
                     success: false,
                     error: error instanceof Error ? error.message : 'Failed to load ops summary',
                 });
@@ -113,11 +130,19 @@ export async function opsRoutes(fastify: FastifyInstance) {
     fastify.get(
         '/workers',
         { onRequest: [fastify.authenticate] },
-        async (_request: FastifyRequest, reply: FastifyReply) => {
-            return reply.send({
-                success: true,
-                data: getWorkerMetrics(),
-            });
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            try {
+                await requireOpsAccess(request);
+                return reply.send({
+                    success: true,
+                    data: getWorkerMetrics(),
+                });
+            } catch (error) {
+                return reply.code(getErrorStatus(error)).send({
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Failed to load workers',
+                });
+            }
         }
     );
 
@@ -125,37 +150,55 @@ export async function opsRoutes(fastify: FastifyInstance) {
         '/errors',
         { onRequest: [fastify.authenticate] },
         async (request: FastifyRequest, reply: FastifyReply) => {
-            const query = request.query as { limit?: string | number };
-            const limitRaw =
-                typeof query?.limit === 'string' ? parseInt(query.limit, 10) : Number(query?.limit || 50);
-            const limit = Number.isFinite(limitRaw) ? limitRaw : 50;
+            try {
+                await requireOpsAccess(request);
+                const query = request.query as { limit?: string | number };
+                const limitRaw =
+                    typeof query?.limit === 'string'
+                        ? parseInt(query.limit, 10)
+                        : Number(query?.limit || 50);
+                const limit = Number.isFinite(limitRaw) ? limitRaw : 50;
 
-            return reply.send({
-                success: true,
-                data: getWorkerErrors(limit),
-            });
+                return reply.send({
+                    success: true,
+                    data: getWorkerErrors(limit),
+                });
+            } catch (error) {
+                return reply.code(getErrorStatus(error)).send({
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Failed to load errors',
+                });
+            }
         }
     );
 
     fastify.get(
         '/alerts',
         { onRequest: [fastify.authenticate] },
-        async (_request: FastifyRequest, reply: FastifyReply) => {
-            const queueSnapshot = await getQueueSnapshot();
-            const alerts = [
-                ...buildQueueAlerts(queueSnapshot),
-                ...getWorkerAlerts().map((alert) => ({
-                    level: alert.level,
-                    queue: alert.queueName,
-                    worker: alert.workerName,
-                    message: alert.message,
-                })),
-            ];
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            try {
+                await requireOpsAccess(request);
+                const queueSnapshot = await getQueueSnapshot();
+                const alerts = [
+                    ...buildQueueAlerts(queueSnapshot),
+                    ...getWorkerAlerts().map((alert) => ({
+                        level: alert.level,
+                        queue: alert.queueName,
+                        worker: alert.workerName,
+                        message: alert.message,
+                    })),
+                ];
 
-            return reply.send({
-                success: true,
-                data: alerts,
-            });
+                return reply.send({
+                    success: true,
+                    data: alerts,
+                });
+            } catch (error) {
+                return reply.code(getErrorStatus(error)).send({
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Failed to load alerts',
+                });
+            }
         }
     );
 }
