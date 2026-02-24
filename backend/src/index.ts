@@ -33,6 +33,7 @@ import { networkRoutes } from './modules/network/network.routes.js';
 import { integrationsRoutes } from './modules/integrations/integrations.routes.js';
 import { opsRoutes } from './modules/ops/ops.routes.js';
 import { billingRoutes } from './modules/billing/billing.routes.js';
+import { agentRoutes } from './modules/agent/agent.routes.js';
 import { startScrapingWorker } from './jobs/scraping.worker.js';
 import { startEnrichmentWorker } from './jobs/enrichment.worker.js';
 import { startEmailWorker } from './jobs/email.worker.js';
@@ -45,6 +46,7 @@ import { startFollowUpWorker } from './modules/inbox/followup.worker.js';
 import { startAnalyticsWorker } from './modules/analytics/analytics.worker.js';
 import { startSignalDetectorWorker } from './modules/signals/signal-detector.worker.js';
 import { startSocialPublishWorker } from './modules/integrations/social-publish.worker.js';
+import { startAgentWorker } from './modules/agent/agent.worker.js';
 
 const fastify = Fastify({
     logger: env.NODE_ENV === 'development',
@@ -127,6 +129,7 @@ fastify.register(networkRoutes, { prefix: '/api/network' });
 fastify.register(integrationsRoutes, { prefix: '/api/integrations' });
 fastify.register(opsRoutes, { prefix: '/api/ops' });
 fastify.register(billingRoutes, { prefix: '/api/billing' });
+fastify.register(agentRoutes, { prefix: '/api/agent' });
 
 if (env.RUN_WORKERS) {
     startScrapingWorker();
@@ -140,6 +143,7 @@ if (env.RUN_WORKERS) {
     startAnalyticsWorker();
     startSignalDetectorWorker();
     startSocialPublishWorker();
+    startAgentWorker();
 }
 
 if (env.RUN_IMAP_POLLING) {

@@ -11,6 +11,7 @@ import {
     IconPlug,
     IconWorld,
     IconActivityHeartbeat,
+    IconSparkles,
 } from "@tabler/icons-react";
 
 interface SettingsLayoutProps {
@@ -42,6 +43,11 @@ const sidebarNavItems = [
         title: "Faturamento",
         href: "/settings/billing",
         icon: IconCreditCard,
+    },
+    {
+        title: "Agente IA",
+        href: "/settings/agent",
+        icon: IconSparkles,
     },
     {
         title: "Network",
@@ -85,5 +91,4 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
         </AppLayout>
     );
 }
-
 

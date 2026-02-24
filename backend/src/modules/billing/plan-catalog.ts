@@ -1,6 +1,7 @@
 import { Plan } from '@prisma/client';
 
 export type SophisticationLevel = 'BASE' | 'SEGMENTED' | 'ADVANCED' | 'CUSTOM';
+export type AgentMode = 'ASSISTED' | 'SUPERVISED' | 'AUTONOMOUS';
 
 export interface PlanCapabilities {
     code: Plan;
@@ -23,6 +24,12 @@ export interface PlanCapabilities {
     sophistication: {
         level: SophisticationLevel;
         refreshWindowHours: number;
+    };
+    agent: {
+        defaultMode: AgentMode;
+        allowedModes: AgentMode[];
+        autoExecuteLowRisk: boolean;
+        requiresApprovalHighRisk: boolean;
     };
 }
 
@@ -53,6 +60,12 @@ export const PLAN_CATALOG: Record<Plan, PlanCapabilities> = {
             level: 'BASE',
             refreshWindowHours: 24,
         },
+        agent: {
+            defaultMode: 'ASSISTED',
+            allowedModes: ['ASSISTED'],
+            autoExecuteLowRisk: false,
+            requiresApprovalHighRisk: true,
+        },
     },
     GROWTH: {
         code: 'GROWTH',
@@ -75,6 +88,12 @@ export const PLAN_CATALOG: Record<Plan, PlanCapabilities> = {
         sophistication: {
             level: 'SEGMENTED',
             refreshWindowHours: 4,
+        },
+        agent: {
+            defaultMode: 'SUPERVISED',
+            allowedModes: ['ASSISTED', 'SUPERVISED'],
+            autoExecuteLowRisk: true,
+            requiresApprovalHighRisk: true,
         },
     },
     SCALE: {
@@ -99,6 +118,12 @@ export const PLAN_CATALOG: Record<Plan, PlanCapabilities> = {
             level: 'ADVANCED',
             refreshWindowHours: 1,
         },
+        agent: {
+            defaultMode: 'AUTONOMOUS',
+            allowedModes: ['ASSISTED', 'SUPERVISED', 'AUTONOMOUS'],
+            autoExecuteLowRisk: true,
+            requiresApprovalHighRisk: true,
+        },
     },
     ENTERPRISE: {
         code: 'ENTERPRISE',
@@ -122,10 +147,16 @@ export const PLAN_CATALOG: Record<Plan, PlanCapabilities> = {
             level: 'CUSTOM',
             refreshWindowHours: 1,
         },
+        agent: {
+            defaultMode: 'AUTONOMOUS',
+            allowedModes: ['ASSISTED', 'SUPERVISED', 'AUTONOMOUS'],
+            autoExecuteLowRisk: true,
+            requiresApprovalHighRisk: true,
+        },
     },
 };
 
-const PLAN_ORDER: Plan[] = ['STARTER', 'GROWTH', 'SCALE', 'ENTERPRISE'];
+export const PLAN_ORDER: Plan[] = ['STARTER', 'GROWTH', 'SCALE', 'ENTERPRISE'];
 
 export function getPlanCapabilities(plan: Plan): PlanCapabilities {
     return PLAN_CATALOG[plan];
@@ -150,3 +181,10 @@ export function toLegacyLimits(plan: Plan) {
     };
 }
 
+export function getAgentCapabilities(plan: Plan) {
+    return PLAN_CATALOG[plan].agent;
+}
+
+export function isAgentModeAllowed(plan: Plan, mode: AgentMode) {
+    return PLAN_CATALOG[plan].agent.allowedModes.includes(mode);
+}

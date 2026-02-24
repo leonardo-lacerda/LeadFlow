@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { recommendPlanBySignalsUsage, toLegacyLimits } from './plan-catalog.js';
+import {
+    getAgentCapabilities,
+    isAgentModeAllowed,
+    recommendPlanBySignalsUsage,
+    toLegacyLimits,
+} from './plan-catalog.js';
 
 test('recommendPlanBySignalsUsage maps thresholds to expected plans', () => {
     assert.equal(recommendPlanBySignalsUsage(0), 'STARTER');
@@ -19,3 +24,14 @@ test('toLegacyLimits keeps historical limit fields aligned with plan capacity', 
     assert.equal(starter.enrichmentsLimit, 2_000);
 });
 
+test('agent mode matrix is enforced by plan', () => {
+    const starter = getAgentCapabilities('STARTER');
+    assert.equal(starter.defaultMode, 'ASSISTED');
+    assert.equal(starter.allowedModes.includes('SUPERVISED'), false);
+
+    assert.equal(isAgentModeAllowed('GROWTH', 'ASSISTED'), true);
+    assert.equal(isAgentModeAllowed('GROWTH', 'SUPERVISED'), true);
+    assert.equal(isAgentModeAllowed('GROWTH', 'AUTONOMOUS'), false);
+
+    assert.equal(isAgentModeAllowed('SCALE', 'AUTONOMOUS'), true);
+});

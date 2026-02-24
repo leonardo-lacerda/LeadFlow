@@ -24,6 +24,12 @@ export interface BillingPlanCatalogItem {
         level: "BASE" | "SEGMENTED" | "ADVANCED" | "CUSTOM";
         refreshWindowHours: number;
     };
+    agent: {
+        defaultMode: "ASSISTED" | "SUPERVISED" | "AUTONOMOUS";
+        allowedModes: Array<"ASSISTED" | "SUPERVISED" | "AUTONOMOUS">;
+        autoExecuteLowRisk: boolean;
+        requiresApprovalHighRisk: boolean;
+    };
 }
 
 export interface BillingCatalog {
@@ -165,4 +171,3 @@ export const billingApi = {
         return response.data.data as BillingUsage;
     },
 };
-

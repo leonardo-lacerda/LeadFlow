@@ -188,6 +188,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     ),
                 },
                 {
+                    label: "Agente IA",
+                    href: "/settings/agent",
+                    icon: (
+                        <IconSparkles className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                },
+                {
                     label: "Time",
                     href: "/settings/team",
                     icon: (
@@ -320,4 +327,3 @@ export const Logo = ({ open = true }: { open?: boolean }) => {
         </Link>
     );
 };
-

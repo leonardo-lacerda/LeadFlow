@@ -35,6 +35,12 @@ function renderUsage(used: number, limit: number) {
     return `${used.toLocaleString("pt-BR")} / ${limit.toLocaleString("pt-BR")}`;
 }
 
+function formatAgentMode(mode: "ASSISTED" | "SUPERVISED" | "AUTONOMOUS") {
+    if (mode === "ASSISTED") return "Assistido";
+    if (mode === "SUPERVISED") return "Supervisionado";
+    return "Autonomo";
+}
+
 export default function BillingPage() {
     const [organization, setOrganization] = useState<Organization | null>(null);
     const [catalog, setCatalog] = useState<BillingCatalog | null>(null);
@@ -339,6 +345,11 @@ export default function BillingPage() {
                                         <div>Assentos: {plan.scale.seats}</div>
                                         <div>Runs/dia: {plan.automation.runsDaily}</div>
                                         <div>Regras: {plan.automation.rulesTotal}</div>
+                                        <div>Modo padrao do agente: {formatAgentMode(plan.agent.defaultMode)}</div>
+                                        <div>
+                                            Modos do agente:{" "}
+                                            {plan.agent.allowedModes.map((mode) => formatAgentMode(mode)).join(", ")}
+                                        </div>
                                     </CardContent>
                                     <CardFooter>
                                         <Button
@@ -397,4 +408,3 @@ export default function BillingPage() {
         </div>
     );
 }
-

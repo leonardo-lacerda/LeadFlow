@@ -141,7 +141,12 @@ class InboxService {
     async sendMessage(
         organizationId: string,
         leadId: string,
-        data: { content: string; type: 'EMAIL' | 'WHATSAPP'; subject?: string }
+        data: {
+            content: string;
+            type: 'EMAIL' | 'WHATSAPP';
+            subject?: string;
+            metadata?: Prisma.InputJsonValue;
+        }
     ) {
         // Verify lead belongs to org
         const lead = await prisma.lead.findFirst({
@@ -159,6 +164,7 @@ class InboxService {
                 status: 'PENDING', // Worker will pick this up
                 content: data.content,
                 subject: data.subject,
+                metadata: data.metadata,
                 // We should also link to a mailbox/wa instance ideally
             },
         });

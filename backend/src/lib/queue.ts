@@ -40,6 +40,9 @@ export const signalDetectorQueue = new Queue('signal_detector', { connection });
 // Social publish queue
 export const socialPublishQueue = new Queue('social_publish', { connection });
 
+// Agent queue
+export const agentQueue = new Queue('agent', { connection });
+
 export const allQueues = {
     email: emailQueue,
     whatsapp: whatsappQueue,
@@ -52,6 +55,7 @@ export const allQueues = {
     inbox_followup: inboxFollowupQueue,
     signal_detector: signalDetectorQueue,
     social_publish: socialPublishQueue,
+    agent: agentQueue,
 } as const;
 
 console.log('Queues initialized');
